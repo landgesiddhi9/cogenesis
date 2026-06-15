@@ -1,6 +1,7 @@
 import type {
   NavLink,
   EditorialImage,
+  EditorialVideo,
   ShopifyProduct,
   CampaignData,
   ModelProfile,
@@ -175,12 +176,33 @@ export const productStripItems: ShopifyProduct[] = [
 
 // Campaign
 export const campaignData: CampaignData = {
-  image: {
-    src: 'https://images.unsplash.com/photo-1469334031218-e382a71b716b?w=1800&h=900&fit=crop',
-    alt: 'Fashion campaign - Woman in flowing red dress with straw hat',
-  },
+  video: '/videos/cinemagraph-eu.webm',
   title: 'Summer of Light',
   subtitle: 'The new collection',
+};
+
+// Full-screen triple video panels — flush below full-screen campaign film
+export const aboutTripleVideo = {
+  src: '/videos/aboutcg1.mp4',
+  offsets: [0, 2, 4],
+};
+
+// Full-screen brand story split — flush below triple video section
+export const brandStoryPanel = {
+  headlineLines: [
+    'A WARDROBE',
+    'DISTILLED TO ITS',
+    'MOST ESSENTIAL',
+    'FORMS.',
+  ],
+  paragraphs: [
+    'Cogenesis began with a quiet observation — that the modern wardrobe had grown noisier than the lives it served. We set out to make fewer pieces, more carefully.',
+    'Each shirt and trouser is developed across months of fabric study, draping and small-batch production, finished by hand in our atelier.',
+  ],
+  image: {
+    src: '/images/letterimg.png',
+    alt: 'White-gloved hand holding a sealed Cogenesis letter on burgundy',
+  },
 };
 
 // Gallery section images
@@ -210,6 +232,14 @@ export const galleryImages: EditorialImage[] = [
     alt: 'Man looking away, fashion editorial',
   },
 ];
+
+// Full-screen luxury campaign film — flush below gallery, video only
+// Place your file at: public/videos/campaign.mp4
+export const editorialVideo: EditorialVideo = {
+  src: '/videos/campaign.mp4',
+  fallbackSrc: 'https://assets.mixkit.co/videos/4832/4832-720.mp4',
+  alt: 'Luxury fashion campaign film',
+};
 
 // Full-width architectural campaign
 export const architecturalCampaign: CampaignData = {

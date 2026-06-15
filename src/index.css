@@ -21,13 +21,27 @@ html {
   scroll-behavior: smooth;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
 body {
   font-family: var(--font-body);
   background-color: var(--color-ivory);
   color: var(--color-charcoal);
+  margin: 0;
+  padding: 0;
+  width: 100%;
   overflow-x: hidden;
+}
+
+#root {
+  margin: 0;
+  padding: 0;
+  width: 100%;
 }
 
 /* Selection styling */
@@ -36,44 +50,17 @@ body {
   color: var(--color-deep-brown);
 }
 
-/* Premium overlay scrollbar — luxury fashion style */
+/* Hidden scrollbar — full-width edge-to-edge layout, scroll still works */
 html {
-  overflow-y: scroll;
-  scrollbar-gutter: stable;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
 
-/* Firefox */
-* {
-  scrollbar-width: thin;
-  scrollbar-color: transparent transparent;
-}
-
-*:hover {
-  scrollbar-color: rgba(163, 152, 144, 0.4) transparent;
-}
-
-/* Webkit (Chrome, Safari, Edge) */
-::-webkit-scrollbar {
-  width: 4px;
-}
-
-::-webkit-scrollbar-track {
+html::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
   background: transparent;
-}
-
-::-webkit-scrollbar-thumb {
-  background: transparent;
-  border-radius: 4px;
-  transition: background 0.3s ease;
-}
-
-/* Show thumb on body hover */
-body:hover::-webkit-scrollbar-thumb {
-  background: rgba(163, 152, 144, 0.35);
-}
-
-body:hover::-webkit-scrollbar-thumb:hover {
-  background: rgba(122, 113, 104, 0.55);
 }
 
 /* Letter spacing utility for editorial feel */
@@ -201,4 +188,250 @@ img {
 
 .nav-link:hover::after {
   width: 100%;
+}
+
+/* Seamless editorial three-panel gallery */
+.gallery {
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  margin: 0;
+  padding: 0;
+  gap: 0;
+  overflow: hidden;
+  flex-direction: column;
+  line-height: 0;
+}
+
+.gallery .left,
+.gallery .center,
+.gallery .right {
+  overflow: hidden;
+  margin: 0;
+  padding: 0;
+}
+
+.gallery .left,
+.gallery .center,
+.gallery .right {
+  flex: 0 0 100%;
+  width: 100%;
+  height: 33.333vh;
+}
+
+.gallery img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  margin: 0;
+  padding: 0;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+@media (min-width: 768px) {
+  .gallery {
+    flex-direction: row;
+  }
+
+  .gallery .left {
+    flex: 0 0 28%;
+    width: 28%;
+    height: 100%;
+  }
+
+  .gallery .center {
+    flex: 0 0 44%;
+    width: 44%;
+    height: 100%;
+  }
+
+  .gallery .right {
+    flex: 0 0 28%;
+    width: 28%;
+    height: 100%;
+  }
+}
+
+/* Seamless full-bleed luxury campaign film — flush below gallery */
+.campaign-film {
+  width: 100%;
+  height: 100vh;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  line-height: 0;
+}
+
+.campaign-film video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  margin: 0;
+  padding: 0;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  background: transparent;
+}
+
+/* Seamless full-screen triple video panels — flush below campaign video */
+.triple-video {
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  margin: 0;
+  padding: 0;
+  gap: 0;
+  overflow: hidden;
+  line-height: 0;
+  flex-direction: row;
+}
+
+.triple-video .left,
+.triple-video .center,
+.triple-video .right {
+  flex: 0 0 33.333%;
+  width: 33.333%;
+  height: 100%;
+  overflow: hidden;
+  margin: 0;
+  padding: 0;
+}
+
+.triple-video video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  margin: 0;
+  padding: 0;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  background: transparent;
+}
+
+/* Full-screen brand story split — flush below triple video */
+.brand-story-split {
+  width: 100%;
+  height: 100vh;
+  display: grid;
+  grid-template-columns: 50% 50%;
+  margin: 0;
+  padding: 0;
+  gap: 0;
+  overflow: hidden;
+  line-height: normal;
+}
+
+.brand-story-split__text {
+  background: #F4F2EE;
+  border-left: 4px solid #5A0F12;
+  border-top: 4px solid #5A0F12;
+  border-bottom: 4px solid #5A0F12;
+  border-right: none;
+  box-sizing: border-box;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+
+.brand-story-split__content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.brand-story-split__text h1 {
+  font-family: var(--font-body);
+  font-size: 4rem;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  line-height: 1.25;
+  max-width: 520px;
+  color: #A98A63;
+  margin: 0 0 80px;
+  padding: 0;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.brand-story-split__text h4 {
+  font-family: var(--font-body);
+  font-size: 1.15rem;
+  font-weight: 400;
+  line-height: 1.8;
+  max-width: 480px;
+  color: #A98A63;
+  margin: 0;
+  padding: 0;
+  text-align: center;
+}
+
+.brand-story-split__text h4 p {
+  margin: 0;
+}
+
+.brand-story-split__text h4 p + p {
+  margin-top: 1.75rem;
+}
+
+.brand-story-split__image {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  line-height: 0;
+}
+
+.brand-story-split__image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  margin: 0;
+  padding: 0;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+@media (max-width: 1023px) {
+  .brand-story-split {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto;
+    height: auto;
+  }
+
+  .brand-story-split__text {
+    min-height: 100vh;
+    padding: 4rem 2rem;
+    box-sizing: border-box;
+  }
+
+  .brand-story-split__text h1 {
+    font-size: clamp(1.75rem, 6vw, 4rem);
+    margin-bottom: 60px;
+  }
+
+  .brand-story-split__text h4 {
+    font-size: clamp(1rem, 2.5vw, 1.15rem);
+  }
+
+  .brand-story-split__image {
+    height: 70vh;
+    min-height: 400px;
+  }
 }

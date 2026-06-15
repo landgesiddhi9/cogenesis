@@ -3,10 +3,12 @@ import Hero from './components/Hero';
 import EditorialGrid from './components/EditorialGrid';
 import ProductStrip from './components/ProductStrip';
 import CampaignBanner from './components/CampaignBanner';
+import TripleVideoSection from './components/TripleVideoSection';
+import BrandStorySplitSection from './components/BrandStorySplitSection';
 import GallerySection from './components/GallerySection';
+import VideoSection from './components/VideoSection';
 import ModelLineup from './components/ModelLineup';
 import CraftsmanshipSection from './components/CraftsmanshipSection';
-import BrandStory from './components/BrandStory';
 import Footer from './components/Footer';
 
 function App() {
@@ -19,8 +21,10 @@ function App() {
         <ProductStrip />
         <CampaignBanner />
         <GallerySection />
+        <VideoSection />
+        <TripleVideoSection />
+        <BrandStorySplitSection />
         <ModelLineup />
-        <BrandStory />
         <CraftsmanshipSection />
       </main>
       <Footer />
