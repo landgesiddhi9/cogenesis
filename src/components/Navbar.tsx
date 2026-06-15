@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { navLinks } from '../data/mockData';
 
 const Navbar = () => {
@@ -13,22 +14,36 @@ const Navbar = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Lock body scroll when menu is open
+  // Lock body scroll when menu is open (preserve scroll position)
   useEffect(() => {
-    if (menuOpen) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
-    }
+    if (!menuOpen) return;
+
+    const scrollY = window.scrollY;
+    document.body.style.position = 'fixed';
+    document.body.style.top = `-${scrollY}px`;
+    document.body.style.left = '0';
+    document.body.style.right = '0';
+    document.body.style.overflow = 'hidden';
+
     return () => {
+      document.body.style.position = '';
+      document.body.style.top = '';
+      document.body.style.left = '';
+      document.body.style.right = '';
       document.body.style.overflow = '';
+      window.scrollTo(0, scrollY);
     };
   }, [menuOpen]);
 
   return (
+    <>
     <nav
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
-        scrolled ? 'bg-ivory/90 backdrop-blur-md shadow-sm border-b border-stone/10' : 'bg-transparent'
+      className={`fixed top-0 left-0 right-0 transition-all duration-500 ${
+        menuOpen ? 'z-[110]' : 'z-50'
+      } ${
+        menuOpen || !scrolled
+          ? 'bg-transparent'
+          : 'bg-ivory/90 backdrop-blur-md shadow-sm border-b border-stone/10'
       }`}
     >
       <div className="w-full px-4 md:px-8">
@@ -71,7 +86,11 @@ const Navbar = () => {
           </a>
 
           {/* Right side — search, account, wishlist, cart */}
-          <div className="flex items-center gap-4 md:gap-5 text-charcoal">
+          <div
+            className={`flex items-center gap-4 md:gap-5 text-charcoal transition-opacity duration-300 ${
+              menuOpen ? 'opacity-0 pointer-events-none' : 'opacity-100'
+            }`}
+          >
             {/* Search */}
             <button
               className="p-1 hover:opacity-70 transition-opacity duration-300"
@@ -123,34 +142,40 @@ const Navbar = () => {
         </div>
       </div>
 
-      {/* Full-screen menu overlay — works on ALL screen sizes */}
-      <div
-        className={`fixed inset-0 top-0 bg-ivory/98 backdrop-blur-lg transition-all duration-500 z-[55] ${
-          menuOpen
-            ? 'opacity-100 pointer-events-auto'
-            : 'opacity-0 pointer-events-none'
-        }`}
-        id="navbar-menu-overlay"
-      >
-        <div className="flex flex-col items-center justify-center h-full gap-10">
-          {navLinks.map((link, index) => (
-            <a
-              key={link.label}
-              href={link.href}
-              className="font-accent text-sm md:text-base tracking-wide-editorial uppercase text-charcoal hover:text-stone transition-all duration-300"
-              onClick={() => setMenuOpen(false)}
-              style={{
-                transitionDelay: menuOpen ? `${index * 80}ms` : '0ms',
-                opacity: menuOpen ? 1 : 0,
-                transform: menuOpen ? 'translateY(0)' : 'translateY(16px)',
-              }}
-            >
-              {link.label}
-            </a>
-          ))}
-        </div>
-      </div>
     </nav>
+
+      {/* Portal to body — avoids fixed-position trap from nav backdrop-blur when scrolled */}
+      {createPortal(
+        <div
+          className={`fixed inset-0 w-screen h-screen bg-ivory/98 backdrop-blur-lg transition-all duration-500 z-[100] ${
+            menuOpen
+              ? 'opacity-100 pointer-events-auto'
+              : 'opacity-0 pointer-events-none'
+          }`}
+          id="navbar-menu-overlay"
+          aria-hidden={!menuOpen}
+        >
+          <div className="flex flex-col items-center justify-center h-full gap-10">
+            {navLinks.map((link, index) => (
+              <a
+                key={link.label}
+                href={link.href}
+                className="font-accent text-sm md:text-base tracking-wide-editorial uppercase text-charcoal hover:text-stone transition-all duration-300"
+                onClick={() => setMenuOpen(false)}
+                style={{
+                  transitionDelay: menuOpen ? `${index * 80}ms` : '0ms',
+                  opacity: menuOpen ? 1 : 0,
+                  transform: menuOpen ? 'translateY(0)' : 'translateY(16px)',
+                }}
+              >
+                {link.label}
+              </a>
+            ))}
+          </div>
+        </div>,
+        document.body
+      )}
+    </>
   );
 };
 

@@ -63,8 +63,17 @@ export interface EditorialImage {
   subcaption?: string;
 }
 
+export interface EditorialVideo {
+  src: string;
+  alt: string;
+  poster?: string;
+  /** Used when the primary src fails to load (e.g. file not added yet) */
+  fallbackSrc?: string;
+}
+
 export interface CampaignData {
-  image: EditorialImage;
+  image?: EditorialImage;
+  video?: string;
   title?: string;
   subtitle?: string;
   cta?: string;
