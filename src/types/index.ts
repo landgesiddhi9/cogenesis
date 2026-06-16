@@ -78,16 +78,3 @@ export interface CampaignData {
   subtitle?: string;
   cta?: string;
 }
-
-export interface ModelProfile {
-  image: string;
-  name?: string;
-  look?: string;
-}
-
-export interface CraftsmanshipDetail {
-  image: string;
-  alt: string;
-  title?: string;
-  description?: string;
-}
