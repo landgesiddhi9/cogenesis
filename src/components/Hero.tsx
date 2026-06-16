@@ -5,7 +5,7 @@ const Hero = () => {
   const { ref, isInView } = useInView({ threshold: 0.2 });
 
   return (
-    <section ref={ref} className="relative w-full h-screen min-h-[600px] max-h-[1000px] overflow-hidden">
+    <section ref={ref} className="relative w-full h-screen min-h-[600px] overflow-hidden">
       {/* Hero image */}
       <div className="absolute inset-0">
         <img

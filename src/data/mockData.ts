@@ -4,8 +4,6 @@ import type {
   EditorialVideo,
   ShopifyProduct,
   CampaignData,
-  ModelProfile,
-  CraftsmanshipDetail,
 } from '../types';
 
 // Navigation
@@ -248,57 +246,6 @@ export const architecturalCampaign: CampaignData = {
     alt: 'Architectural interior with models - luxury campaign',
   },
 };
-
-// Model lineup
-export const modelLineup: ModelProfile[] = [
-  {
-    image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=550&fit=crop&crop=top',
-    name: 'Look I',
-    look: 'The olive field shirt',
-  },
-  {
-    image: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=400&h=550&fit=crop&crop=top',
-    name: 'Look II',
-    look: 'The white oxford',
-  },
-  {
-    image: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=400&h=550&fit=crop&crop=top',
-    name: 'Look III',
-    look: 'The cream polo',
-  },
-  {
-    image: 'https://images.unsplash.com/photo-1480455624313-e29b44bbfde1?w=400&h=550&fit=crop&crop=top',
-    name: 'Look IV',
-    look: 'The riviera stripe',
-  },
-  {
-    image: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=550&fit=crop&crop=top',
-    name: 'Look V',
-    look: 'The sky blue linen',
-  },
-];
-
-// Craftsmanship details
-export const craftsmanshipDetails: CraftsmanshipDetail[] = [
-  {
-    image: 'https://images.unsplash.com/photo-1558171813-4c088753af8f?w=600&h=400&fit=crop',
-    alt: 'Fine leather detail - craftsmanship',
-    title: 'Heritage Leather',
-    description: 'Hand-finished Italian leather goods crafted in our Florentine atelier.',
-  },
-  {
-    image: 'https://images.unsplash.com/photo-1590874103328-eac38a683ce7?w=600&h=400&fit=crop',
-    alt: 'Fabric texture close-up',
-    title: 'Noble Fabrics',
-    description: 'Sourced from the finest mills across Italy, Portugal, and Japan.',
-  },
-  {
-    image: 'https://images.unsplash.com/photo-1611312449408-fcece27cdbb7?w=600&h=400&fit=crop',
-    alt: 'Button detail on garment',
-    title: 'Considered Details',
-    description: 'Every button, every stitch speaks to a commitment to permanence.',
-  },
-];
 
 // Brand story
 export const brandStory = {
