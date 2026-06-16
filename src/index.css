@@ -190,6 +190,26 @@ img {
   width: 100%;
 }
 
+/* Editorial split — full viewport, flush with hero above */
+.editorial-section {
+  width: 100%;
+  height: 100vh;
+  height: 100dvh;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+.editorial-section__grid {
+  height: 100%;
+}
+
+@media (max-width: 767px) {
+  .editorial-section__grid {
+    grid-template-rows: 1fr 1fr;
+  }
+}
+
 /* Seamless editorial three-panel gallery */
 .gallery {
   width: 100%;

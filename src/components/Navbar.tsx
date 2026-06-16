@@ -47,7 +47,7 @@ const Navbar = () => {
       }`}
     >
       <div className="w-full px-4 md:px-8">
-        <div className="relative flex items-center justify-between h-20 md:h-28">
+        <div className="relative flex items-center justify-between h-14 md:h-16">
           {/* Hamburger menu — always visible on left */}
           <button
             className="flex flex-col gap-[5px] p-2 relative z-[60]"
@@ -81,7 +81,7 @@ const Navbar = () => {
             <img
               src="/images/logo.png"
               alt="Cogenesis"
-              className="h-24 md:h-[7.2rem] w-auto brightness-0"
+              className="h-9 md:h-11 w-auto brightness-0"
             />
           </a>
 

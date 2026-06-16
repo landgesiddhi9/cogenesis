@@ -6,29 +6,29 @@ const EditorialGrid = () => {
   const { ref: rightRef, isInView: rightInView } = useInView({ threshold: 0.15 });
 
   return (
-    <section className="w-full" id="editorial-section">
-      <div className="grid grid-cols-1 md:grid-cols-2">
+    <section className="editorial-section w-full" id="editorial-section">
+      <div className="editorial-section__grid grid grid-cols-1 md:grid-cols-2 h-full">
 
         {/* Left column — collar detail image + text below */}
         <div
           ref={leftRef}
-          className={`bg-[#F5F0EB] flex flex-col transition-all duration-1000 ${
+          className={`bg-[#F5F0EB] flex flex-col h-full min-h-0 transition-all duration-1000 ${
             leftInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
           }`}
         >
-          {/* Image container — centered with padding, extra bottom space for text */}
-          <div className="px-16 pt-8 pb-6 md:px-20 md:pt-10 md:pb-8 lg:px-28 lg:pt-12 lg:pb-10">
-            <div className="img-zoom aspect-[4/5] overflow-hidden">
+          {/* Image fills remaining space; offset down 1cm without shifting text */}
+          <div className="flex-1 min-h-0 px-16 pb-6 md:px-20 md:pb-8 lg:px-28 lg:pb-10">
+            <div className="img-zoom h-full mt-[1cm] overflow-hidden">
               <img
                 src="/images/collar-detail.png"
                 alt="White shirt collar detail showing premium craftsmanship"
-                className="w-full h-full object-cover"
+                className="w-full h-full object-cover object-center"
               />
             </div>
           </div>
 
           {/* Text block below left image */}
-          <div className="flex flex-col items-center justify-center pt-4 pb-10 md:pt-6 md:pb-14 px-8">
+          <div className="flex-shrink-0 flex flex-col items-center justify-center pt-4 pb-10 md:pt-6 md:pb-14 px-8">
             <h1 className="font-sans text-2xl md:text-3xl lg:text-[32px] font-bold uppercase tracking-[0.25em] text-[#2A2420] mb-3">
               TIMELESS
             </h1>
@@ -41,7 +41,7 @@ const EditorialGrid = () => {
         {/* Right column — packaging image, full bleed on white */}
         <div
           ref={rightRef}
-          className={`bg-white flex transition-all duration-1000 delay-200 ${
+          className={`bg-white flex h-full min-h-0 overflow-hidden transition-all duration-1000 delay-200 ${
             rightInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
           }`}
         >
@@ -49,7 +49,7 @@ const EditorialGrid = () => {
             <img
               src={editorialImages[1].src}
               alt={editorialImages[1].alt}
-              className="w-full h-full object-cover"
+              className="w-full h-full object-cover object-center"
             />
           </div>
         </div>
