@@ -39,7 +39,7 @@ const VideoSection = () => {
   };
 
   return (
-    <section className="campaign-film">
+    <section className="campaign-film section-media">
       <video
         key={videoSrc}
         ref={videoRef}

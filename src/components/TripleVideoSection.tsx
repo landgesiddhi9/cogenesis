@@ -55,7 +55,7 @@ const TripleVideoSection = () => {
   };
 
   return (
-    <section className="triple-video">
+    <section className="triple-video section-media">
       <div className="left">
         <video ref={leftRef} {...videoProps} />
       </div>

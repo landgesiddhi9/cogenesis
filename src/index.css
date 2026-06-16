@@ -16,15 +16,33 @@
   --font-accent: 'Josefin Sans', sans-serif;
 }
 
+/* ── Global editorial layout reset ── */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  width: 100%;
+  overflow-x: hidden;
+  margin: 0;
+  padding: 0;
+}
+
+img,
+video {
+  display: block;
+  max-width: 100%;
+}
+
 /* Base styles */
 html {
   scroll-behavior: smooth;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  margin: 0;
-  padding: 0;
-  width: 100%;
-  overflow-x: hidden;
   overflow-y: auto;
 }
 
@@ -32,16 +50,80 @@ body {
   font-family: var(--font-body);
   background-color: var(--color-ivory);
   color: var(--color-charcoal);
-  margin: 0;
-  padding: 0;
-  width: 100%;
-  overflow-x: hidden;
+  min-height: 100svh;
 }
 
 #root {
-  margin: 0;
-  padding: 0;
+  min-height: 100svh;
+}
+
+/* ── Editorial layout framework ── */
+.section-hero {
+  position: relative;
   width: 100%;
+  min-height: 100svh;
+  overflow: hidden;
+}
+
+.section-media {
+  width: 100%;
+  min-height: 100svh;
+  overflow: hidden;
+}
+
+.section-media--tall {
+  min-height: 60svh;
+}
+
+.section-content {
+  width: 100%;
+  min-height: fit-content;
+}
+
+.media-cover,
+.media-cover img,
+.media-cover video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.media-fill {
+  position: absolute;
+  inset: 0;
+}
+
+.media-fill img,
+.media-fill video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Horizontal editorial scroll */
+.scroll-strip {
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.scroll-strip::-webkit-scrollbar {
+  display: none;
+}
+
+.scroll-strip__track {
+  display: flex;
+  width: max-content;
+  min-height: fit-content;
+}
+
+.scroll-strip__panel {
+  flex-shrink: 0;
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
 }
 
 /* Selection styling */
@@ -190,30 +272,31 @@ img {
   width: 100%;
 }
 
-/* Editorial split — full viewport, flush with hero above */
+/* Editorial split — full viewport spread, flush with hero above */
 .editorial-section {
   width: 100%;
-  height: 100vh;
-  height: 100dvh;
+  min-height: 100svh;
   margin: 0;
   padding: 0;
   overflow: hidden;
 }
 
 .editorial-section__grid {
+  min-height: 100svh;
   height: 100%;
 }
 
 @media (max-width: 767px) {
   .editorial-section__grid {
-    grid-template-rows: 1fr 1fr;
+    grid-template-rows: minmax(0, 1fr) minmax(0, 1fr);
+    min-height: 100svh;
   }
 }
 
 /* Seamless editorial three-panel gallery */
 .gallery {
   width: 100%;
-  height: 100vh;
+  min-height: 100svh;
   display: flex;
   margin: 0;
   padding: 0;
@@ -229,21 +312,15 @@ img {
   overflow: hidden;
   margin: 0;
   padding: 0;
-}
-
-.gallery .left,
-.gallery .center,
-.gallery .right {
-  flex: 0 0 100%;
+  flex: 1 1 33.333%;
   width: 100%;
-  height: 33.333vh;
+  min-height: 33.333svh;
 }
 
 .gallery img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  display: block;
   margin: 0;
   padding: 0;
   border: none;
@@ -259,26 +336,26 @@ img {
   .gallery .left {
     flex: 0 0 28%;
     width: 28%;
-    height: 100%;
+    min-height: 100svh;
   }
 
   .gallery .center {
     flex: 0 0 44%;
     width: 44%;
-    height: 100%;
+    min-height: 100svh;
   }
 
   .gallery .right {
     flex: 0 0 28%;
     width: 28%;
-    height: 100%;
+    min-height: 100svh;
   }
 }
 
 /* Seamless full-bleed luxury campaign film — flush below gallery */
 .campaign-film {
   width: 100%;
-  height: 100vh;
+  min-height: 100svh;
   margin: 0;
   padding: 0;
   overflow: hidden;
@@ -288,8 +365,8 @@ img {
 .campaign-film video {
   width: 100%;
   height: 100%;
+  min-height: 100svh;
   object-fit: cover;
-  display: block;
   margin: 0;
   padding: 0;
   border: none;
@@ -301,7 +378,7 @@ img {
 /* Seamless full-screen triple video panels — flush below campaign video */
 .triple-video {
   width: 100%;
-  height: 100vh;
+  min-height: 100svh;
   display: flex;
   margin: 0;
   padding: 0;
@@ -314,9 +391,9 @@ img {
 .triple-video .left,
 .triple-video .center,
 .triple-video .right {
-  flex: 0 0 33.333%;
+  flex: 1 1 33.333%;
   width: 33.333%;
-  height: 100%;
+  min-height: 100svh;
   overflow: hidden;
   margin: 0;
   padding: 0;
@@ -326,7 +403,6 @@ img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  display: block;
   margin: 0;
   padding: 0;
   border: none;
@@ -335,10 +411,24 @@ img {
   background: transparent;
 }
 
+@media (max-width: 767px) {
+  .triple-video {
+    flex-direction: column;
+  }
+
+  .triple-video .left,
+  .triple-video .center,
+  .triple-video .right {
+    flex: 1 1 auto;
+    width: 100%;
+    min-height: 33.333svh;
+  }
+}
+
 /* Full-screen brand story split — flush below triple video */
 .brand-story-split {
   width: 100%;
-  height: 100vh;
+  min-height: 100svh;
   display: grid;
   grid-template-columns: 50% 50%;
   margin: 0;
@@ -355,7 +445,7 @@ img {
   border-bottom: 4px solid #5A0F12;
   border-right: none;
   box-sizing: border-box;
-  height: 100%;
+  min-height: 100svh;
   margin: 0;
   padding: 0;
   display: flex;
@@ -409,7 +499,7 @@ img {
 
 .brand-story-split__image {
   width: 100%;
-  height: 100%;
+  min-height: 100svh;
   margin: 0;
   padding: 0;
   overflow: hidden;
@@ -432,18 +522,17 @@ img {
   .brand-story-split {
     grid-template-columns: 1fr;
     grid-template-rows: auto auto;
-    height: auto;
+    min-height: fit-content;
   }
 
   .brand-story-split__text {
-    min-height: 100vh;
-    padding: 4rem 2rem;
-    box-sizing: border-box;
+    min-height: fit-content;
+    padding: clamp(3rem, 8svh, 5rem) clamp(1.5rem, 5vw, 2rem);
   }
 
   .brand-story-split__text h1 {
     font-size: clamp(1.75rem, 6vw, 4rem);
-    margin-bottom: 60px;
+    margin-bottom: clamp(2.5rem, 6svh, 3.75rem);
   }
 
   .brand-story-split__text h4 {
@@ -451,7 +540,30 @@ img {
   }
 
   .brand-story-split__image {
-    height: 70vh;
-    min-height: 400px;
+    aspect-ratio: 4 / 5;
+    width: 100%;
+    min-height: 50svh;
+  }
+}
+
+/* Partial-viewport campaign banner */
+.campaign-banner {
+  position: relative;
+  width: 100%;
+  min-height: 60svh;
+  overflow: hidden;
+  margin: 0;
+  padding: 0;
+}
+
+@media (min-width: 768px) {
+  .campaign-banner {
+    min-height: 75svh;
+  }
+}
+
+@media (min-width: 1024px) {
+  .campaign-banner {
+    min-height: 85svh;
   }
 }

@@ -6,7 +6,7 @@ const EditorialGrid = () => {
   const { ref: rightRef, isInView: rightInView } = useInView({ threshold: 0.15 });
 
   return (
-    <section className="editorial-section w-full" id="editorial-section">
+    <section className="editorial-section section-media" id="editorial-section">
       <div className="editorial-section__grid grid grid-cols-1 md:grid-cols-2 h-full">
 
         {/* Left column — collar detail image + text below */}
@@ -18,11 +18,11 @@ const EditorialGrid = () => {
         >
           {/* Image fills remaining space; offset down 1cm without shifting text */}
           <div className="flex-1 min-h-0 px-16 pb-6 md:px-20 md:pb-8 lg:px-28 lg:pb-10">
-            <div className="img-zoom h-full mt-[1cm] overflow-hidden">
+            <div className="img-zoom h-full mt-[1cm] overflow-hidden media-cover">
               <img
                 src="/images/collar-detail.png"
                 alt="White shirt collar detail showing premium craftsmanship"
-                className="w-full h-full object-cover object-center"
+                className="object-center"
               />
             </div>
           </div>
@@ -45,11 +45,11 @@ const EditorialGrid = () => {
             rightInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
           }`}
         >
-          <div className="img-zoom w-full h-full">
+          <div className="img-zoom w-full h-full media-cover">
             <img
               src={editorialImages[1].src}
               alt={editorialImages[1].alt}
-              className="w-full h-full object-cover object-center"
+              className="object-center"
             />
           </div>
         </div>

@@ -14,18 +14,18 @@ const ProductCard = ({
   return (
     <div
       ref={ref}
-      className={`group relative overflow-hidden cursor-pointer flex-shrink-0 w-[280px] md:w-[320px] lg:w-[360px] transition-all duration-700 ${
+      className={`group relative overflow-hidden cursor-pointer scroll-strip__panel w-[280px] md:w-[320px] lg:w-[360px] transition-all duration-700 ${
         isInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
       }`}
       style={{ transitionDelay: `${index * 100}ms` }}
       id={`product-card-${product.handle}`}
     >
       {/* Image */}
-      <div className="aspect-[5/8] overflow-hidden">
+      <div className="aspect-[5/8] overflow-hidden media-cover">
         <img
           src={product.featuredImage.url}
           alt={product.featuredImage.altText}
-          className="product-img w-full h-full object-cover object-top"
+          className="product-img object-top"
           loading="lazy"
         />
       </div>
@@ -51,25 +51,15 @@ const ProductCard = ({
 
 const ProductStrip = () => {
   return (
-    <section id="product-collection">
+    <section id="product-collection" className="section-content">
       {/* Horizontal scrolling editorial strip */}
-      <div className="overflow-x-auto scrollbar-hide">
-        <div className="flex min-w-max">
+      <div className="scroll-strip">
+        <div className="scroll-strip__track">
           {productStripItems.map((product, index) => (
             <ProductCard key={product.id} product={product} index={index} />
           ))}
         </div>
       </div>
-
-      <style>{`
-        .scrollbar-hide::-webkit-scrollbar {
-          display: none;
-        }
-        .scrollbar-hide {
-          -ms-overflow-style: none;
-          scrollbar-width: none;
-        }
-      `}</style>
     </section>
   );
 };

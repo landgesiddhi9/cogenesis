@@ -2,7 +2,7 @@ import { brandStoryPanel } from '../data/mockData';
 
 const BrandStorySplitSection = () => {
   return (
-    <section className="brand-story-split">
+    <section className="brand-story-split section-media">
       <div className="brand-story-split__text">
         <div className="brand-story-split__content">
           <h1>
