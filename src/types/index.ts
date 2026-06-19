@@ -54,6 +54,7 @@ export interface ShopifyCollection {
 export interface NavLink {
   label: string;
   href: string;
+  submenu?: NavLink[];
 }
 
 export interface EditorialImage {
