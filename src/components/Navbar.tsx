@@ -1,25 +1,45 @@
 import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { navLinks } from "../data/mockData";
+import SearchOverlay from "./SearchOverlay";
 
 const Navbar = () => {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  // HEAD: accordion dropdown state
   const [expandedSection, setExpandedSection] = useState<number | null>(null);
   const [underlineWidth, setUnderlineWidth] = useState(0);
   const headingRefsRef = useRef<(HTMLDivElement | null)[]>([]);
+  // Cherry-pick: search overlay + router state
+  const [searchOpen, setSearchOpen] = useState(false);
+  const navigate = useNavigate();
+  const location = useLocation();
+  const activePath = location.pathname;
 
+  // Helper: icon button class with active state (cherry-pick)
+  const iconButtonClass = (isActive: boolean) =>
+    `p-1 transition-all duration-200 ease-out transform ${
+      isActive
+        ? "text-[#111] scale-110"
+        : "text-charcoal hover:text-[#111] hover:scale-[1.08]"
+    }`;
+
+  // Helper: stroke weight for active icon (cherry-pick)
+  const activeStroke = (isActive: boolean) =>
+    isActive ? "stroke-[1.4]" : "stroke-[1.2]";
+
+  // Scroll effect
   useEffect(() => {
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 50);
-    };
+    const handleScroll = () => setScrolled(window.scrollY > 50);
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Lock body scroll when menu is open
+  // Lock body scroll when menu OR search overlay is open (preserve scroll position)
   useEffect(() => {
-    if (!menuOpen) return;
+    const shouldLock = menuOpen || searchOpen;
+    if (!shouldLock) return;
 
     const scrollY = window.scrollY;
     document.body.style.position = "fixed";
@@ -36,9 +56,9 @@ const Navbar = () => {
       document.body.style.overflow = "";
       window.scrollTo(0, scrollY);
     };
-  }, [menuOpen]);
+  }, [menuOpen, searchOpen]);
 
-  // Update underline width when expanded section changes
+  // Update underline width when expanded accordion section changes (HEAD)
   useEffect(() => {
     if (expandedSection !== null && headingRefsRef.current[expandedSection]) {
       const container = headingRefsRef.current[expandedSection];
@@ -51,26 +71,22 @@ const Navbar = () => {
     }
   }, [expandedSection]);
 
+  // Toggle or collapse accordion section (HEAD)
   const handleHeadingClick = (index: number) => {
-    // Toggle the section: if it's already expanded, collapse it
-    // Otherwise, expand it and collapse any other expanded section
-    if (expandedSection === index) {
-      setExpandedSection(null);
-    } else {
-      setExpandedSection(index);
-    }
+    setExpandedSection((prev) => (prev === index ? null : index));
   };
 
+  // Close the entire menu (HEAD)
   const closeMenu = () => {
     setMenuOpen(false);
     setExpandedSection(null);
   };
 
+  // Navigate via React Router and close menu (merged: uses navigate() for React Router compat)
   const handleNavigation = (href: string) => {
     closeMenu();
     if (!href.startsWith("http") && href !== "#") {
-      window.history.pushState({}, "", href);
-      window.dispatchEvent(new PopStateEvent("popstate"));
+      navigate(href);
     }
   };
 
@@ -87,7 +103,7 @@ const Navbar = () => {
       >
         <div className="w-full px-4 md:px-8">
           <div className="relative flex items-center justify-between h-14 md:h-16">
-            {/* Hamburger menu */}
+            {/* Hamburger — HEAD version */}
             <button
               className="flex flex-col gap-1.25 p-2 relative z-60"
               onClick={() => setMenuOpen(!menuOpen)}
@@ -111,7 +127,7 @@ const Navbar = () => {
               />
             </button>
 
-            {/* Center logo */}
+            {/* Center logo — HEAD version */}
             <a
               href="/"
               className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-60"
@@ -124,16 +140,18 @@ const Navbar = () => {
               />
             </a>
 
-            {/* Right side icons */}
+            {/* Right-side icons — cherry-pick active-state version */}
             <div
               className={`flex items-center gap-4 md:gap-5 text-charcoal transition-opacity duration-300 ${
                 menuOpen ? "opacity-0 pointer-events-none" : "opacity-100"
               }`}
             >
+              {/* Search */}
               <button
-                className="p-1 hover:opacity-70 transition-opacity duration-300"
+                className={iconButtonClass(activePath === "/search")}
                 aria-label="Search"
                 id="navbar-search"
+                onClick={() => setSearchOpen(true)}
               >
                 <svg
                   width="20"
@@ -141,17 +159,19 @@ const Navbar = () => {
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
-                  strokeWidth="1.2"
+                  className={activeStroke(activePath === "/search")}
                 >
                   <circle cx="11" cy="11" r="8" />
                   <path d="M21 21l-4.35-4.35" />
                 </svg>
               </button>
 
+              {/* Account */}
               <button
-                className="p-1 hover:opacity-70 transition-opacity duration-300"
+                className={iconButtonClass(activePath === "/login")}
                 aria-label="Account"
                 id="navbar-account"
+                onClick={() => navigate("/login")}
               >
                 <svg
                   width="20"
@@ -159,15 +179,16 @@ const Navbar = () => {
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
-                  strokeWidth="1.2"
+                  className={activeStroke(activePath === "/login")}
                 >
                   <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" />
                   <circle cx="12" cy="7" r="4" />
                 </svg>
               </button>
 
+              {/* Wishlist */}
               <button
-                className="p-1 hover:opacity-70 transition-opacity duration-300"
+                className={iconButtonClass(activePath === "/wishlist")}
                 aria-label="Wishlist"
                 id="navbar-wishlist"
               >
@@ -177,14 +198,15 @@ const Navbar = () => {
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
-                  strokeWidth="1.2"
+                  className={activeStroke(activePath === "/wishlist")}
                 >
                   <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z" />
                 </svg>
               </button>
 
+              {/* Cart */}
               <button
-                className="p-1 hover:opacity-70 transition-opacity duration-300"
+                className={iconButtonClass(activePath === "/cart")}
                 aria-label="Shopping bag"
                 id="navbar-cart"
               >
@@ -194,7 +216,7 @@ const Navbar = () => {
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
-                  strokeWidth="1.2"
+                  className={activeStroke(activePath === "/cart")}
                 >
                   <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z" />
                   <line x1="3" y1="6" x2="21" y2="6" />
@@ -206,7 +228,7 @@ const Navbar = () => {
         </div>
       </nav>
 
-      {/* ACCORDION DROPDOWN MENU */}
+      {/* ACCORDION DROPDOWN MENU — HEAD version, unchanged */}
       {createPortal(
         <div
           className={`fixed inset-y-0 left-0 transition-all duration-300 z-100 ${
@@ -223,7 +245,6 @@ const Navbar = () => {
           }}
           id="navbar-dropdown"
         >
-          {/* Navigation content */}
           {menuOpen && (
             <div className="h-full flex flex-col items-center justify-center px-8 py-16">
               <div className="w-full space-y-8 flex flex-col items-center">
@@ -239,7 +260,7 @@ const Navbar = () => {
                           : 0.55,
                     }}
                   >
-                    {/* Section heading (always visible) */}
+                    {/* Section heading */}
                     <div
                       ref={(el) => {
                         headingRefsRef.current[sectionIndex] = el;
@@ -271,7 +292,7 @@ const Navbar = () => {
                         }}
                       >
                         <span className="heading-text">{section.label}</span>
-                        {/* Underline for active heading */}
+                        {/* Animated underline for active heading */}
                         {expandedSection === sectionIndex && (
                           <div
                             style={{
@@ -290,7 +311,7 @@ const Navbar = () => {
                       </button>
                     </div>
 
-                    {/* Subcategories (hidden by default, shown when expanded) */}
+                    {/* Subcategories */}
                     {section.submenu && (
                       <div
                         className="overflow-hidden transition-all duration-300"
@@ -335,19 +356,16 @@ const Navbar = () => {
         document.body,
       )}
 
-      {/* Animations */}
+      {/* Accordion underline animation — HEAD */}
       <style>{`
         @keyframes expandWidth {
-          from {
-            width: 0;
-            opacity: 0;
-          }
-          to {
-            width: inherit;
-            opacity: 1;
-          }
+          from { width: 0; opacity: 0; }
+          to   { width: inherit; opacity: 1; }
         }
       `}</style>
+
+      {/* Search overlay — cherry-pick */}
+      <SearchOverlay isOpen={searchOpen} onClose={() => setSearchOpen(false)} />
     </>
   );
 };

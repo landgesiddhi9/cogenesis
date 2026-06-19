@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useLocation, useParams, Routes, Route } from "react-router-dom";
 import Navbar from "./components/Navbar";
 import Hero from "./components/Hero";
 import EditorialGrid from "./components/EditorialGrid";
@@ -11,59 +11,64 @@ import VideoSection from "./components/VideoSection";
 import Footer from "./components/Footer";
 import CollectionPage from "./pages/CollectionPage";
 import LaunchingSoonPage from "./pages/LaunchingSoonPage";
+import LoginPage from "./components/LoginPage";
+
+// Wrapper so CollectionPage receives its collectionHandle prop via React Router params
+const CollectionRouteWrapper = () => {
+  const { handle } = useParams<{ handle: string }>();
+  return <CollectionPage collectionHandle={handle ?? ""} />;
+};
 
 function App() {
-  const [currentPath, setCurrentPath] = useState(window.location.pathname);
+  const location = useLocation();
+  const isLoginPage = location.pathname === "/login";
 
-  useEffect(() => {
-    const handlePathChange = () => {
-      setCurrentPath(window.location.pathname);
-    };
-
-    window.addEventListener("popstate", handlePathChange);
-    return () => window.removeEventListener("popstate", handlePathChange);
-  }, []);
-
-  // Launching Soon route
-  if (currentPath === "/launching-soon") {
-    return (
-      <div className="bg-ivory">
-        <Navbar />
-        <LaunchingSoonPage />
-        <Footer />
-      </div>
-    );
-  }
-
-  // Collection routes
-  if (currentPath.startsWith("/collections/")) {
-    const collectionHandle = currentPath
-      .replace("/collections/", "")
-      .replace("/", "");
-    return (
-      <div className="bg-ivory">
-        <Navbar />
-        <CollectionPage collectionHandle={collectionHandle} />
-        <Footer />
-      </div>
-    );
-  }
-
-  // Homepage (default)
   return (
     <div className="section-content bg-ivory">
       <Navbar />
       <main>
-        <Hero />
-        <EditorialGrid />
-        <ProductStrip />
-        <CampaignBanner />
-        <GallerySection />
-        <VideoSection />
-        <TripleVideoSection />
-        <BrandStorySplitSection />
+        <Routes>
+          {/* Homepage */}
+          <Route
+            path="/"
+            element={
+              <>
+                <Hero />
+                <EditorialGrid />
+                <ProductStrip />
+                <CampaignBanner />
+                <GallerySection />
+                <VideoSection />
+                <TripleVideoSection />
+                <BrandStorySplitSection />
+              </>
+            }
+          />
+
+          {/* Login — drawer overlaid on hero */}
+          <Route
+            path="/login"
+            element={
+              <>
+                <Hero />
+                <LoginPage />
+              </>
+            }
+          />
+
+          {/* Collection pages */}
+          <Route
+            path="/collections/:handle"
+            element={<CollectionRouteWrapper />}
+          />
+
+          {/* Launching soon */}
+          <Route path="/launching-soon" element={<LaunchingSoonPage />} />
+        </Routes>
       </main>
-      <Footer />
+
+      {/* Hide footer while the login drawer is open */}
+      {!isLoginPage && <Footer />}
     </div>
   );
 }
