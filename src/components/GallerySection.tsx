@@ -4,7 +4,7 @@ const GallerySection = () => {
   const [left, center, right] = galleryImages;
 
   return (
-    <section className="gallery" aria-label="Editorial portrait gallery">
+    <section className="gallery section-media" aria-label="Editorial portrait gallery">
       <div className="left">
         <img src={left.src} alt={left.alt} loading="lazy" />
       </div>

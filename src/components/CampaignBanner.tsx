@@ -36,7 +36,7 @@ const CampaignBanner = () => {
   return (
     <section
       ref={ref}
-      className="relative w-full h-[60vh] md:h-[75vh] lg:h-[85vh] overflow-hidden m-0 p-0"
+      className="campaign-banner"
     >
       {campaignData.video ? (
         <video
@@ -50,14 +50,14 @@ const CampaignBanner = () => {
           disablePictureInPicture
           controls={false}
           controlsList="nodownload nofullscreen noremoteplayback"
-          className="w-full h-full object-cover block m-0 p-0"
+          className="media-cover absolute inset-0 m-0 p-0"
         />
       ) : (
         campaignData.image && (
           <img
             src={campaignData.image.src}
             alt={campaignData.image.alt}
-            className={`w-full h-full object-cover transition-transform duration-[2500ms] ease-out ${
+            className={`media-cover absolute inset-0 transition-transform duration-[2500ms] ease-out ${
               isInView ? 'scale-100' : 'scale-110'
             }`}
             loading="lazy"

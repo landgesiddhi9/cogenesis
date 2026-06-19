@@ -12,7 +12,7 @@ const Footer = () => {
   };
 
   return (
-    <footer className="bg-[#f0ece4]" id="site-footer">
+    <footer className="section-content bg-[#f0ece4]" id="site-footer">
       {/* Main footer content — reduced vertical padding ~18% */}
       <div className="max-w-[1400px] mx-auto px-6 md:px-12 lg:px-16 py-10 md:py-16">
         <div className="grid grid-cols-1 md:grid-cols-12 gap-10 md:gap-6">

@@ -5,13 +5,13 @@ const Hero = () => {
   const { ref, isInView } = useInView({ threshold: 0.2 });
 
   return (
-    <section ref={ref} className="relative w-full h-screen min-h-[600px] overflow-hidden">
+    <section ref={ref} className="section-hero">
       {/* Hero image */}
-      <div className="absolute inset-0">
+      <div className="media-fill">
         <img
           src={heroImage.src}
           alt={heroImage.alt}
-          className={`w-full h-full object-cover object-top transition-transform duration-[2000ms] ease-out ${
+          className={`transition-transform duration-[2000ms] ease-out ${
             isInView ? 'scale-100' : 'scale-110'
           }`}
         />
