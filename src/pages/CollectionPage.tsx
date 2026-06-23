@@ -70,6 +70,15 @@ const CollectionProductCard = ({
   });
   const [selectedColorIndex, setSelectedColorIndex] = useState(0);
 
+  const handleProductClick = () => {
+    window.history.pushState(
+      { path: `/products/${product.handle}` },
+      "",
+      `/products/${product.handle}`,
+    );
+    window.dispatchEvent(new PopStateEvent("popstate"));
+  };
+
   const handleWishlistToggle = (e: React.MouseEvent) => {
     e.stopPropagation();
     const wishlist = JSON.parse(sessionStorage.getItem("wishlist") || "[]");
@@ -100,10 +109,11 @@ const CollectionProductCard = ({
   return (
     <div
       ref={ref}
-      className={`group relative overflow-hidden transition-all duration-700 ${
+      className={`group relative overflow-hidden transition-all duration-700 cursor-pointer ${
         isInView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
       }`}
       style={{ transitionDelay: `${index * 50}ms` }}
+      onClick={handleProductClick}
     >
       {/* Image container with hover effect */}
       <div
@@ -126,29 +136,25 @@ const CollectionProductCard = ({
         {/* Wishlist button */}
         <button
           onClick={handleWishlistToggle}
-          className={`absolute top-4 right-4 flex items-center justify-center w-10 h-10 rounded-full transition-all duration-300 backdrop-blur-md ${
+          className={`absolute top-5 right-5 p-0 bg-transparent border-none cursor-pointer transition-opacity duration-300 ${
             isHovered
               ? "opacity-100"
               : "opacity-0 group-hover/image:opacity-100"
           }`}
-          style={{
-            backgroundColor: isHovered
-              ? "rgba(255, 255, 255, 0.95)"
-              : "rgba(255, 255, 255, 0.75)",
-            transform: isHovered ? "scale(1.05)" : "scale(1)",
-          }}
           aria-label="Add to wishlist"
         >
           <svg
-            width="20"
-            height="20"
+            width="22"
+            height="22"
             viewBox="0 0 24 24"
-            fill={isWishlisted ? "#A98A63" : "none"}
-            stroke={isWishlisted ? "#A98A63" : "#2A2420"}
+            fill={isWishlisted ? "#482C1B" : "none"}
+            stroke={isWishlisted ? "#482C1B" : "#482C1B"}
             strokeWidth="1.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
             className="transition-all duration-300"
           >
-            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+            <path d="M6 2h12v16l-6-4l-6 4V2z" />
           </svg>
         </button>
       </div>
