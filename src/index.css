@@ -16,6 +16,68 @@
     --font-accent: "Josefin Sans", sans-serif;
 }
 
+/* Custom classes for header branding */
+@layer utilities {
+    .h-15 {
+        height: 56px;
+    }
+
+    @media (min-width: 768px) {
+        .h-15 {
+            height: 60px;
+        }
+    }
+
+    .h-32 {
+        height: 65px; /* 72px reduced by 10% */
+    }
+
+    @media (min-width: 768px) {
+        .h-32 {
+            height: 109px; /* 121.5px reduced by 10% */
+        }
+    }
+
+    /* Extra tight gap between monogram and logo (19-21px visible space with 0.2cm increase) */
+    .gap-tight {
+        gap: 1.1875rem; /* 19px on mobile (11px + 8px) */
+    }
+
+    @media (min-width: 768px) {
+        .gap-tight {
+            gap: 1.3125rem; /* 21px on desktop (13px + 8px) */
+        }
+    }
+
+    /* Compensate for transparent PNG padding on monogram */
+    .monogram-trim {
+        margin-right: -0.75rem; /* -12px to pull inward */
+    }
+
+    @media (min-width: 768px) {
+        .monogram-trim {
+            margin-right: -1rem; /* -16px on desktop */
+        }
+    }
+
+    /* Compensate for transparent PNG padding on logo */
+    .logo-trim {
+        margin-left: -0.75rem; /* -12px to pull inward */
+    }
+
+    @media (min-width: 768px) {
+        .logo-trim {
+            margin-left: -1rem; /* -16px on desktop */
+        }
+    }
+
+    /* Custom color recoloring to #5C3432 - bolder and more visible */
+    .branding-dark {
+        filter: brightness(0.58) contrast(1.25) saturate(1.1) hue-rotate(-8deg);
+        opacity: 1;
+    }
+}
+
 /* ── Global editorial layout reset ── */
 *,
 *::before,

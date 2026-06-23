@@ -3,6 +3,8 @@ import { createPortal } from "react-dom";
 import { navLinks } from "../data/mockData";
 
 const Navbar = () => {
+  // Images: Monogram.png and Logo.png are in public/images/
+  // Branding: Monogram (h-15) + Logo (h-32) with 8-10px visible gap + color #5C3432 + trim margins for PNG padding
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [expandedSection, setExpandedSection] = useState<number | null>(null);
@@ -111,16 +113,25 @@ const Navbar = () => {
               />
             </button>
 
-            {/* Center logo */}
+            {/* Center logo - monogram + logo */}
             <a
               href="/"
-              className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-60"
+              className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-60 flex items-center gap-tight"
               id="navbar-logo"
             >
+              {/* Monogram - reduced 15-20%, framed within header */}
               <img
-                src="/images/logo.png"
+                src="/images/Monogram.png"
+                alt="Cogenesis Monogram"
+                className="h-15 w-auto object-contain shrink-0 branding-dark monogram-trim"
+                style={{ opacity: 1 }}
+              />
+              {/* Logo - dominant wordmark, 30% larger */}
+              <img
+                src="/images/Logo.png"
                 alt="Cogenesis"
-                className="h-9 md:h-11 w-auto brightness-0"
+                className="h-32 w-auto object-contain shrink-0 branding-dark logo-trim"
+                style={{ opacity: 1 }}
               />
             </a>
 
