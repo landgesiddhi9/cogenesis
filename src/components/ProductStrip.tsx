@@ -1,6 +1,6 @@
-import { useInView } from '../hooks/useInView';
-import { productStripItems } from '../data/mockData';
-import type { ShopifyProduct } from '../types';
+import { useInView } from "../hooks/useInView";
+import { productStripItems } from "../data/mockData";
+import type { ShopifyProduct } from "../types";
 
 const ProductCard = ({
   product,
@@ -11,14 +11,24 @@ const ProductCard = ({
 }) => {
   const { ref, isInView } = useInView({ threshold: 0.1 });
 
+  const handleProductClick = () => {
+    window.history.pushState(
+      { path: `/products/${product.handle}` },
+      "",
+      `/products/${product.handle}`,
+    );
+    window.dispatchEvent(new PopStateEvent("popstate"));
+  };
+
   return (
     <div
       ref={ref}
       className={`group relative overflow-hidden cursor-pointer scroll-strip__panel w-[280px] md:w-[320px] lg:w-[360px] transition-all duration-700 ${
-        isInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+        isInView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
       }`}
       style={{ transitionDelay: `${index * 100}ms` }}
       id={`product-card-${product.handle}`}
+      onClick={handleProductClick}
     >
       {/* Image */}
       <div className="aspect-[5/8] overflow-hidden media-cover">

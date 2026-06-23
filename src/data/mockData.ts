@@ -1189,6 +1189,8 @@ export const allProducts = [
   ...poloShirtProducts,
 ];
 
+export const products = allProducts;
+
 export const collections: ShopifyCollection[] = [
   {
     id: "gid://shopify/Collection/1",
@@ -1249,6 +1251,12 @@ export const getCollectionByHandle = (handle: string): ShopifyCollection => {
       products: [],
     }
   );
+};
+
+export const getProductByHandle = (
+  handle: string,
+): (typeof allProducts)[0] | undefined => {
+  return allProducts.find((p) => p.handle === handle);
 };
 
 // Footer data

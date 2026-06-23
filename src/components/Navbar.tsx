@@ -6,11 +6,12 @@ import { navLinks } from "../data/mockData";
 import { getSession, SESSION_EVENT } from "../utils/auth";
 
 const Navbar = () => {
+  // Images: Monogram.png and Logo.png are in public/images/
+  // Branding: Monogram (h-15) + Logo (h-32) with 8-10px visible gap + color #5C3432 + trim margins for PNG padding
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   // HEAD: accordion dropdown state
   const [expandedSection, setExpandedSection] = useState<number | null>(null);
-  const [underlineWidth, setUnderlineWidth] = useState(0);
   const headingRefsRef = useRef<(HTMLDivElement | null)[]>([]);
   const navigate = useNavigate();
   const location = useLocation();
@@ -140,17 +141,31 @@ const Navbar = () => {
       >
         <div className="w-full px-4 md:px-8">
           <div className="relative flex items-center justify-between h-14 md:h-16">
-            {/* Hamburger — HEAD version */}
+            {/* Hamburger menu / Close button */}
             <button
-              className="flex flex-col gap-1.25 p-2 relative z-60"
+              className="flex flex-col gap-1.25 p-2 relative z-60 transition-all duration-300"
               onClick={() => setMenuOpen(!menuOpen)}
-              aria-label="Toggle menu"
+              aria-label={menuOpen ? "Close menu" : "Toggle menu"}
               id="navbar-hamburger"
+              style={{
+                opacity: menuOpen ? 0.7 : 1,
+              }}
+              onMouseEnter={(e) => {
+                (e.currentTarget as HTMLElement).style.opacity = "1";
+              }}
+              onMouseLeave={(e) => {
+                (e.currentTarget as HTMLElement).style.opacity = menuOpen
+                  ? "0.7"
+                  : "1";
+              }}
             >
               <span
                 className={`block w-5 h-px bg-charcoal transition-all duration-300 origin-center ${
                   menuOpen ? "rotate-45 translate-y-1.5" : ""
                 }`}
+                style={{
+                  backgroundColor: menuOpen ? "#482C1B" : "currentColor",
+                }}
               />
               <span
                 className={`block w-5 h-px bg-charcoal transition-all duration-300 ${
@@ -161,19 +176,31 @@ const Navbar = () => {
                 className={`block w-5 h-px bg-charcoal transition-all duration-300 origin-center ${
                   menuOpen ? "-rotate-45 -translate-y-1.5" : ""
                 }`}
+                style={{
+                  backgroundColor: menuOpen ? "#482C1B" : "currentColor",
+                }}
               />
             </button>
 
-            {/* Center logo — HEAD version */}
+            {/* Center logo - monogram + logo */}
             <a
               href="/"
-              className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-60"
+              className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-60 flex items-center gap-tight"
               id="navbar-logo"
             >
+              {/* Monogram - reduced 15-20%, framed within header */}
               <img
-                src="/images/logo.png"
+                src="/images/Monogram.png"
+                alt="Cogenesis Monogram"
+                className="h-15 w-auto object-contain shrink-0 branding-dark monogram-trim"
+                style={{ opacity: 1 }}
+              />
+              {/* Logo - dominant wordmark, 30% larger */}
+              <img
+                src="/images/Logo.png"
                 alt="Cogenesis"
-                className="h-9 md:h-11 w-auto brightness-0"
+                className="h-32 w-auto object-contain shrink-0 branding-dark logo-trim"
+                style={{ opacity: 1 }}
               />
             </a>
 
@@ -233,14 +260,16 @@ const Navbar = () => {
                 onClick={() => navigate("/wishlist")}
               >
                 <svg
-                  width="20"
-                  height="20"
+                  width="22"
+                  height="22"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
-                  className={activeStroke(activePath === "/wishlist")}
+                  strokeWidth="1.2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
                 >
-                  <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z" />
+                  <path d="M6 2h12v16l-6-4l-6 4V2z" />
                 </svg>
               </button>
 
@@ -287,17 +316,17 @@ const Navbar = () => {
               : "opacity-0 pointer-events-none"
           }`}
           style={{
-            width: menuOpen ? "22vw" : "0vw",
+            width: menuOpen ? "clamp(280px, 28vw, 400px)" : "0vw",
             backgroundColor: menuOpen
-              ? "rgba(250, 249, 247, 0.99)"
+              ? "rgba(247, 245, 241, 0.98)"
               : "transparent",
-            backdropFilter: menuOpen ? "blur(24px)" : "none",
+            backdropFilter: menuOpen ? "blur(10px)" : "none",
           }}
           id="navbar-dropdown"
         >
           {menuOpen && (
-            <div className="h-full flex flex-col items-center justify-center px-8 py-16">
-              <div className="w-full space-y-8 flex flex-col items-center">
+            <div className="h-full flex flex-col items-center justify-center px-9 py-20">
+              <div className="w-full space-y-14 flex flex-col items-center">
                 {navLinks.map((section, sectionIndex) => (
                   <div
                     key={section.label}
@@ -315,26 +344,24 @@ const Navbar = () => {
                       ref={(el) => {
                         headingRefsRef.current[sectionIndex] = el;
                       }}
-                      className="relative cursor-pointer mb-4 group transition-opacity duration-280"
+                      className="relative cursor-pointer mb-8 group transition-opacity duration-300"
                     >
                       <button
                         onClick={() => handleHeadingClick(sectionIndex)}
-                        className={`inline-flex flex-col transition-all duration-280 text-center ${
-                          expandedSection === sectionIndex
-                            ? "font-semibold"
-                            : "font-medium group-hover:opacity-90"
-                        }`}
+                        className={`inline-flex flex-col transition-all duration-300 text-center`}
                         style={{
-                          fontSize: "31px",
-                          fontWeight:
-                            expandedSection === sectionIndex ? 600 : 500,
-                          letterSpacing: "0.08em",
+                          fontSize: "36px",
+                          fontWeight: 500,
+                          letterSpacing: "-0.02em",
                           lineHeight: "1.2",
-                          color: "#A98A63",
-                          transitionProperty: "all",
-                          transitionDuration: "280ms",
-                          transitionTimingFunction:
-                            "cubic-bezier(0.4, 0, 0.2, 1)",
+                          color:
+                            expandedSection === sectionIndex
+                              ? "#482C1B"
+                              : "#B8AA96",
+                          opacity: expandedSection === sectionIndex ? 1 : 0.6,
+                          transitionProperty: "color, opacity",
+                          transitionDuration: "300ms",
+                          transitionTimingFunction: "ease",
                           background: "none",
                           border: "none",
                           padding: "0",
@@ -342,19 +369,16 @@ const Navbar = () => {
                         }}
                       >
                         <span className="heading-text">{section.label}</span>
-                        {/* Animated underline for active heading */}
+                        {/* Subtle underline for active heading */}
                         {expandedSection === sectionIndex && (
                           <div
                             style={{
-                              height: "1.5px",
-                              width:
-                                underlineWidth > 0
-                                  ? `${underlineWidth}px`
-                                  : "0px",
-                              marginTop: "4px",
+                              height: "1px",
+                              width: "48px",
+                              marginTop: "10px",
                               animation:
-                                "expandWidth 280ms cubic-bezier(0.4, 0, 0.2, 1) forwards",
-                              background: "#A98A63",
+                                "expandWidth 300ms cubic-bezier(0.4, 0, 0.2, 1) forwards",
+                              background: "#482C1B",
                             }}
                           />
                         )}
@@ -364,31 +388,55 @@ const Navbar = () => {
                     {/* Subcategories */}
                     {section.submenu && (
                       <div
-                        className="overflow-hidden transition-all duration-300"
+                        className="overflow-hidden transition-all duration-250"
                         style={{
                           maxHeight:
                             expandedSection === sectionIndex
-                              ? `${section.submenu.length * 40 + 24}px`
+                              ? `${section.submenu.length * 48 + 32}px`
                               : "0px",
                           opacity: expandedSection === sectionIndex ? 1 : 0,
+                          transform:
+                            expandedSection === sectionIndex
+                              ? "translateY(0)"
+                              : "translateY(-10px)",
+                          transition: "all 250ms cubic-bezier(0.4, 0, 0.2, 1)",
                         }}
                       >
-                        <div className="space-y-4 pt-4 flex flex-col items-center w-full">
+                        <div className="space-y-6 pt-8 flex flex-col items-center w-full">
                           {section.submenu.map((subitem) => (
                             <a
                               key={subitem.label}
                               href={subitem.href}
-                              className="inline-flex transition-all duration-280 font-light hover:opacity-100 opacity-80"
+                              className="inline-flex transition-all duration-220 hover:opacity-100"
                               onClick={(e) => {
                                 e.preventDefault();
                                 handleNavigation(subitem.href);
                               }}
                               style={{
-                                fontSize: "19px",
+                                fontSize: "22px",
                                 fontWeight: 400,
-                                letterSpacing: "0.06em",
-                                lineHeight: "1.5",
-                                color: "#A98A63",
+                                letterSpacing: "0.01em",
+                                lineHeight: "1.7",
+                                color: "#A6855E",
+                                transform: "translateX(0)",
+                                transition: "all 220ms ease",
+                                cursor: "pointer",
+                              }}
+                              onMouseEnter={(e) => {
+                                (e.target as HTMLElement).style.color =
+                                  "#482C1B";
+                                (e.target as HTMLElement).style.transform =
+                                  "translateX(8px)";
+                                (e.target as HTMLElement).style.letterSpacing =
+                                  "0.03em";
+                              }}
+                              onMouseLeave={(e) => {
+                                (e.target as HTMLElement).style.color =
+                                  "#A6855E";
+                                (e.target as HTMLElement).style.transform =
+                                  "translateX(0)";
+                                (e.target as HTMLElement).style.letterSpacing =
+                                  "0.01em";
                               }}
                             >
                               {subitem.label}
@@ -396,6 +444,18 @@ const Navbar = () => {
                           ))}
                         </div>
                       </div>
+                    )}
+
+                    {/* Divider between sections */}
+                    {sectionIndex < navLinks.length - 1 && (
+                      <div
+                        style={{
+                          height: "1px",
+                          backgroundColor: "#E7E1D8",
+                          width: "32px",
+                          marginTop: "28px",
+                        }}
+                      />
                     )}
                   </div>
                 ))}
@@ -411,6 +471,17 @@ const Navbar = () => {
         @keyframes expandWidth {
           from { width: 0; opacity: 0; }
           to   { width: inherit; opacity: 1; }
+        }
+
+        @keyframes slideDown {
+          from {
+            opacity: 0;
+            transform: translateY(-10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
         }
       `}</style>
 
