@@ -1,8 +1,11 @@
+import { useNavigate } from "react-router-dom";
+
 const LaunchingSoonPage = () => {
+  const navigate = useNavigate();
   return (
-    <main className="bg-ivory min-h-screen flex flex-col">
-      {/* Spacer for fixed header */}
-      <div className="h-20" />
+    <main className="bg-ivory min-h-[100svh] flex flex-col">
+      {/* Spacer matches actual navbar height: h-14 on mobile, h-16 on md+ */}
+      <div className="h-14 md:h-16" />
 
       {/* Main content - centered */}
       <div className="flex-1 flex items-center justify-center px-4 md:px-8 py-20">
@@ -45,10 +48,7 @@ const LaunchingSoonPage = () => {
 
           {/* Back button */}
           <button
-            onClick={() => {
-              window.history.pushState({}, "", "/");
-              window.dispatchEvent(new PopStateEvent("popstate"));
-            }}
+            onClick={() => navigate("/")}
             className="inline-flex items-center gap-2 px-8 py-3 text-sm tracking-wide font-sans text-charcoal border border-stone/20 hover:border-charcoal/40 hover:bg-stone/5 transition-all duration-300"
           >
             Continue Shopping

@@ -1,13 +1,13 @@
-import { useState } from 'react';
+import { useState } from "react";
 
 const Footer = () => {
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState("");
 
   const handleSubscribe = (e: React.FormEvent) => {
     e.preventDefault();
     if (email) {
       window.location.href = `mailto:newsletter@cogenesis.com?subject=Newsletter Subscription&body=Please subscribe me with email: ${email}`;
-      setEmail('');
+      setEmail("");
     }
   };
 
@@ -16,19 +16,19 @@ const Footer = () => {
       {/* Main footer content — reduced vertical padding ~18% */}
       <div className="max-w-[1400px] mx-auto px-6 md:px-12 lg:px-16 py-10 md:py-16">
         <div className="grid grid-cols-1 md:grid-cols-12 gap-10 md:gap-6">
-
           {/* Left — Logo + Description + Newsletter */}
           <div className="md:col-span-4 lg:col-span-4">
             {/* Logo — tightly cropped version, -ml-1 compensates for logo's internal padding */}
             <img
               src="/images/logo-footer.png"
               alt="Cogenesis"
-              className="w-[220px] md:w-[260px] h-auto mb-2 -ml-[38px]"
+              className="w-[220px] md:w-[260px] h-auto mb-2 md:-ml-[38px]"
               id="footer-logo"
             />
             {/* Description — tighter to logo (mb-1.5 above), then large gap to newsletter */}
-            <p className="font-sans text-[13px] text-[#7a7260] leading-relaxed max-w-[280px] mb-14 -mt-[22px]">
-              A premium menswear label devoted to timeless shirts and trousers for the modern gentleman.
+            <p className="font-sans text-[13px] text-[#7a7260] leading-relaxed max-w-[280px] mb-14 md:-mt-[22px]">
+              A premium menswear label devoted to timeless shirts and trousers
+              for the modern gentleman.
             </p>
 
             {/* Newsletter — pushed further down via mb-14 above */}
@@ -36,7 +36,10 @@ const Footer = () => {
               Newsletter
             </h3>
             <div className="mt-4">
-              <form onSubmit={handleSubscribe} className="flex items-center border-b border-[#b5a978] max-w-[280px]">
+              <form
+                onSubmit={handleSubscribe}
+                className="flex items-center border-b border-[#b5a978] max-w-[280px]"
+              >
                 <input
                   type="email"
                   value={email}
@@ -63,17 +66,26 @@ const Footer = () => {
             </h4>
             <ul className="space-y-3 mt-4">
               <li>
-                <a href="/men" className="font-sans text-[13px] text-[#7a7260] hover:text-[#3d3929] transition-colors duration-300">
+                <a
+                  href="/men"
+                  className="font-sans text-[13px] text-[#7a7260] hover:text-[#3d3929] transition-colors duration-300"
+                >
                   Men
                 </a>
               </li>
               <li>
-                <a href="/women" className="font-sans text-[13px] text-[#7a7260] hover:text-[#3d3929] transition-colors duration-300">
+                <a
+                  href="/women"
+                  className="font-sans text-[13px] text-[#7a7260] hover:text-[#3d3929] transition-colors duration-300"
+                >
                   Women
                 </a>
               </li>
               <li>
-                <a href="/fabric" className="font-sans text-[13px] text-[#7a7260] hover:text-[#3d3929] transition-colors duration-300">
+                <a
+                  href="/fabric"
+                  className="font-sans text-[13px] text-[#7a7260] hover:text-[#3d3929] transition-colors duration-300"
+                >
                   Fabric
                 </a>
               </li>
@@ -87,32 +99,50 @@ const Footer = () => {
             </h4>
             <ul className="space-y-3 mt-4">
               <li>
-                <a href="/contact" className="font-sans text-[13px] text-[#7a7260] hover:text-[#3d3929] transition-colors duration-300">
+                <a
+                  href="/contact"
+                  className="font-sans text-[13px] text-[#7a7260] hover:text-[#3d3929] transition-colors duration-300"
+                >
                   Contact Us
                 </a>
               </li>
               <li>
-                <a href="/faqs" className="font-sans text-[13px] text-[#7a7260] hover:text-[#3d3929] transition-colors duration-300">
+                <a
+                  href="/faqs"
+                  className="font-sans text-[13px] text-[#7a7260] hover:text-[#3d3929] transition-colors duration-300"
+                >
                   FAQs
                 </a>
               </li>
               <li>
-                <a href="/shipping-policy" className="font-sans text-[13px] text-[#7a7260] hover:text-[#3d3929] transition-colors duration-300">
+                <a
+                  href="/shipping-policy"
+                  className="font-sans text-[13px] text-[#7a7260] hover:text-[#3d3929] transition-colors duration-300"
+                >
                   Shipping Policy
                 </a>
               </li>
               <li>
-                <a href="/refund-policy" className="font-sans text-[13px] text-[#7a7260] hover:text-[#3d3929] transition-colors duration-300">
+                <a
+                  href="/refund-policy"
+                  className="font-sans text-[13px] text-[#7a7260] hover:text-[#3d3929] transition-colors duration-300"
+                >
                   Refund Policy
                 </a>
               </li>
               <li>
-                <a href="/terms-and-conditions" className="font-sans text-[13px] text-[#7a7260] hover:text-[#3d3929] transition-colors duration-300">
+                <a
+                  href="/terms-and-conditions"
+                  className="font-sans text-[13px] text-[#7a7260] hover:text-[#3d3929] transition-colors duration-300"
+                >
                   Terms & Conditions
                 </a>
               </li>
               <li>
-                <a href="/privacy-policy" className="font-sans text-[13px] text-[#7a7260] hover:text-[#3d3929] transition-colors duration-300">
+                <a
+                  href="/privacy-policy"
+                  className="font-sans text-[13px] text-[#7a7260] hover:text-[#3d3929] transition-colors duration-300"
+                >
                   Privacy Policy
                 </a>
               </li>
@@ -126,7 +156,10 @@ const Footer = () => {
             </h4>
             <ul className="space-y-3 mt-4 mb-20">
               <li>
-                <a href="/about" className="font-sans text-[13px] text-[#7a7260] hover:text-[#3d3929] transition-colors duration-300">
+                <a
+                  href="/about"
+                  className="font-sans text-[13px] text-[#7a7260] hover:text-[#3d3929] transition-colors duration-300"
+                >
                   About Us
                 </a>
               </li>
@@ -146,10 +179,25 @@ const Footer = () => {
                 aria-label="Instagram"
                 id="footer-instagram"
               >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="white"
+                  strokeWidth="1.8"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
                   <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
                   <circle cx="12" cy="12" r="5" />
-                  <circle cx="17.5" cy="6.5" r="1.2" fill="white" stroke="none" />
+                  <circle
+                    cx="17.5"
+                    cy="6.5"
+                    r="1.2"
+                    fill="white"
+                    stroke="none"
+                  />
                 </svg>
               </a>
 
@@ -224,7 +272,6 @@ const Footer = () => {
               </a>
             </div>
           </div>
-
         </div>
       </div>
 

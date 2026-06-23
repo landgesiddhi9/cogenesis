@@ -5,6 +5,8 @@ import type {
   ShopifyProduct,
   CampaignData,
   ShopifyCollection,
+  Order,
+  ReturnRequest,
 } from "../types";
 
 // Navigation
@@ -1181,7 +1183,7 @@ export const brandStory = {
 };
 
 // Collections
-const allProducts = [
+export const allProducts = [
   ...shirtProducts,
   ...trousersProducts,
   ...poloShirtProducts,
@@ -1271,3 +1273,163 @@ export const footerLinks = {
     { label: "Contact", href: "/contact" },
   ],
 };
+
+export const mockOrders: Order[] = [
+  {
+    id: "COG-1024",
+    orderDate: "2026-06-15",
+    total: 9297,
+    status: "delivered",
+    items: [
+      {
+        productId: "gid://shopify/Product/1",
+        title: "White Linen Shirt",
+        price: 2999,
+        image: "https://images.unsplash.com/photo-1596215578519-47ac5beb46b7?w=200&h=250&fit=crop&crop=top",
+        imageAlt: "White Linen Shirt",
+        size: "M",
+        quantity: 1,
+      },
+      {
+        productId: "gid://shopify/Product/102",
+        title: "Milano Tailored Trouser",
+        price: 3499,
+        image: "https://images.unsplash.com/photo-1542272604-787c62d465d1?w=200&h=250&fit=crop&crop=top",
+        imageAlt: "Milano Tailored Trouser",
+        size: "L",
+        quantity: 1,
+      },
+      {
+        productId: "gid://shopify/Product/201",
+        title: "Riviera Polo",
+        price: 2799,
+        image: "https://images.unsplash.com/photo-1578504494785-2ff8d48a4f38?w=200&h=250&fit=crop&crop=top",
+        imageAlt: "Riviera Polo",
+        size: "M",
+        quantity: 1,
+      },
+    ],
+  },
+  {
+    id: "COG-1023",
+    orderDate: "2026-05-28",
+    total: 6398,
+    status: "shipped",
+    items: [
+      {
+        productId: "gid://shopify/Product/4",
+        title: "White Oxford Shirt",
+        price: 3199,
+        image: "https://images.unsplash.com/photo-1596215578519-47ac5beb46b7?w=200&h=250&fit=crop&crop=top",
+        imageAlt: "White Oxford Shirt",
+        size: "S",
+        quantity: 2,
+      },
+    ],
+  },
+  {
+    id: "COG-1022",
+    orderDate: "2026-04-10",
+    total: 2899,
+    status: "processing",
+    items: [
+      {
+        productId: "gid://shopify/Product/14",
+        title: "The Amalfi Knit",
+        price: 2899,
+        image: "https://images.unsplash.com/photo-1621072156002-e2fccdc0b176?w=200&h=250&fit=crop&crop=top",
+        imageAlt: "The Amalfi Knit",
+        size: "XL",
+        quantity: 1,
+      },
+    ],
+  },
+  {
+    id: "COG-1021",
+    orderDate: "2026-02-20",
+    total: 5498,
+    status: "cancelled",
+    items: [
+      {
+        productId: "gid://shopify/Product/6",
+        title: "Sage Green Linen Shirt",
+        price: 3499,
+        image: "https://images.unsplash.com/photo-1594938298603-c8148c4dae35?w=200&h=250&fit=crop&crop=top",
+        imageAlt: "Sage Green Linen Shirt",
+        size: "L",
+        quantity: 1,
+      },
+      {
+        productId: "gid://shopify/Product/103",
+        title: "Capri Cotton Trouser",
+        price: 1999,
+        image: "https://images.unsplash.com/photo-1624378439385-7520369cfb0d?w=200&h=250&fit=crop&crop=top",
+        imageAlt: "Capri Cotton Trouser",
+        size: "M",
+        quantity: 1,
+      },
+    ],
+  },
+];
+
+export const mockReturns: ReturnRequest[] = [
+  {
+    id: "RET-001",
+    orderId: "COG-1024",
+    orderDate: "2026-06-15",
+    total: 2999,
+    reason: "Size不合适 — item too large",
+    status: "approved",
+    pickupDate: "2026-06-22",
+    items: [
+      {
+        productId: "gid://shopify/Product/1",
+        title: "White Linen Shirt",
+        price: 2999,
+        image: "https://images.unsplash.com/photo-1596215578519-47ac5beb46b7?w=200&h=250&fit=crop&crop=top",
+        imageAlt: "White Linen Shirt",
+        size: "M",
+        quantity: 1,
+      },
+    ],
+  },
+  {
+    id: "RET-002",
+    orderId: "COG-1022",
+    orderDate: "2026-04-10",
+    total: 2899,
+    reason: "Changed mind — no longer needed",
+    status: "refunded",
+    refundDate: "2026-04-22",
+    items: [
+      {
+        productId: "gid://shopify/Product/14",
+        title: "The Amalfi Knit",
+        price: 2899,
+        image: "https://images.unsplash.com/photo-1621072156002-e2fccdc0b176?w=200&h=250&fit=crop&crop=top",
+        imageAlt: "The Amalfi Knit",
+        size: "XL",
+        quantity: 1,
+      },
+    ],
+  },
+  {
+    id: "RET-003",
+    orderId: "COG-1021",
+    orderDate: "2026-02-20",
+    total: 1999,
+    reason: "Defective — stitching came loose",
+    status: "pending",
+    items: [
+      {
+        productId: "gid://shopify/Product/103",
+        title: "Capri Cotton Trouser",
+        price: 1999,
+        image: "https://images.unsplash.com/photo-1624378439385-7520369cfb0d?w=200&h=250&fit=crop&crop=top",
+        imageAlt: "Capri Cotton Trouser",
+        size: "M",
+        quantity: 1,
+      },
+    ],
+  },
+];

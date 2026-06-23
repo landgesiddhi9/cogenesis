@@ -1,31 +1,54 @@
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { setSession, getSession } from "../utils/auth";
 import { FcGoogle } from "react-icons/fc";
 import { FaApple, FaEye, FaEyeSlash } from "react-icons/fa";
 
-type AuthState =
-  | "email"
-  | "signin"
-  | "forgot"
-  | "forgot-success"
-  | "create"
-  | "menu";
+type AuthState = "email" | "forgot" | "forgot-success" | "create";
 
-const EXISTING_EMAILS = [
-  "test@example.com",
-  "admin@example.com",
-  "demo@example.com",
-];
+// ─── localStorage mock auth ────────────────────────────────────────────────────
+const USER_KEY = "cogenesis_users";
+interface MockUser {
+  email: string;
+  password: string;
+  firstName: string;
+  lastName: string;
+}
+
+const getUsers = (): MockUser[] => {
+  try {
+    return JSON.parse(localStorage.getItem(USER_KEY) || "[]");
+  } catch {
+    return [];
+  }
+};
+
+const findUser = (email: string): MockUser | undefined =>
+  getUsers().find((u) => u.email.toLowerCase() === email.toLowerCase().trim());
+
+const saveUser = (user: MockUser): void => {
+  const users = getUsers().filter(
+    (u) => u.email.toLowerCase() !== user.email.toLowerCase(),
+  );
+  localStorage.setItem(USER_KEY, JSON.stringify([...users, user]));
+};
 
 // ─── Shared style constants (match existing design exactly) ──────────────────
 const inputCls =
-  "w-full h-[48px] bg-transparent border-0 border-b-[1px] border-[#222] text-[16px] text-[#111] outline-none placeholder:text-[#999]";
+  "w-full h-[36px] bg-transparent border-0 border-b-[1px] border-[#222] text-[15px] text-[#111] outline-none placeholder:text-[#999]";
 const labelCls =
-  "block text-[11px] uppercase tracking-[0.12em] text-[#666] mb-3";
+  "block text-[10px] uppercase tracking-[0.12em] text-[#666] mb-1";
+
+// ─── Compact variants used only in Create Account ─────────────────────────────
+// Tighter label gap + slimmer input keeps all 5 fields on-screen without scroll
+const inputClsCmpct =
+  "w-full h-[36px] bg-transparent border-0 border-b-[1px] border-[#222] text-[15px] text-[#111] outline-none placeholder:text-[#999]";
+const labelClsCmpct =
+  "block text-[10px] uppercase tracking-[0.12em] text-[#666] mb-1";
 const primaryBtnCls =
-  "w-full h-[52px] bg-black text-white uppercase tracking-[0.12em] font-medium text-[14px] transition-opacity duration-200 hover:opacity-90";
+  "w-full h-[40px] bg-black text-white uppercase tracking-[0.12em] font-medium text-[12px] transition-opacity duration-200 hover:opacity-90";
 const socialBtnCls =
-  "w-full h-[48px] flex items-center justify-center gap-3 border border-[#111] bg-white text-[#111] uppercase tracking-[0.08em] text-[14px] transition-colors duration-150 hover:bg-[#F8F8F8]";
+  "w-full h-[40px] flex items-center justify-center gap-3 border border-[#111] bg-white text-[#111] uppercase tracking-[0.08em] text-[12px] transition-colors duration-150 hover:bg-[#F8F8F8]";
 const backBtnCls =
   "text-[12px] uppercase tracking-[0.2em] text-[#666] cursor-pointer hover:text-[#111] transition-colors duration-150";
 const errCls = "text-[11px] text-red-500 mt-1.5";
@@ -57,17 +80,38 @@ const SocialButtons = () => (
   </div>
 );
 
-// ─── Account label + heading ─────────────────────────────────────────────────
+// ─── Heading ─────────────────────────────────────────────────────────────────
 const Heading = ({ title }: { title: string }) => (
-  <div className="mb-8">
-    <p className="text-[12px] font-medium uppercase tracking-[0.3em] text-[#666] mb-3">
-      Account
-    </p>
-    <h1 className="text-[32px] font-light leading-[1.15] tracking-[-0.02em] text-[#111]">
+  <div className="mb-4">
+    <h1 className="text-[24px] font-light leading-[1.15] tracking-[-0.02em] text-[#111]">
       {title}
     </h1>
   </div>
 );
+
+// ─── Password hints ──────────────────────────────────────────────────────────
+const PasswordHints = ({ password }: { password: string }) => {
+  const checks = [
+    { label: "Minimum 8 characters", pass: password.length >= 8 },
+    { label: "At least 1 capital letter", pass: /[A-Z]/.test(password) },
+    { label: "At least 1 lowercase letter", pass: /[a-z]/.test(password) },
+  ];
+
+  return (
+    <div className="mt-2 space-y-1">
+      {checks.map((c) => (
+        <div key={c.label} className="flex items-center gap-2">
+          <span className={`text-[10px] ${c.pass ? 'text-[#2a7a4a]' : 'text-[#bbb]'}`}>
+            {c.pass ? '✓' : '○'}
+          </span>
+          <span className={`font-sans text-[10px] ${c.pass ? 'text-[#2a7a4a]' : 'text-[#bbb]'}`}>
+            {c.label}
+          </span>
+        </div>
+      ))}
+    </div>
+  );
+};
 
 // ─── Password input with eye toggle ─────────────────────────────────────────
 const PasswordInput = ({
@@ -79,6 +123,8 @@ const PasswordInput = ({
   label = "Password",
   error,
   autoFocus,
+  inputClassName,
+  labelClassName,
 }: {
   value: string;
   onChange: (v: string) => void;
@@ -88,16 +134,18 @@ const PasswordInput = ({
   label?: string;
   error?: string;
   autoFocus?: boolean;
+  inputClassName?: string;
+  labelClassName?: string;
 }) => (
   <div>
-    <label className={labelCls}>{label}</label>
+    <label className={labelClassName ?? labelCls}>{label}</label>
     <div className="relative">
       <input
         type={show ? "text" : "password"}
         value={value}
         onChange={(e) => onChange(e.target.value)}
         onKeyDown={onKeyDown}
-        className={`${inputCls} pr-10`}
+        className={`${inputClassName ?? inputCls} pr-10`}
         aria-label={label}
         autoFocus={autoFocus}
       />
@@ -134,14 +182,17 @@ const LoginPage: React.FC = () => {
   const [newsletter, setNewsletter] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPw, setShowConfirmPw] = useState(false);
-  const [loggedInName, setLoggedInName] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  // Drawer entry animation
+  // Drawer entry animation + session guard (must be after all useState)
   useEffect(() => {
+    if (getSession()) {
+      navigate("/account", { replace: true });
+      return;
+    }
     const id = window.requestAnimationFrame(() => setDrawerVisible(true));
     return () => window.cancelAnimationFrame(id);
-  }, []);
+  }, [navigate]);
 
   // Smooth fade + slight-slide between states
   const transitionTo = (next: AuthState) => {
@@ -156,25 +207,26 @@ const LoginPage: React.FC = () => {
   };
 
   // ── Handlers ────────────────────────────────────────────────────────────────
-  const handleEmailContinue = () => {
-    if (!email.trim()) {
-      setErrors({ email: "Email address is required." });
-      return;
-    }
-    if (EXISTING_EMAILS.includes(email.toLowerCase().trim())) {
-      transitionTo("signin");
-    } else {
-      transitionTo("create");
-    }
-  };
-
   const handleSignIn = () => {
-    if (!password.trim()) {
-      setErrors({ password: "Password is required." });
+    const e: Record<string, string> = {};
+    if (!email.trim()) e.email = "Email address is required.";
+    if (!password.trim()) e.password = "Password is required.";
+    if (Object.keys(e).length) { setErrors(e); return; }
+
+    const user = findUser(email);
+    if (!user) {
+      transitionTo("create");
       return;
     }
-    setLoggedInName(email.split("@")[0]);
-    transitionTo("menu");
+    if (user.password !== password) {
+      setErrors({ password: "Incorrect password. Please try again." });
+      return;
+    }
+    setSession({
+      name: user.firstName || email.split("@")[0],
+      email: email.trim().toLowerCase(),
+    });
+    navigate("/account");
   };
 
   const handleCreateAccount = () => {
@@ -193,19 +245,15 @@ const LoginPage: React.FC = () => {
       setErrors(e);
       return;
     }
-    setLoggedInName(firstName);
-    transitionTo("menu");
-  };
-
-  const handleLogout = () => {
-    setEmail("");
-    setPassword("");
-    setFirstName("");
-    setLastName("");
-    setConfirmPassword("");
-    setNewsletter(false);
-    setLoggedInName("");
-    transitionTo("email");
+    // Persist new account and open the dashboard
+    saveUser({
+      email: email.trim().toLowerCase(),
+      password,
+      firstName,
+      lastName,
+    });
+    setSession({ name: firstName, email: email.trim().toLowerCase() });
+    navigate("/account");
   };
 
   // ── State renderers ──────────────────────────────────────────────────────────
@@ -213,9 +261,11 @@ const LoginPage: React.FC = () => {
   // STATE 1 ─ Email Entry
   const renderEmail = () => (
     <>
-      <Heading title="Sign in" />
+      <h1 className="text-[22px] font-light leading-[1.15] tracking-[-0.02em] text-[#111] text-center mb-3">
+        Sign in
+      </h1>
 
-      <div className="mb-7">
+      <div className="mb-2">
         <label className={labelCls}>Email address</label>
         <input
           type="email"
@@ -224,7 +274,6 @@ const LoginPage: React.FC = () => {
             setEmail(e.target.value);
             setErrors({});
           }}
-          onKeyDown={(e) => e.key === "Enter" && handleEmailContinue()}
           className={inputCls}
           placeholder=""
           aria-label="Email Address"
@@ -233,59 +282,7 @@ const LoginPage: React.FC = () => {
         {errors.email && <p className={errCls}>{errors.email}</p>}
       </div>
 
-      <button onClick={handleEmailContinue} className={`${primaryBtnCls} mb-7`}>
-        Continue
-      </button>
-
-      <div className="mb-6">
-        <OrDivider />
-      </div>
-
-      <div className="mb-6">
-        <SocialButtons />
-      </div>
-
-      <p className="text-[13px] text-[#666] leading-[1.6] mb-5">
-        By logging in with my social login, I agree to link my account as per
-        the{" "}
-        <Link to="#" className="underline">
-          Privacy Policy
-        </Link>
-        .
-      </p>
-
-      <div className="text-[14px] tracking-[0.03em] text-[#111]">
-        <p className="mb-2 uppercase tracking-[0.2em] text-[#666] text-[12px]">
-          New here?
-        </p>
-        <button
-          type="button"
-          onClick={() => transitionTo("create")}
-          className="underline hover:text-black text-[14px]"
-        >
-          Create Account →
-        </button>
-      </div>
-    </>
-  );
-
-  // STATE 2 ─ Sign In
-  const renderSignIn = () => (
-    <>
-      <Heading title="Welcome Back" />
-
-      <div className="mb-7">
-        <label className={labelCls}>Email address</label>
-        <input
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          className={inputCls}
-          aria-label="Email Address"
-        />
-      </div>
-
-      <div className="mb-3">
+      <div className="mb-2">
         <PasswordInput
           value={password}
           onChange={(v) => {
@@ -296,39 +293,55 @@ const LoginPage: React.FC = () => {
           onToggle={() => setShowPassword((p) => !p)}
           onKeyDown={(e) => e.key === "Enter" && handleSignIn()}
           error={errors.password}
-          autoFocus
         />
+        {password.length > 0 && <PasswordHints password={password} />}
       </div>
 
-      <div className="mb-7 flex justify-end">
+      <div className="h-6"></div>
+
+      <div className="mb-2 flex justify-end">
         <button
           type="button"
           onClick={() => transitionTo("forgot")}
-          className="text-[12px] text-[#666] underline hover:text-[#111] transition-colors duration-150"
+          className="text-[11px] text-[#666] hover:text-[#111] transition-colors duration-150"
         >
           Forgot Password?
         </button>
       </div>
 
-      <button onClick={handleSignIn} className={`${primaryBtnCls} mb-7`}>
+      <button onClick={handleSignIn} className={`${primaryBtnCls} mb-2`}>
         Sign In
       </button>
 
-      <div className="mb-6">
+      <div className="mb-2">
         <OrDivider />
       </div>
 
-      <div className="mb-7">
+      <div className="mb-2">
         <SocialButtons />
       </div>
 
-      <button
-        type="button"
-        onClick={() => transitionTo("email")}
-        className={backBtnCls}
-      >
-        ← Back
-      </button>
+      <p className="text-[11px] text-[#666] leading-[1.4] mb-2">
+        By logging in with my social login, I agree to link my account as per
+        the{" "}
+        <Link to="#" className="underline">
+          Privacy Policy
+        </Link>
+        .
+      </p>
+
+      <div className="text-center mb-2">
+        <p className="mb-1 uppercase tracking-[0.2em] text-[#666] text-[10px]">
+          New user?
+        </p>
+        <button
+          type="button"
+          onClick={() => transitionTo("create")}
+          className="text-[12px] text-[#666] hover:text-[#111] transition-colors duration-150"
+        >
+          Create Account →
+        </button>
+      </div>
     </>
   );
 
@@ -363,18 +376,20 @@ const LoginPage: React.FC = () => {
 
       <button
         type="button"
-        onClick={() => transitionTo("signin")}
-        className={backBtnCls}
-      >
-        ← Back to Sign In
-      </button>
+        onClick={() => transitionTo("email")}
+          className={backBtnCls}
+        >
+          ← Back to Sign In
+        </button>
     </>
   );
 
   // STATE 3b ─ Forgot Password Success
   const renderForgotSuccess = () => (
     <>
-      <Heading title="Check your inbox" />
+      <h1 className="text-[24px] font-light leading-[1.15] tracking-[-0.02em] text-[#111] mb-4">
+        Check your inbox
+      </h1>
 
       <div className="mb-10">
         <p className="text-[15px] text-[#111] leading-[1.6] mb-2">
@@ -387,29 +402,24 @@ const LoginPage: React.FC = () => {
       </div>
 
       <button
-        type="button"
-        onClick={() => transitionTo("signin")}
-        className={backBtnCls}
-      >
-        ← Back to Sign In
-      </button>
-    </>
-  );
+          type="button"
+          onClick={() => transitionTo("email")}
+          className={backBtnCls}
+        >
+          ← Back to Sign In
+        </button>
+      </>
+    );
 
   // STATE 4 ─ Create Account
   const renderCreate = () => (
     <>
-      <div className="mb-6">
-        <p className="text-[12px] font-medium uppercase tracking-[0.3em] text-[#666] mb-3">
-          Account
-        </p>
-        <h1 className="text-[32px] font-light leading-[1.15] tracking-[-0.02em] text-[#111]">
-          Create Account
-        </h1>
-      </div>
+      <h1 className="text-[22px] font-light leading-[1.15] tracking-[-0.02em] text-[#111] text-center mb-3">
+        Create Account
+      </h1>
 
-      <div className="mb-5">
-        <label className={labelCls}>First name</label>
+      <div className="mb-2">
+        <label className={labelClsCmpct}>First name</label>
         <input
           type="text"
           value={firstName}
@@ -417,15 +427,15 @@ const LoginPage: React.FC = () => {
             setFirstName(e.target.value);
             setErrors((prev) => ({ ...prev, firstName: "" }));
           }}
-          className={inputCls}
+          className={inputClsCmpct}
           aria-label="First Name"
           autoFocus
         />
         {errors.firstName && <p className={errCls}>{errors.firstName}</p>}
       </div>
 
-      <div className="mb-5">
-        <label className={labelCls}>Last name</label>
+      <div className="mb-2">
+        <label className={labelClsCmpct}>Last name</label>
         <input
           type="text"
           value={lastName}
@@ -433,24 +443,24 @@ const LoginPage: React.FC = () => {
             setLastName(e.target.value);
             setErrors((prev) => ({ ...prev, lastName: "" }));
           }}
-          className={inputCls}
+          className={inputClsCmpct}
           aria-label="Last Name"
         />
         {errors.lastName && <p className={errCls}>{errors.lastName}</p>}
       </div>
 
-      <div className="mb-5">
-        <label className={labelCls}>Email address</label>
+      <div className="mb-2">
+        <label className={labelClsCmpct}>Email address</label>
         <input
           type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className={inputCls}
+          className={inputClsCmpct}
           aria-label="Email Address"
         />
       </div>
 
-      <div className="mb-5">
+      <div className="mb-2">
         <PasswordInput
           value={password}
           onChange={(v) => {
@@ -460,10 +470,13 @@ const LoginPage: React.FC = () => {
           show={showPassword}
           onToggle={() => setShowPassword((p) => !p)}
           error={errors.password}
+          inputClassName={inputClsCmpct}
+          labelClassName={labelClsCmpct}
         />
+        {password.length > 0 && <PasswordHints password={password} />}
       </div>
 
-      <div className="mb-5">
+      <div className="mb-2">
         <PasswordInput
           label="Confirm password"
           value={confirmPassword}
@@ -474,107 +487,60 @@ const LoginPage: React.FC = () => {
           show={showConfirmPw}
           onToggle={() => setShowConfirmPw((p) => !p)}
           error={errors.confirmPassword}
+          inputClassName={inputClsCmpct}
+          labelClassName={labelClsCmpct}
         />
       </div>
 
-      <label className="flex items-start gap-3 mb-6 cursor-pointer select-none">
-        <input
-          type="checkbox"
-          checked={newsletter}
-          onChange={(e) => setNewsletter(e.target.checked)}
-          className="mt-0.5 accent-black"
-        />
-        <span className="text-[13px] text-[#666] leading-[1.5]">
-          Receive updates and offers
-        </span>
-      </label>
-
-      <button onClick={handleCreateAccount} className={`${primaryBtnCls} mb-6`}>
+      <button
+        type="button"
+        onClick={handleCreateAccount}
+        className="w-full h-[40px] border border-[#111] bg-white text-[#111] text-[11px] font-medium uppercase tracking-[0.12em] hover:bg-[#111] hover:text-white transition-colors duration-200 mb-2"
+      >
         Create Account
       </button>
 
-      <button
-        type="button"
-        onClick={() => transitionTo("email")}
-        className={backBtnCls}
-      >
-        ← Back
-      </button>
-    </>
-  );
-
-  // STATE 5 ─ Account Menu
-  const renderMenu = () => (
-    <>
-      <div className="mb-10">
-        <p className="text-[12px] font-medium uppercase tracking-[0.3em] text-[#666] mb-3">
-          Account
+      <div className="text-center">
+        <p className="mb-1 uppercase tracking-[0.2em] text-[#666] text-[10px]">
+          Already have an account?
         </p>
-        <h1 className="text-[32px] font-light leading-[1.15] tracking-[-0.02em] text-[#111]">
-          Hello, {loggedInName}
-        </h1>
+        <button
+          type="button"
+          onClick={() => transitionTo("email")}
+          className="text-[12px] text-[#666] hover:text-[#111] transition-colors duration-150"
+        >
+          Sign in →
+        </button>
       </div>
-
-      <nav className="mb-10">
-        {[
-          { label: "My Orders", to: "#" },
-          { label: "Wishlist", to: "#" },
-          { label: "Addresses", to: "#" },
-          { label: "Profile Settings", to: "#" },
-        ].map(({ label, to }) => (
-          <Link
-            key={label}
-            to={to}
-            className="flex items-center justify-between py-[18px] border-b border-[#EAEAEA] text-[15px] tracking-[0.02em] text-[#111] hover:text-[#666] transition-colors duration-150 group"
-          >
-            <span>{label}</span>
-            <span className="text-[#bbb] group-hover:translate-x-1 transition-transform duration-150 text-[16px]">
-              →
-            </span>
-          </Link>
-        ))}
-      </nav>
-
-      <button
-        type="button"
-        onClick={handleLogout}
-        className="text-[12px] uppercase tracking-[0.25em] text-[#666] hover:text-[#111] transition-colors duration-150"
-      >
-        Logout
-      </button>
     </>
   );
 
-  // ── Route to correct renderer ────────────────────────────────────────────────
+  // ── Route to correct renderer ─────────────────────────────────────────────────────────────────
   const renderContent = () => {
     switch (authState) {
       case "email":
         return renderEmail();
-      case "signin":
-        return renderSignIn();
+
       case "forgot":
         return renderForgot();
       case "forgot-success":
         return renderForgotSuccess();
       case "create":
         return renderCreate();
-      case "menu":
-        return renderMenu();
     }
   };
 
   // ── Root render ──────────────────────────────────────────────────────────────
   return (
     <div
-      className={`fixed right-0 top-14 md:top-16 h-[calc(100vh-3.5rem)] md:h-[calc(100vh-4rem)] w-[clamp(420px,35vw,520px)] border-l border-[#EAEAEA] bg-white z-[120] font-sans transition-all duration-[350ms] ease-[cubic-bezier(0.22,1,0.36,1)] ${
+      className={`fixed right-0 top-14 md:top-16 h-[calc(100vh-3.5rem)] md:h-[calc(100vh-4rem)] w-[clamp(420px,35vw,520px)] border-l border-[#EAEAEA] bg-ivory z-[120] font-sans transition-all duration-[350ms] ease-[cubic-bezier(0.22,1,0.36,1)] ${
         drawerVisible
           ? "translate-x-0 opacity-100"
           : "translate-x-full opacity-0"
       }`}
     >
-      {/* overflow-y-auto only kicks in for Create Account on short viewports */}
-      <div className="relative h-full overflow-y-auto">
-        <div className="min-h-full flex flex-col justify-center px-[60px]">
+      <div className="relative h-full overflow-hidden">
+        <div className="min-h-full flex flex-col justify-center px-8">
           {/* Close button — unchanged */}
           <button
             type="button"

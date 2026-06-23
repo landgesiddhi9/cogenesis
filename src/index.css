@@ -16,6 +16,17 @@
     --font-accent: "Josefin Sans", sans-serif;
 }
 
+/* ── Responsive layout tokens ── */
+/* Mirrors the Navbar's h-14 / md:h-16 Tailwind classes */
+:root {
+    --navbar-height: 3.5rem;
+}
+@media (min-width: 768px) {
+    :root {
+        --navbar-height: 4rem;
+    }
+}
+
 /* ── Global editorial layout reset ── */
 *,
 *::before,
@@ -43,7 +54,11 @@ html {
     scroll-behavior: smooth;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    /* Cross-browser glyph quality on Windows + macOS */
+    text-rendering: optimizeLegibility;
     overflow-y: auto;
+    /* When JS/router scrolls to a section, top edge lands below the fixed navbar */
+    scroll-padding-top: var(--navbar-height);
 }
 
 body {
@@ -61,6 +76,8 @@ body {
 .section-hero {
     position: relative;
     width: 100%;
+    /* Explicit height so absolutely-positioned children resolve height: 100% */
+    height: 100svh;
     min-height: 100svh;
     overflow: hidden;
 }
@@ -291,15 +308,28 @@ img {
 /* Editorial split — full viewport spread, flush with hero above */
 .editorial-section {
     width: 100%;
+    height: 100svh;
     min-height: 100svh;
+    /* flex column so .editorial-section__grid can use flex: 1 */
+    display: flex;
+    flex-direction: column;
     margin: 0;
     padding: 0;
     overflow: hidden;
 }
 
 .editorial-section__grid {
+    /* flex: 1 fills the parent flex container (.editorial-section) */
+    flex: 1;
     min-height: 100svh;
-    height: 100%;
+    /*
+     * grid-template-rows: 1fr — the single desktop row fills the entire grid height.
+     * Without this, CSS Grid auto-rows don't stretch to fill an explicit height,
+     * so columns get no definite height and all height:100% / flex-1 inside them
+     * resolve to auto → images collapse.
+     * The mobile override below replaces this with two equal rows.
+     */
+    grid-template-rows: 1fr;
 }
 
 @media (max-width: 767px) {
@@ -312,6 +342,8 @@ img {
 /* Seamless editorial three-panel gallery */
 .gallery {
     width: 100%;
+    /* Explicit height so panel children resolve height: 100% on images */
+    height: 100svh;
     min-height: 100svh;
     display: flex;
     margin: 0;
@@ -330,6 +362,8 @@ img {
     padding: 0;
     flex: 1 1 33.333%;
     width: 100%;
+    /* Explicit height alongside min-height so img height: 100% resolves */
+    height: 33.333svh;
     min-height: 33.333svh;
 }
 
@@ -352,18 +386,21 @@ img {
     .gallery .left {
         flex: 0 0 28%;
         width: 28%;
+        height: 100svh;
         min-height: 100svh;
     }
 
     .gallery .center {
         flex: 0 0 44%;
         width: 44%;
+        height: 100svh;
         min-height: 100svh;
     }
 
     .gallery .right {
         flex: 0 0 28%;
         width: 28%;
+        height: 100svh;
         min-height: 100svh;
     }
 }
@@ -371,6 +408,8 @@ img {
 /* Seamless full-bleed luxury campaign film — flush below gallery */
 .campaign-film {
     width: 100%;
+    /* Explicit height so video height: 100% resolves cross-browser */
+    height: 100svh;
     min-height: 100svh;
     margin: 0;
     padding: 0;
@@ -394,6 +433,8 @@ img {
 /* Seamless full-screen triple video panels — flush below campaign video */
 .triple-video {
     width: 100%;
+    /* Explicit height so video height: 100% resolves cross-browser */
+    height: 100svh;
     min-height: 100svh;
     display: flex;
     margin: 0;
@@ -409,6 +450,7 @@ img {
 .triple-video .right {
     flex: 1 1 33.333%;
     width: 33.333%;
+    height: 100svh;
     min-height: 100svh;
     overflow: hidden;
     margin: 0;
@@ -437,17 +479,18 @@ img {
     .triple-video .right {
         flex: 1 1 auto;
         width: 100%;
+        height: 33.333svh;
         min-height: 33.333svh;
     }
 }
 
 /* Full-screen brand story split — flush below triple video */
+/* Uses global --navbar-height so the section fills exactly the space below the nav */
 .brand-story-split {
-    --brand-story-nav: 3.5rem;
     width: 100%;
-    height: calc(100svh - var(--brand-story-nav));
-    min-height: calc(100svh - var(--brand-story-nav));
-    max-height: calc(100svh - var(--brand-story-nav));
+    height: calc(100svh - var(--navbar-height));
+    min-height: calc(100svh - var(--navbar-height));
+    max-height: calc(100svh - var(--navbar-height));
     display: grid;
     grid-template-columns: 1fr 1fr;
     grid-template-rows: 1fr;
@@ -456,12 +499,6 @@ img {
     gap: 0;
     overflow: hidden;
     line-height: normal;
-}
-
-@media (min-width: 768px) {
-    .brand-story-split {
-        --brand-story-nav: 4rem;
-    }
 }
 
 .brand-story-split__text {

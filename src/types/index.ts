@@ -79,3 +79,33 @@ export interface CampaignData {
   subtitle?: string;
   cta?: string;
 }
+
+export interface OrderItem {
+  productId: string;
+  title: string;
+  price: number;
+  image: string;
+  imageAlt: string;
+  size: string;
+  quantity: number;
+}
+
+export interface Order {
+  id: string;
+  orderDate: string;
+  items: OrderItem[];
+  total: number;
+  status: "delivered" | "shipped" | "processing" | "cancelled";
+}
+
+export interface ReturnRequest {
+  id: string;
+  orderId: string;
+  orderDate: string;
+  items: OrderItem[];
+  total: number;
+  reason: string;
+  status: "pending" | "approved" | "picked_up" | "refunded" | "rejected";
+  pickupDate?: string;
+  refundDate?: string;
+}
