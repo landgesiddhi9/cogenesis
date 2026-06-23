@@ -18,23 +18,15 @@ const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-12 gap-10 md:gap-6">
           {/* Left — Logo + Description + Newsletter */}
           <div className="md:col-span-4 lg:col-span-4">
-            {/* Logo + Monogram — identical to header branding */}
-            <div className="flex items-center gap-tight mb-2">
-              <img
-                src="/images/Monogram.png"
-                alt="Cogenesis Monogram"
-                className="h-15 w-auto object-contain shrink-0 branding-dark monogram-trim"
-                id="footer-monogram"
-              />
-              <img
-                src="/images/Logo.png"
-                alt="Cogenesis"
-                className="h-32 w-auto object-contain shrink-0 branding-dark logo-trim"
-                id="footer-logo"
-              />
-            </div>
+            {/* Logo — tightly cropped version, -ml-1 compensates for logo's internal padding */}
+            <img
+              src="/images/logo-footer.png"
+              alt="Cogenesis"
+              className="w-[220px] md:w-[260px] h-auto mb-2 md:-ml-[38px]"
+              id="footer-logo"
+            />
             {/* Description — tighter to logo (mb-1.5 above), then large gap to newsletter */}
-            <p className="font-sans text-[13px] text-[#7a7260] leading-relaxed max-w-[280px] mb-14">
+            <p className="font-sans text-[13px] text-[#7a7260] leading-relaxed max-w-[280px] mb-14 md:-mt-[22px]">
               A premium menswear label devoted to timeless shirts and trousers
               for the modern gentleman.
             </p>

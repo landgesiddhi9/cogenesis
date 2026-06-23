@@ -251,7 +251,7 @@ const CollectionPage = ({ collectionHandle }: CollectionPageProps) => {
 
   if (!collection.products.length) {
     return (
-      <main className="bg-ivory min-h-screen">
+      <main className="bg-ivory min-h-[100svh]">
         <div className="max-w-7xl mx-auto px-4 md:px-8 py-20">
           <h1 className="text-center text-2xl text-charcoal font-sans">
             Collection not found
