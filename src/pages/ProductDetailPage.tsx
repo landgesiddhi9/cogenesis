@@ -1,0 +1,165 @@
+import { useState, useEffect } from "react";
+import { products } from "../data/mockData";
+import ImageGallery from "../components/ProductDetail/ImageGallery";
+import ProductInfo from "../components/ProductDetail/ProductInfo";
+import ProductAccordion from "../components/ProductDetail/ProductAccordion";
+import RelatedProducts from "../components/ProductDetail/RelatedProducts";
+import RecentlyViewed from "../components/ProductDetail/RecentlyViewed";
+import type { ShopifyProduct } from "../types";
+
+interface ProductDetailPageProps {
+  productHandle: string;
+}
+
+const ProductDetailPage = ({ productHandle }: ProductDetailPageProps) => {
+  const [product, setProduct] = useState<ShopifyProduct | null>(null);
+  const [selectedColor, setSelectedColor] = useState(0);
+  const [selectedSize, setSelectedSize] = useState("");
+  const [quantity, setQuantity] = useState(1);
+  const [isWishlisted, setIsWishlisted] = useState(false);
+
+  useEffect(() => {
+    const foundProduct = products.find((p) => p.handle === productHandle);
+    if (foundProduct) {
+      setProduct(foundProduct);
+      // Track recently viewed
+      const recentlyViewedData = sessionStorage.getItem("recentlyViewed");
+      const recentlyViewed: ShopifyProduct[] = recentlyViewedData
+        ? JSON.parse(recentlyViewedData)
+        : [];
+      if (!recentlyViewed.find((p) => p.id === foundProduct.id)) {
+        recentlyViewed.unshift(foundProduct);
+        if (recentlyViewed.length > 10) recentlyViewed.pop();
+        sessionStorage.setItem(
+          "recentlyViewed",
+          JSON.stringify(recentlyViewed),
+        );
+      }
+
+      // Check if wishlisted
+      const wishlistData = sessionStorage.getItem("wishlist");
+      const wishlisted: ShopifyProduct[] = wishlistData
+        ? JSON.parse(wishlistData)
+        : [];
+      setIsWishlisted(wishlisted.some((p) => p.id === foundProduct.id));
+    }
+  }, [productHandle]);
+
+  const toggleWishlist = () => {
+    if (!product) return;
+
+    const wishlistData = sessionStorage.getItem("wishlist");
+    const wishlisted: ShopifyProduct[] = wishlistData
+      ? JSON.parse(wishlistData)
+      : [];
+    const index = wishlisted.findIndex((p) => p.id === product.id);
+
+    if (index > -1) {
+      wishlisted.splice(index, 1);
+    } else {
+      wishlisted.push(product);
+    }
+
+    sessionStorage.setItem("wishlist", JSON.stringify(wishlisted));
+    setIsWishlisted(!isWishlisted);
+  };
+
+  const addToCart = () => {
+    if (!selectedSize) {
+      alert("Please select a size");
+      return;
+    }
+    if (!product) {
+      alert("Product not found");
+      return;
+    }
+    alert(`Added ${quantity} ${product.title} (${selectedSize}) to cart`);
+  };
+
+  if (!product) {
+    return (
+      <div className="w-full h-screen flex items-center justify-center bg-[#f7f5f1]">
+        <p className="text-charcoal text-lg font-sans">Loading...</p>
+      </div>
+    );
+  }
+
+  const productDescription =
+    product.description ||
+    `Crafted with meticulous attention to detail, this ${product.title.toLowerCase()} exemplifies the pinnacle of luxury craftsmanship. Made from premium ${
+      product.tags?.find((t: string) =>
+        ["cotton", "linen", "blend"].includes(t.toLowerCase()),
+      ) || "fabric"
+    }, this piece combines timeless elegance with contemporary design. Perfect for the discerning gentleman who appreciates quality, durability, and understated sophistication.`;
+
+  return (
+    <div className="bg-[#f7f5f1] min-h-screen">
+      {/* Main Product Section with Sticky Info Panel */}
+      <div className="max-w-[1600px] mx-auto px-6 md:px-12 lg:px-16 py-16 md:py-24">
+        <div className="grid grid-cols-1 lg:grid-cols-[65%_35%] gap-12 lg:gap-20">
+          {/* Left Side - Image Gallery */}
+          <div>
+            <ImageGallery product={product} selectedColor={selectedColor} />
+          </div>
+
+          {/* Right Side - Sticky Product Info Panel */}
+          <div className="sticky top-20 h-fit">
+            <ProductInfo
+              product={product}
+              selectedColor={selectedColor}
+              setSelectedColor={setSelectedColor}
+              selectedSize={selectedSize}
+              setSelectedSize={setSelectedSize}
+              quantity={quantity}
+              setQuantity={setQuantity}
+              isWishlisted={isWishlisted}
+              toggleWishlist={toggleWishlist}
+              addToCart={addToCart}
+              description={productDescription}
+            />
+
+            {/* Accordions in the sticky panel */}
+            <div className="mt-16 space-y-0">
+              <ProductAccordion
+                title="Product Details"
+                content={`Type: ${product.productType}\nVendor: ${product.vendor}\nAvailable in multiple colors and sizes.`}
+              />
+              <ProductAccordion
+                title="Fabric & Composition"
+                content="Premium quality material with a lightweight structure. Made from sustainably sourced fibers. Designed for breathability and comfort throughout the day."
+              />
+              <ProductAccordion
+                title="Care Instructions"
+                content="Gentle hand wash in cold water. Lay flat to dry. Do not bleach. Iron at low temperature if needed. For best longevity, avoid frequent washing."
+              />
+              <ProductAccordion
+                title="Shipping Information"
+                content="Free shipping on orders above ₹3,000. Standard delivery: 5-7 business days. Express delivery available for select locations."
+              />
+              <ProductAccordion
+                title="Return & Exchange"
+                content="Easy 7-day returns on unworn items with original tags. Free exchanges for different sizes. Full refund within 14 days."
+              />
+              <ProductAccordion
+                title="Payment & Security"
+                content="All transactions are encrypted and secured. We accept all major payment methods including credit cards, digital wallets, and bank transfers."
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Related Products */}
+      <div className="max-w-[1600px] mx-auto px-6 md:px-12 lg:px-16 py-16 border-t border-[#e7e1d8]">
+        <RelatedProducts currentProductId={product.id} />
+      </div>
+
+      {/* Recently Viewed */}
+      <div className="max-w-[1600px] mx-auto px-6 md:px-12 lg:px-16 py-16 border-t border-[#e7e1d8]">
+        <RecentlyViewed currentProductId={product.id} />
+      </div>
+    </div>
+  );
+};
+
+export default ProductDetailPage;

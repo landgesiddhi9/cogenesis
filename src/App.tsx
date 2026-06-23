@@ -11,6 +11,7 @@ import VideoSection from "./components/VideoSection";
 import Footer from "./components/Footer";
 import CollectionPage from "./pages/CollectionPage";
 import LaunchingSoonPage from "./pages/LaunchingSoonPage";
+import ProductDetailPage from "./pages/ProductDetailPage";
 
 function App() {
   const [currentPath, setCurrentPath] = useState(window.location.pathname);
@@ -30,6 +31,20 @@ function App() {
       <div className="bg-ivory">
         <Navbar />
         <LaunchingSoonPage />
+        <Footer />
+      </div>
+    );
+  }
+
+  // Product Detail route
+  if (currentPath.startsWith("/products/")) {
+    const productHandle = currentPath
+      .replace("/products/", "")
+      .replace("/", "");
+    return (
+      <div className="bg-[#f7f5f1]">
+        <Navbar />
+        <ProductDetailPage productHandle={productHandle} />
         <Footer />
       </div>
     );
