@@ -59,19 +59,6 @@ const Navbar = () => {
     };
   }, [menuOpen, searchOpen]);
 
-  // Update underline width when expanded accordion section changes (HEAD)
-  useEffect(() => {
-    if (expandedSection !== null && headingRefsRef.current[expandedSection]) {
-      const container = headingRefsRef.current[expandedSection];
-      if (container) {
-        const textSpan = container.querySelector("span.heading-text");
-        if (textSpan) {
-          setUnderlineWidth(textSpan.getBoundingClientRect().width);
-        }
-      }
-    }
-  }, [expandedSection]);
-
   // Toggle or collapse accordion section (HEAD)
   const handleHeadingClick = (index: number) => {
     setExpandedSection((prev) => (prev === index ? null : index));
