@@ -17,19 +17,19 @@ const readIds = (): string[] => {
 const writeIds = (ids: string[]) =>
   sessionStorage.setItem(WISHLIST_KEY, JSON.stringify(ids));
 
-// ── Heart icon ────────────────────────────────────────────────────────────────
-const HeartIcon = ({ filled }: { filled: boolean }) => (
+// ── Bookmark icon ─────────────────────────────────────────────────────────────
+const BookmarkIcon = ({ filled }: { filled: boolean }) => (
   <svg
-    width="16"
-    height="16"
+    width="22"
+    height="22"
     viewBox="0 0 24 24"
-    fill={filled ? "#111" : "none"}
-    stroke={filled ? "#111" : "white"}
+    fill={filled ? "#431c1c" : "none"}
+    stroke={filled ? "#431c1c" : "white"}
     strokeWidth="1.8"
     strokeLinecap="round"
     strokeLinejoin="round"
   >
-    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+    <path d="M6 2h12v16l-6-4l-6 4V2z" />
   </svg>
 );
 
@@ -53,22 +53,18 @@ const ProductCard = ({
         loading="lazy"
       />
 
-      {/* Heart — always visible when wishlisted, shown on hover otherwise */}
+      {/* Bookmark — always visible when wishlisted, shown on hover otherwise */}
       <button
         type="button"
         onClick={(e) => {
           e.stopPropagation();
           onToggle(product.id);
         }}
-        className={`absolute top-3 right-3 w-7 h-7 flex items-center justify-center
-          rounded-full backdrop-blur-sm transition-all duration-200
-          ${wishlisted
-            ? "opacity-100 bg-white/90"
-            : "opacity-0 group-hover:opacity-100 bg-white/30"
-          }`}
+        className={`absolute top-3 right-3 p-0 bg-transparent border-none cursor-pointer transition-opacity duration-200
+          ${wishlisted ? "opacity-100" : "opacity-0 group-hover:opacity-100"}`}
         aria-label={wishlisted ? "Remove from wishlist" : "Add to wishlist"}
       >
-        <HeartIcon filled={wishlisted} />
+        <BookmarkIcon filled={wishlisted} />
       </button>
     </div>
 
@@ -77,8 +73,8 @@ const ProductCard = ({
       <p className="font-sans text-[12px] tracking-[0.03em] text-[#111] leading-snug truncate">
         {product.title}
       </p>
-      <p className="font-sans text-[12px] text-[#888] mt-1 tracking-[0.02em]">
-        ₹{product.priceRange.minVariantPrice.amount}
+      <p className="font-sans text-[12px] text-[#888] mt-1 tracking-[0.02em] tabular-nums">
+        ₹{Number(product.priceRange.minVariantPrice.amount).toLocaleString("en-IN")}
       </p>
     </div>
   </article>
@@ -176,7 +172,7 @@ const WishlistPage = () => {
       <div className="h-14 md:h-16" />
 
       {/* ── Page title ──────────────────────────────────────────────────────── */}
-      <header className="px-10 md:px-16 pt-10 md:pt-14 pb-8">
+      <header className="px-10 md:px-16 pt-6 md:pt-8 pb-8">
         <h1 className="font-sans text-[13px] font-semibold uppercase tracking-[0.22em] text-[#111]">
           My Wishlist
         </h1>
@@ -194,25 +190,19 @@ const WishlistPage = () => {
             Your Wishlist Is Empty
           </h2>
           <ul className="space-y-3 list-none p-0">
-            <CheckRow text="Use the hearts to add or remove favourites" />
+            <CheckRow text="Use the bookmark icon to add or remove favourites" />
             <CheckRow text="Access your wishlist from any device" />
           </ul>
         </section>
       ) : (
-        /* Filled grid — editorial 1-px gap, no card borders */
+        /* Filled grid — responsive auto-fill, consistent card sizes */
         <section
           className="px-10 md:px-16 mb-16"
           aria-label="Wishlist products"
         >
-          {/*
-           * The 1-px gap trick: set gap-[1px] + a warm-gray bg on the grid,
-           * then fill each cell with bg-ivory — the grid bg becomes the "border".
-           */}
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-[1px] bg-[#e4e1db]">
+          <div className="grid gap-6" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))" }}>
             {wishlistProducts.map((p) => (
-              <div key={p.id} className="bg-ivory px-2 pt-1">
-                <ProductCard product={p} wishlisted onToggle={toggle} />
-              </div>
+              <ProductCard key={p.id} product={p} wishlisted onToggle={toggle} />
             ))}
           </div>
         </section>

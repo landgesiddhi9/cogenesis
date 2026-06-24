@@ -37,7 +37,7 @@ const OrderCard = ({ order }: { order: Order }) => {
           <span className={`font-sans text-[10px] font-semibold uppercase tracking-[0.12em] px-3 py-1 rounded-full ${statusColor(order.status)}`}>
             {order.status}
           </span>
-          <span className="font-sans text-[13px] font-medium text-[#111]">
+          <span className="font-sans text-[12px] text-[#888] tracking-[0.02em] tabular-nums">
             ₹{order.total.toLocaleString("en-IN")}
           </span>
         </div>
@@ -63,7 +63,7 @@ const OrderCard = ({ order }: { order: Order }) => {
                 Size: {item.size} / Qty: {item.quantity}
               </p>
             </div>
-            <span className="font-sans text-[13px] text-[#111] flex-shrink-0">
+            <span className="font-sans text-[12px] text-[#888] tracking-[0.02em] tabular-nums flex-shrink-0">
               ₹{(item.price * item.quantity).toLocaleString("en-IN")}
             </span>
           </div>

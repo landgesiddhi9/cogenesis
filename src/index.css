@@ -12,8 +12,9 @@
     --color-deep-brown: #1a1512;
 
     --font-display: "Cormorant Garamond", "Georgia", serif;
-    --font-body: "Inter", "Helvetica Neue", sans-serif;
-    --font-accent: "Josefin Sans", sans-serif;
+    --font-body: "Cormorant Garamond", "Georgia", serif;
+    --font-accent: "Cormorant Garamond", "Georgia", serif;
+    --font-sans: "Inter", "Helvetica Neue", sans-serif;
 }
 
 /* ── Responsive layout tokens ── */
