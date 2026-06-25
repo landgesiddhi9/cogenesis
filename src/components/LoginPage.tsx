@@ -267,7 +267,7 @@ const LoginPage: React.FC = () => {
   // STATE 1 ─ Email Entry
   const renderEmail = () => (
     <>
-      <h1 className="text-[22px] font-light leading-[1.15] tracking-[-0.02em] text-[#111] text-center mb-3">
+      <h1 className="text-[22px] font-light leading-[1.15] tracking-[-0.02em] text-[#111] text-center mb-6">
         Sign in
       </h1>
 
@@ -309,7 +309,7 @@ const LoginPage: React.FC = () => {
         <button
           type="button"
           onClick={() => transitionTo("forgot")}
-          className="text-[11px] text-[#666] hover:text-[#111] transition-colors duration-150"
+          className="text-[13px] text-[#666] hover:text-[#111] transition-colors duration-150"
         >
           Forgot Password?
         </button>
@@ -327,7 +327,7 @@ const LoginPage: React.FC = () => {
         <SocialButtons />
       </div>
 
-      <p className="text-[11px] text-[#666] leading-[1.4] mb-2">
+      <p className="text-[13px] text-[#666] leading-[1.4] mb-2">
         By logging in with my social login, I agree to link my account as per
         the{" "}
         <Link to="#" className="underline">
@@ -336,14 +336,14 @@ const LoginPage: React.FC = () => {
         .
       </p>
 
-      <div className="text-center mb-2">
+      <div className="text-center mt-8 mb-2">
         <p className="mb-1 uppercase tracking-[0.2em] text-[#666] text-[10px]">
           New user?
         </p>
         <button
           type="button"
           onClick={() => transitionTo("create")}
-          className="text-[12px] text-[#666] hover:text-[#111] transition-colors duration-150"
+          className="text-[14px] font-semibold text-[#666] hover:text-[#111] transition-colors duration-150"
         >
           Create Account →
         </button>
@@ -420,7 +420,7 @@ const LoginPage: React.FC = () => {
   // STATE 4 ─ Create Account
   const renderCreate = () => (
     <>
-      <h1 className="text-[22px] font-light leading-[1.15] tracking-[-0.02em] text-[#111] text-center mb-3">
+      <h1 className="text-[22px] font-light leading-[1.15] tracking-[-0.02em] text-[#111] text-center mb-6">
         Create Account
       </h1>
 
@@ -501,7 +501,7 @@ const LoginPage: React.FC = () => {
       <button
         type="button"
         onClick={handleCreateAccount}
-        className="w-full h-[40px] border border-[#111] bg-white text-[#111] text-[11px] font-medium uppercase tracking-[0.12em] hover:bg-[#111] hover:text-white transition-colors duration-200 mb-2"
+        className="w-full h-[40px] border border-[#111] bg-white text-[#111] text-[11px] font-medium uppercase tracking-[0.12em] hover:bg-[#111] hover:text-white transition-colors duration-200 mt-12 mb-2"
       >
         Create Account
       </button>
@@ -513,7 +513,7 @@ const LoginPage: React.FC = () => {
         <button
           type="button"
           onClick={() => transitionTo("email")}
-          className="text-[12px] text-[#666] hover:text-[#111] transition-colors duration-150"
+          className="text-[16px] font-semibold text-[#666] hover:text-[#111] transition-colors duration-150"
         >
           Sign in →
         </button>
@@ -539,14 +539,16 @@ const LoginPage: React.FC = () => {
   // ── Root render ──────────────────────────────────────────────────────────────
   return (
     <div
-      className={`fixed right-0 top-14 md:top-16 h-[calc(100vh-3.5rem)] md:h-[calc(100vh-4rem)] w-[clamp(420px,35vw,520px)] border-l border-[#EAEAEA] bg-ivory z-[120] font-sans transition-all duration-[350ms] ease-[cubic-bezier(0.22,1,0.36,1)] ${
+      className={`fixed right-0 top-0 h-screen w-[clamp(420px,35vw,520px)] border-l border-[#EAEAEA] bg-ivory z-[120] font-sans transition-all duration-[350ms] ease-[cubic-bezier(0.22,1,0.36,1)] ${
         drawerVisible
           ? "translate-x-0 opacity-100"
           : "translate-x-full opacity-0"
       }`}
     >
       <div className="relative h-full overflow-hidden">
-        <div className="min-h-full flex flex-col justify-center px-8">
+        <div className={`min-h-full flex flex-col px-8 ${
+          authState === "email" || authState === "create" ? "justify-start pt-10" : "justify-center"
+        }`}>
           {/* Close button — unchanged */}
           <button
             type="button"

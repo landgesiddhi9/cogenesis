@@ -1,6 +1,18 @@
+import { useState } from "react";
 import { useInView } from "../hooks/useInView";
 import { productStripItems } from "../data/mockData";
 import type { ShopifyProduct } from "../types";
+
+const WL_KEY = "wishlist";
+const readWL = (): string[] => {
+  try {
+    return JSON.parse(sessionStorage.getItem(WL_KEY) || "[]");
+  } catch {
+    return [];
+  }
+};
+const writeWL = (ids: string[]) =>
+  sessionStorage.setItem(WL_KEY, JSON.stringify(ids));
 
 const ProductCard = ({
   product,
@@ -10,6 +22,17 @@ const ProductCard = ({
   index: number;
 }) => {
   const { ref, isInView } = useInView({ threshold: 0.1 });
+  const [wishlisted, setWishlisted] = useState(() => readWL().includes(product.id));
+
+  const toggleWishlist = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const ids = readWL();
+    const next = ids.includes(product.id)
+      ? ids.filter((id) => id !== product.id)
+      : [...ids, product.id];
+    writeWL(next);
+    setWishlisted(!ids.includes(product.id));
+  };
 
   const handleProductClick = () => {
     window.history.pushState(
@@ -31,13 +54,35 @@ const ProductCard = ({
       onClick={handleProductClick}
     >
       {/* Image */}
-      <div className="aspect-[5/8] overflow-hidden media-cover">
+      <div className="aspect-[5/8] overflow-hidden media-cover relative">
         <img
           src={product.featuredImage.url}
           alt={product.featuredImage.altText}
           className="product-img object-top"
           loading="lazy"
         />
+
+        <button
+          type="button"
+          onClick={toggleWishlist}
+          className={`absolute top-3 right-3 p-0 bg-transparent border-none cursor-pointer transition-opacity duration-200 ${
+            wishlisted ? "opacity-100" : "opacity-0 group-hover:opacity-100"
+          }`}
+          aria-label={wishlisted ? "Remove from wishlist" : "Add to wishlist"}
+        >
+          <svg
+            width="22"
+            height="22"
+            viewBox="0 0 24 24"
+            fill={wishlisted ? "#431c1c" : "none"}
+            stroke={wishlisted ? "#431c1c" : "white"}
+            strokeWidth="1.8"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M6 2h12v16l-6-4l-6 4V2z" />
+          </svg>
+        </button>
       </div>
 
       {/* Hover overlay — subtle dark gradient from bottom */}
@@ -51,8 +96,8 @@ const ProductCard = ({
         <h3 className="font-sans text-[15px] md:text-base font-light tracking-wide text-white mb-1.5">
           {product.title}
         </h3>
-        <p className="font-sans text-[12px] tracking-wider text-white/60">
-          €{product.priceRange.minVariantPrice.amount}
+        <p className="font-sans text-[12px] tracking-wider text-white/60 tabular-nums">
+          ₹{Number(product.priceRange.minVariantPrice.amount).toLocaleString("en-IN")}
         </p>
       </div>
     </div>

@@ -3,6 +3,17 @@ import { useNavigate } from 'react-router-dom';
 import { productStripItems } from '../data/mockData';
 import type { ShopifyProduct } from '../types';
 
+const WL_KEY = "wishlist";
+const readWL = (): string[] => {
+  try {
+    return JSON.parse(sessionStorage.getItem(WL_KEY) || "[]");
+  } catch {
+    return [];
+  }
+};
+const writeWL = (ids: string[]) =>
+  sessionStorage.setItem(WL_KEY, JSON.stringify(ids));
+
 const formatPrice = (product: ShopifyProduct) => {
   const amount = product.priceRange?.minVariantPrice?.amount ?? '4990';
   const value = Number(amount) || 4990;
@@ -19,7 +30,18 @@ const SearchPage = () => {
   const railRef = useRef<HTMLDivElement | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
   const [hasText, setHasText] = useState(false);
+  const [wishlist, setWishlist] = useState<string[]>(() => readWL());
   const navigate = useNavigate();
+
+  const toggleWishlist = (e: React.MouseEvent, id: string) => {
+    e.stopPropagation();
+    e.preventDefault();
+    const next = wishlist.includes(id)
+      ? wishlist.filter((wid) => wid !== id)
+      : [...wishlist, id];
+    writeWL(next);
+    setWishlist(next);
+  };
 
   useEffect(() => {
     inputRef.current?.focus();
@@ -125,12 +147,34 @@ const SearchPage = () => {
                     className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.02]"
                     loading="lazy"
                   />
+
+                  <button
+                    type="button"
+                    onClick={(e) => toggleWishlist(e, p.id)}
+                    className={`absolute top-3 right-3 p-0 bg-transparent border-none cursor-pointer transition-opacity duration-200 z-10 ${
+                      wishlist.includes(p.id) ? "opacity-100" : "opacity-0 group-hover:opacity-100"
+                    }`}
+                    aria-label={wishlist.includes(p.id) ? "Remove from wishlist" : "Add to wishlist"}
+                  >
+                    <svg
+                      width="22"
+                      height="22"
+                      viewBox="0 0 24 24"
+                      fill={wishlist.includes(p.id) ? "#431c1c" : "none"}
+                      stroke={wishlist.includes(p.id) ? "#431c1c" : "#2A2420"}
+                      strokeWidth="1.8"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="M6 2h12v16l-6-4l-6 4V2z" />
+                    </svg>
+                  </button>
                 </div>
                 <div className="mt-3">
                   <h3 className="text-[15px] font-normal tracking-[0.02em] leading-[1.2] text-charcoal">
                     {p.title}
                   </h3>
-                  <p className="text-[14px] font-medium text-earth">{formatPrice(p)}</p>
+                  <p className="font-sans text-[12px] text-[#888] tracking-[0.02em] tabular-nums">₹{Number(p.priceRange.minVariantPrice.amount).toLocaleString("en-IN")}</p>
                 </div>
               </article>
             ))}

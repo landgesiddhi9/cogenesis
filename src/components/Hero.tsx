@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router-dom';
 import { useInView } from '../hooks/useInView';
 import { heroImage } from '../data/mockData';
 
@@ -7,6 +8,7 @@ type HeroProps = {
 
 const Hero: React.FC<HeroProps> = ({ overlay }) => {
   const { ref, isInView } = useInView({ threshold: 0.2 });
+  const navigate = useNavigate();
 
   return (
     <section ref={ref} className="section-hero relative overflow-hidden">
@@ -32,6 +34,22 @@ const Hero: React.FC<HeroProps> = ({ overlay }) => {
           </div>
         </div>
       )}
+
+      {/* CTA button — centered near bottom of hero */}
+      <div className="absolute bottom-20 md:bottom-24 left-[calc(10%-1cm)] z-30">
+        <button
+          type="button"
+          onClick={() => navigate('/collections/shirts')}
+          className={`
+            text-white/90 text-[13px] md:text-[14px] font-medium tracking-[0.28em] uppercase
+            transition-all duration-500 ease-out
+            hover:text-white hover:scale-[1.03]
+            ${isInView ? 'animate-fade-in-up' : 'opacity-0 translate-y-4'}
+          `}
+        >
+          SHOP THE COLLECTION&nbsp;&nbsp;→
+        </button>
+      </div>
     </section>
   );
 };

@@ -60,7 +60,7 @@ const ReturnCard = ({ ret }: { ret: ReturnRequest }) => {
                 Size: {item.size} / Qty: {item.quantity}
               </p>
             </div>
-            <span className="font-sans text-[13px] text-[#111] flex-shrink-0">
+            <span className="font-sans text-[12px] text-[#888] tracking-[0.02em] tabular-nums flex-shrink-0">
               ₹{(item.price * item.quantity).toLocaleString("en-IN")}
             </span>
           </div>

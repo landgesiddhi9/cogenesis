@@ -147,8 +147,8 @@ const CollectionProductCard = ({
             width="22"
             height="22"
             viewBox="0 0 24 24"
-            fill={isWishlisted ? "#482C1B" : "none"}
-            stroke={isWishlisted ? "#482C1B" : "#482C1B"}
+            fill={isWishlisted ? "#431c1c" : "none"}
+            stroke={isWishlisted ? "#431c1c" : "#431c1c"}
             strokeWidth="1.5"
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -174,8 +174,8 @@ const CollectionProductCard = ({
         )}
 
         {/* Price */}
-        <p className="text-center font-light text-[13px] md:text-[14px] tracking-wide text-charcoal mb-3 font-sans">
-          ₹{product.priceRange.minVariantPrice.amount}
+        <p className="font-sans text-[12px] text-[#888] mt-1 tracking-[0.02em] tabular-nums">
+          ₹{Number(product.priceRange.minVariantPrice.amount).toLocaleString("en-IN")}
         </p>
 
         {/* Color swatches */}

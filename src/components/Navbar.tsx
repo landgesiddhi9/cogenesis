@@ -12,6 +12,7 @@ const Navbar = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   // HEAD: accordion dropdown state
   const [expandedSection, setExpandedSection] = useState<number | null>(null);
+  const [underlineWidth, setUnderlineWidth] = useState(0);
   const headingRefsRef = useRef<(HTMLDivElement | null)[]>([]);
   const navigate = useNavigate();
   const location = useLocation();

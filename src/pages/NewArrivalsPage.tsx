@@ -62,33 +62,28 @@ const ProductCard = ({
           loading="lazy"
         />
 
-        {/* ── Heart icon ─────────────────────────────────────────────────── */}
+        {/* ── Bookmark icon ─────────────────────────────────────────────── */}
         <button
           type="button"
           onClick={(e) => {
             e.stopPropagation();
             onWishlistToggle(product.id);
           }}
-          className={`absolute top-3 right-3 w-8 h-8 flex items-center justify-center
-            rounded-full backdrop-blur-sm transition-all duration-200
-            ${
-              wishlisted
-                ? "opacity-100 bg-white/90"
-                : "opacity-0 group-hover:opacity-100 bg-white/30"
-            }`}
+          className={`absolute top-3 right-3 p-0 bg-transparent border-none cursor-pointer transition-opacity duration-200
+            ${wishlisted ? "opacity-100" : "opacity-0 group-hover:opacity-100"}`}
           aria-label={wishlisted ? "Remove from wishlist" : "Add to wishlist"}
         >
           <svg
-            width="16"
-            height="16"
+            width="22"
+            height="22"
             viewBox="0 0 24 24"
-            fill={wishlisted ? "#111" : "none"}
-            stroke={wishlisted ? "#111" : "white"}
+            fill={wishlisted ? "#431c1c" : "none"}
+            stroke={wishlisted ? "#431c1c" : "white"}
             strokeWidth="1.8"
             strokeLinecap="round"
             strokeLinejoin="round"
           >
-            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+            <path d="M6 2h12v16l-6-4l-6 4V2z" />
           </svg>
         </button>
 
@@ -136,8 +131,8 @@ const ProductCard = ({
         <p className="font-sans text-[12px] tracking-[0.03em] text-[#111] leading-snug truncate">
           {product.title}
         </p>
-        <p className="font-sans text-[12px] text-[#888] mt-1 tracking-[0.01em]">
-          ₹{product.priceRange.minVariantPrice.amount}
+        <p className="font-sans text-[12px] text-[#888] mt-1 tracking-[0.02em] tabular-nums">
+          ₹{Number(product.priceRange.minVariantPrice.amount).toLocaleString("en-IN")}
         </p>
       </div>
     </article>

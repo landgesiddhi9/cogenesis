@@ -18,6 +18,7 @@ import CartPage from "./pages/CartPage";
 import NewArrivalsPage from "./pages/NewArrivalsPage";
 import AccountPage from "./pages/AccountPage";
 import SearchPage from "./pages/SearchPage";
+import AIAssistant from "./components/AIAssistant";
 import PurchasesPage from "./pages/PurchasesPage";
 import ReturnsPage from "./pages/ReturnsPage";
 
@@ -107,6 +108,8 @@ function App() {
 
       {/* Hide footer while the login drawer is open */}
       {!isLoginPage && <Footer />}
+
+      <AIAssistant />
     </div>
   );
 }

@@ -84,16 +84,16 @@ const ProductInfo = ({
         <p
           className="text-charcoal tracking-normal"
           style={{
-            fontFamily: "'Cormorant Garamond', 'Canela', serif",
+            fontFamily: "'Inter', 'Helvetica Neue', sans-serif",
             fontSize: "28px",
             fontWeight: 400,
             color: "#5A5550",
             lineHeight: 1,
-            letterSpacing: "0",
-            fontVariantNumeric: "lining-nums tabular-nums",
           }}
         >
-          ₹{price}
+          <span className="font-sans text-[12px] text-[#888] tracking-[0.02em] tabular-nums">
+            ₹{Number(price).toLocaleString("en-IN")}
+          </span>
         </p>
       </div>
 
@@ -289,11 +289,11 @@ const ProductInfo = ({
         }}
       >
         <svg
-          width="24"
-          height="24"
+          width="22"
+          height="22"
           viewBox="0 0 24 24"
-          fill={isWishlisted ? "currentColor" : "none"}
-          stroke="currentColor"
+          fill={isWishlisted ? "#431c1c" : "none"}
+          stroke={isWishlisted ? "#431c1c" : "currentColor"}
           strokeWidth="1.2"
           strokeLinecap="round"
           strokeLinejoin="round"
