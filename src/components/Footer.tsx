@@ -18,18 +18,28 @@ const Footer = () => {
       <div className="max-w-[1400px] mx-auto px-6 md:px-12 lg:px-16 py-10 md:py-16">
         <div className="grid grid-cols-1 md:grid-cols-12 gap-10 md:gap-6">
           {/* Left — Logo + Description + Newsletter */}
-          <div className="md:col-span-4 lg:col-span-4">
-            {/* Logo — tightly cropped version, -ml-1 compensates for logo's internal padding */}
-            <img
-              src="/images/logo-footer.png"
-              alt="Cogenesis"
-              className="w-[220px] md:w-[260px] h-auto mb-2 md:-ml-[38px]"
-              id="footer-logo"
-            />
+          <div className="md:col-span-4 lg:col-span-4" style={{ marginLeft: '-0.5cm' }}>
+            {/* Logo — monogram + wordmark lockup (same as header) */}
+            <div className="flex items-center gap-4 mb-7" id="footer-logo">
+              <img
+                src="/images/Monogram.png"
+                alt="Cogenesis Monogram"
+                className="h-[70px] w-auto object-contain shrink-0 logo-monogram"
+                style={{ marginLeft: '-0.5cm' }}
+              />
+              <div className="logo-wordmark" style={{ width: 216, height: 35, overflow: 'hidden', flexShrink: 0, marginLeft: '-1cm' }}>
+                <img
+                  src="/images/logo.png"
+                  alt="COGENESIS"
+                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                />
+              </div>
+            </div>
             {/* Description — tighter to logo (mb-1.5 above), then large gap to newsletter */}
-            <p className="font-sans text-[13px] text-[#7a7260] leading-relaxed max-w-[280px] mb-14 md:-mt-[22px]">
-              A premium menswear label devoted to timeless shirts and trousers
-              for the modern gentleman.
+            <p className="font-sans text-[15px] text-[#7a7260] leading-[1.75] max-w-[420px] mb-14" style={{ marginTop: '-0.5cm' }}>
+              A premium menswear label devoted to timeless
+              <br />
+              shirts and trousers for the modern gentleman.
             </p>
 
             {/* Newsletter — pushed further down via mb-14 above */}
@@ -39,7 +49,7 @@ const Footer = () => {
             <div className="mt-4">
               <form
                 onSubmit={handleSubscribe}
-                className="flex items-center border-b border-[#b5a978] max-w-[280px]"
+                className="flex items-center border-b border-[#b5a978] max-w-[420px]"
               >
                 <input
                   type="email"
@@ -51,7 +61,7 @@ const Footer = () => {
                 />
                 <button
                   type="submit"
-                  className="font-sans text-[11px] tracking-[0.15em] uppercase text-[#3d3929] hover:text-[#65220e] transition-colors duration-300 py-2.5 pl-3 font-semibold"
+                  className="font-sans text-[11px] tracking-[0.15em] uppercase text-[#3d3929] hover:text-[#3d3929] transition-colors duration-300 py-2.5 pl-3 font-semibold"
                   id="footer-subscribe-btn"
                 >
                   Subscribe
@@ -181,8 +191,8 @@ const Footer = () => {
                 id="footer-instagram"
               >
                 <svg
-                  width="16"
-                  height="16"
+                  width="18"
+                  height="18"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="white"
@@ -211,7 +221,7 @@ const Footer = () => {
                 aria-label="X"
                 id="footer-x"
               >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="white">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="white">
                   <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
                 </svg>
               </a>
@@ -225,7 +235,7 @@ const Footer = () => {
                 aria-label="YouTube"
                 id="footer-youtube"
               >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="white">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="white">
                   <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
                 </svg>
               </a>
@@ -239,7 +249,7 @@ const Footer = () => {
                 aria-label="LinkedIn"
                 id="footer-linkedin"
               >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="white">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="white">
                   <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
                 </svg>
               </a>
@@ -253,7 +263,7 @@ const Footer = () => {
                 aria-label="Pinterest"
                 id="footer-pinterest"
               >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="white">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="white">
                   <path d="M12.017 0C5.396 0 .029 5.367.029 11.987c0 5.079 3.158 9.417 7.618 11.162-.105-.949-.199-2.403.041-3.439.219-.937 1.406-5.957 1.406-5.957s-.359-.72-.359-1.781c0-1.668.967-2.914 2.171-2.914 1.023 0 1.518.769 1.518 1.69 0 1.029-.655 2.568-.994 3.995-.283 1.194.599 2.169 1.777 2.169 2.133 0 3.772-2.249 3.772-5.495 0-2.873-2.064-4.882-5.012-4.882-3.414 0-5.418 2.561-5.418 5.207 0 1.031.397 2.138.893 2.738a.36.36 0 0 1 .083.345l-.333 1.36c-.053.22-.174.267-.402.161-1.499-.698-2.436-2.889-2.436-4.649 0-3.785 2.75-7.262 7.929-7.262 4.163 0 7.398 2.967 7.398 6.931 0 4.136-2.607 7.464-6.227 7.464-1.216 0-2.359-.631-2.75-1.378l-.748 2.853c-.271 1.043-1.002 2.35-1.492 3.146C9.57 23.812 10.763 24 12.017 24c6.624 0 11.99-5.367 11.99-11.988C24.007 5.367 18.641 0 12.017 0z" />
                 </svg>
               </a>
@@ -267,7 +277,7 @@ const Footer = () => {
                 aria-label="Threads"
                 id="footer-threads"
               >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="white">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="white">
                   <path d="M12.186 24h-.007C5.461 23.956.057 18.521 0 11.799 0 11.742 0 11.686 0 11.63.057 4.908 5.461-.528 12.179-.572h.007C18.907-.528 24.311 4.908 24.368 11.63c0 .056 0 .112 0 .169C24.311 18.521 18.907 23.956 12.186 24zm.068-22.164h-.005C6.592 1.879 2.063 6.434 2.008 11.799v.042c.055 5.365 4.584 9.92 11.241 9.963h.005c6.657-.043 11.186-4.598 11.241-9.963v-.042c-.055-5.365-4.584-9.92-11.241-9.963zM16.87 13.3c-.21-1.383-1.174-2.447-2.862-3.158a.413.413 0 0 0-.086-.031c-.92-.36-1.967-.552-3.108-.568h-.044c-1.14.016-2.188.208-3.108.568a.413.413 0 0 0-.086.031C5.888 10.853 4.924 11.917 4.714 13.3c-.137.904-.05 1.826.254 2.672.573 1.598 1.83 2.761 3.543 3.275.897.27 1.85.407 2.832.407h.082c.982 0 1.935-.137 2.832-.407 1.713-.514 2.97-1.677 3.543-3.275.304-.846.391-1.768.254-2.672h-.184zm-1.697 2.297c-.406 1.135-1.274 1.955-2.514 2.327-.717.215-1.478.325-2.262.325h-.066c-.784 0-1.545-.11-2.262-.325-1.24-.372-2.108-1.192-2.514-2.327-.212-.591-.277-1.221-.189-1.823.143-.941.815-1.712 1.997-2.293.79-.308 1.666-.472 2.605-.486h.036c.939.014 1.815.178 2.605.486 1.182.581 1.854 1.352 1.997 2.293.088.602.023 1.232-.189 1.823h-.244z" />
                 </svg>
               </a>
