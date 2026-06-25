@@ -101,10 +101,14 @@ const PasswordHints = ({ password }: { password: string }) => {
     <div className="mt-2 space-y-1">
       {checks.map((c) => (
         <div key={c.label} className="flex items-center gap-2">
-          <span className={`text-[10px] ${c.pass ? 'text-[#2a7a4a]' : 'text-[#bbb]'}`}>
-            {c.pass ? '✓' : '○'}
+          <span
+            className={`text-[10px] ${c.pass ? "text-[#2a7a4a]" : "text-[#bbb]"}`}
+          >
+            {c.pass ? "✓" : "○"}
           </span>
-          <span className={`font-sans text-[10px] ${c.pass ? 'text-[#2a7a4a]' : 'text-[#bbb]'}`}>
+          <span
+            className={`font-sans text-[10px] ${c.pass ? "text-[#2a7a4a]" : "text-[#bbb]"}`}
+          >
             {c.label}
           </span>
         </div>
@@ -179,7 +183,6 @@ const LoginPage: React.FC = () => {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [newsletter, setNewsletter] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPw, setShowConfirmPw] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -211,7 +214,10 @@ const LoginPage: React.FC = () => {
     const e: Record<string, string> = {};
     if (!email.trim()) e.email = "Email address is required.";
     if (!password.trim()) e.password = "Password is required.";
-    if (Object.keys(e).length) { setErrors(e); return; }
+    if (Object.keys(e).length) {
+      setErrors(e);
+      return;
+    }
 
     const user = findUser(email);
     if (!user) {
@@ -377,10 +383,10 @@ const LoginPage: React.FC = () => {
       <button
         type="button"
         onClick={() => transitionTo("email")}
-          className={backBtnCls}
-        >
-          ← Back to Sign In
-        </button>
+        className={backBtnCls}
+      >
+        ← Back to Sign In
+      </button>
     </>
   );
 
@@ -402,14 +408,14 @@ const LoginPage: React.FC = () => {
       </div>
 
       <button
-          type="button"
-          onClick={() => transitionTo("email")}
-          className={backBtnCls}
-        >
-          ← Back to Sign In
-        </button>
-      </>
-    );
+        type="button"
+        onClick={() => transitionTo("email")}
+        className={backBtnCls}
+      >
+        ← Back to Sign In
+      </button>
+    </>
+  );
 
   // STATE 4 ─ Create Account
   const renderCreate = () => (

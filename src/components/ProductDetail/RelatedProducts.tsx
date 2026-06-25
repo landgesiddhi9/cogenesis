@@ -18,7 +18,7 @@ interface RelatedProductsProps {
 }
 
 const RelatedProducts = ({ currentProductId }: RelatedProductsProps) => {
-  const [hoveredId, setHoveredId] = useState<string | null>(null);
+  const [_hoveredId, setHoveredId] = useState<string | null>(null);
   const [wishlist, setWishlist] = useState<string[]>(() => readWL());
 
   const toggleWishlist = (e: React.MouseEvent, id: string) => {

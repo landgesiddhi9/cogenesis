@@ -17,8 +17,6 @@ const statusColor = (status: ReturnRequest["status"]) => {
 };
 
 const ReturnCard = ({ ret }: { ret: ReturnRequest }) => {
-  const itemCount = ret.items.reduce((s, i) => s + i.quantity, 0);
-
   return (
     <div className="border border-[#e4e1db] bg-white">
       {/* Return header */}
@@ -35,7 +33,9 @@ const ReturnCard = ({ ret }: { ret: ReturnRequest }) => {
             })}
           </span>
         </div>
-        <span className={`font-sans text-[10px] font-semibold uppercase tracking-[0.12em] px-3 py-1 rounded-full ${statusColor(ret.status)}`}>
+        <span
+          className={`font-sans text-[10px] font-semibold uppercase tracking-[0.12em] px-3 py-1 rounded-full ${statusColor(ret.status)}`}
+        >
           {ret.status === "picked_up" ? "Picked Up" : ret.status}
         </span>
       </div>
@@ -74,18 +74,24 @@ const ReturnCard = ({ ret }: { ret: ReturnRequest }) => {
         </p>
         {ret.pickupDate && (
           <p className="font-sans text-[11px] text-[#888]">
-            Pickup: <span className="text-[#555]">
+            Pickup:{" "}
+            <span className="text-[#555]">
               {new Date(ret.pickupDate).toLocaleDateString("en-IN", {
-                day: "numeric", month: "short", year: "numeric",
+                day: "numeric",
+                month: "short",
+                year: "numeric",
               })}
             </span>
           </p>
         )}
         {ret.refundDate && (
           <p className="font-sans text-[11px] text-[#888]">
-            Refunded: <span className="text-[#555]">
+            Refunded:{" "}
+            <span className="text-[#555]">
               {new Date(ret.refundDate).toLocaleDateString("en-IN", {
-                day: "numeric", month: "short", year: "numeric",
+                day: "numeric",
+                month: "short",
+                year: "numeric",
               })}
             </span>
           </p>
