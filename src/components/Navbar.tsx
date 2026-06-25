@@ -1,8 +1,8 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { useLocation, useNavigate } from "react-router-dom";
-import { navLinks } from "../data/mockData";
-
+import SearchOverlay from "./SearchOverlay";
+import MegaMenuPanel from "./MegaMenuPanel";
 import { getSession, SESSION_EVENT } from "../utils/auth";
 
 const Navbar = () => {
@@ -10,10 +10,9 @@ const Navbar = () => {
   // Branding: Monogram (h-15) + Logo (h-32) with 8-10px visible gap + color #5C3432 + trim margins for PNG padding
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
-  // HEAD: accordion dropdown state
-  const [expandedSection, setExpandedSection] = useState<number | null>(null);
-  const [underlineWidth, setUnderlineWidth] = useState(0);
-  const headingRefsRef = useRef<(HTMLDivElement | null)[]>([]);
+
+  // Cherry-pick: search overlay + router state
+  const [searchOpen, setSearchOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const activePath = location.pathname;
@@ -75,9 +74,9 @@ const Navbar = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Lock body scroll when menu is open (preserve scroll position)
+  // Lock body scroll when menu OR search overlay is open (preserve scroll position)
   useEffect(() => {
-    const shouldLock = menuOpen;
+    const shouldLock = menuOpen || searchOpen;
     if (!shouldLock) return;
 
     const scrollY = window.scrollY;
@@ -95,26 +94,7 @@ const Navbar = () => {
       document.body.style.overflow = "";
       window.scrollTo(0, scrollY);
     };
-  }, [menuOpen]);
-
-  // Toggle or collapse accordion section (HEAD)
-  const handleHeadingClick = (index: number) => {
-    setExpandedSection((prev) => (prev === index ? null : index));
-  };
-
-  // Close the entire menu (HEAD)
-  const closeMenu = () => {
-    setMenuOpen(false);
-    setExpandedSection(null);
-  };
-
-  // Navigate via React Router and close menu (merged: uses navigate() for React Router compat)
-  const handleNavigation = (href: string) => {
-    closeMenu();
-    if (!href.startsWith("http") && href !== "#") {
-      navigate(href);
-    }
-  };
+  }, [menuOpen, searchOpen]);
 
   return (
     <>
@@ -122,9 +102,11 @@ const Navbar = () => {
         className={`fixed top-0 left-0 right-0 transition-all duration-500 ${
           menuOpen ? "z-110" : "z-50"
         } ${
-          menuOpen || !scrolled
-            ? "bg-transparent"
-            : "bg-ivory/90 backdrop-blur-md shadow-sm border-b border-stone/10"
+          menuOpen
+            ? "bg-[#FFF6ED] border-b border-[#D9D2C7]"
+            : !scrolled
+              ? "bg-transparent"
+              : "bg-ivory/90 backdrop-blur-md shadow-sm border-b border-stone/10"
         }`}
       >
         <div className="w-full px-4 md:px-8">
@@ -194,16 +176,14 @@ const Navbar = () => {
 
             {/* Right-side icons — cherry-pick active-state version */}
             <div
-              className={`flex items-center gap-4 md:gap-5 text-charcoal transition-opacity duration-300 ${
-                menuOpen ? "opacity-0 pointer-events-none" : "opacity-100"
-              }`}
+              className="flex items-center gap-4 md:gap-5 text-charcoal transition-opacity duration-300 opacity-100"
             >
               {/* Search */}
               <button
                 className={iconButtonClass(activePath === "/search")}
                 aria-label="Search"
                 id="navbar-search"
-                onClick={() => navigate("/search")}
+                onClick={() => setSearchOpen(true)}
               >
                 <svg
                   width="20"
@@ -295,184 +275,19 @@ const Navbar = () => {
         </div>
       </nav>
 
-      {/* ACCORDION DROPDOWN MENU — HEAD version, unchanged */}
+      {/* MEGA MENU — floating panel */}
       {createPortal(
         <div
-          className={`fixed inset-y-0 left-0 transition-all duration-300 z-100 ${
-            menuOpen
-              ? "opacity-100 pointer-events-auto"
-              : "opacity-0 pointer-events-none"
-          }`}
-          style={{
-            width: menuOpen ? "clamp(280px, 28vw, 400px)" : "0vw",
-            backgroundColor: menuOpen
-              ? "rgba(247, 245, 241, 0.98)"
-              : "transparent",
-            backdropFilter: menuOpen ? "blur(10px)" : "none",
-          }}
+          className="fixed left-0 right-0 z-100 top-14 md:top-16 flex justify-center"
           id="navbar-dropdown"
         >
-          {menuOpen && (
-            <div className="h-full flex flex-col items-center justify-center px-9 py-20">
-              <div className="w-full space-y-14 flex flex-col items-center">
-                {navLinks.map((section, sectionIndex) => (
-                  <div
-                    key={section.label}
-                    className="transition-opacity duration-280 text-center"
-                    style={{
-                      opacity:
-                        expandedSection === null ||
-                        expandedSection === sectionIndex
-                          ? 1
-                          : 0.55,
-                    }}
-                  >
-                    {/* Section heading */}
-                    <div
-                      ref={(el) => {
-                        headingRefsRef.current[sectionIndex] = el;
-                      }}
-                      className="relative cursor-pointer mb-8 group transition-opacity duration-300"
-                    >
-                      <button
-                        onClick={() => handleHeadingClick(sectionIndex)}
-                        className={`inline-flex flex-col transition-all duration-300 text-center`}
-                        style={{
-                          fontSize: "36px",
-                          fontWeight: 500,
-                          letterSpacing: "-0.02em",
-                          lineHeight: "1.2",
-                          color:
-                            expandedSection === sectionIndex
-                              ? "#482C1B"
-                              : "#B8AA96",
-                          opacity: expandedSection === sectionIndex ? 1 : 0.6,
-                          transitionProperty: "color, opacity",
-                          transitionDuration: "300ms",
-                          transitionTimingFunction: "ease",
-                          background: "none",
-                          border: "none",
-                          padding: "0",
-                          cursor: "pointer",
-                        }}
-                      >
-                        <span className="heading-text">{section.label}</span>
-                        {/* Subtle underline for active heading */}
-                        {expandedSection === sectionIndex && (
-                          <div
-                            style={{
-                              height: "1px",
-                              width: "48px",
-                              marginTop: "10px",
-                              animation:
-                                "expandWidth 300ms cubic-bezier(0.4, 0, 0.2, 1) forwards",
-                              background: "#482C1B",
-                            }}
-                          />
-                        )}
-                      </button>
-                    </div>
-
-                    {/* Subcategories */}
-                    {section.submenu && (
-                      <div
-                        className="overflow-hidden transition-all duration-250"
-                        style={{
-                          maxHeight:
-                            expandedSection === sectionIndex
-                              ? `${section.submenu.length * 48 + 32}px`
-                              : "0px",
-                          opacity: expandedSection === sectionIndex ? 1 : 0,
-                          transform:
-                            expandedSection === sectionIndex
-                              ? "translateY(0)"
-                              : "translateY(-10px)",
-                          transition: "all 250ms cubic-bezier(0.4, 0, 0.2, 1)",
-                        }}
-                      >
-                        <div className="space-y-6 pt-8 flex flex-col items-center w-full">
-                          {section.submenu.map((subitem) => (
-                            <a
-                              key={subitem.label}
-                              href={subitem.href}
-                              className="inline-flex transition-all duration-220 hover:opacity-100"
-                              onClick={(e) => {
-                                e.preventDefault();
-                                handleNavigation(subitem.href);
-                              }}
-                              style={{
-                                fontSize: "22px",
-                                fontWeight: 400,
-                                letterSpacing: "0.01em",
-                                lineHeight: "1.7",
-                                color: "#A6855E",
-                                transform: "translateX(0)",
-                                transition: "all 220ms ease",
-                                cursor: "pointer",
-                              }}
-                              onMouseEnter={(e) => {
-                                (e.target as HTMLElement).style.color =
-                                  "#482C1B";
-                                (e.target as HTMLElement).style.transform =
-                                  "translateX(8px)";
-                                (e.target as HTMLElement).style.letterSpacing =
-                                  "0.03em";
-                              }}
-                              onMouseLeave={(e) => {
-                                (e.target as HTMLElement).style.color =
-                                  "#A6855E";
-                                (e.target as HTMLElement).style.transform =
-                                  "translateX(0)";
-                                (e.target as HTMLElement).style.letterSpacing =
-                                  "0.01em";
-                              }}
-                            >
-                              {subitem.label}
-                            </a>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Divider between sections */}
-                    {sectionIndex < navLinks.length - 1 && (
-                      <div
-                        style={{
-                          height: "1px",
-                          backgroundColor: "#E7E1D8",
-                          width: "32px",
-                          marginTop: "28px",
-                        }}
-                      />
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
+          {menuOpen && <MegaMenuPanel onNavigate={() => setMenuOpen(false)} />}
         </div>,
         document.body,
       )}
 
-      {/* Accordion underline animation — HEAD */}
-      <style>{`
-        @keyframes expandWidth {
-          from { width: 0; opacity: 0; }
-          to   { width: inherit; opacity: 1; }
-        }
-
-        @keyframes slideDown {
-          from {
-            opacity: 0;
-            transform: translateY(-10px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-      `}</style>
-
+      {/* Search overlay */}
+      <SearchOverlay isOpen={searchOpen} onClose={() => setSearchOpen(false)} />
     </>
   );
 };

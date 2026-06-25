@@ -14,17 +14,6 @@ const readWL = (): string[] => {
 const writeWL = (ids: string[]) =>
   sessionStorage.setItem(WL_KEY, JSON.stringify(ids));
 
-const formatPrice = (product: ShopifyProduct) => {
-  const amount = product.priceRange?.minVariantPrice?.amount ?? '4990';
-  const value = Number(amount) || 4990;
-  return new Intl.NumberFormat('en-IN', {
-    style: 'currency',
-    currency: 'INR',
-    maximumFractionDigits: 0,
-    minimumFractionDigits: 0,
-  }).format(value);
-};
-
 const SearchPage = () => {
   const products = useMemo(() => productStripItems.slice(0, 7), []);
   const railRef = useRef<HTMLDivElement | null>(null);
