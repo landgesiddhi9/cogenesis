@@ -11,6 +11,7 @@ import VideoSection from "./components/VideoSection";
 import Footer from "./components/Footer";
 import CollectionPage from "./pages/CollectionPage";
 import LaunchingSoonPage from "./pages/LaunchingSoonPage";
+import FAQPage from "./pages/FAQPage";
 import ProductDetailPage from "./pages/ProductDetailPage";
 import LoginPage from "./components/LoginPage";
 import WishlistPage from "./pages/WishlistPage";
@@ -103,6 +104,9 @@ function App() {
 
           {/* Launching soon */}
           <Route path="/launching-soon" element={<LaunchingSoonPage />} />
+
+          {/* FAQ */}
+          <Route path="/faqs" element={<FAQPage />} />
         </Routes>
       </main>
 
