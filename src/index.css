@@ -234,9 +234,14 @@ html::-webkit-scrollbar {
     letter-spacing: 0.5em;
 }
 
-/* Smooth image loading */
-img {
-    transition: opacity 0.6s ease;
+/* Logo protection — never inherit dimming/blur from dropdown animations */
+.logo-monogram,
+.logo-wordmark {
+    opacity: 1 !important;
+    filter: none !important;
+    mix-blend-mode: normal !important;
+    visibility: visible !important;
+    transition: none !important;
 }
 
 /* Parallax-like subtle scroll animations */
