@@ -1,4 +1,4 @@
-import { useLocation, useParams, Routes, Route } from "react-router-dom";
+import { useLocation, useParams, Routes, Route, Navigate } from "react-router-dom";
 import Navbar from "./components/Navbar";
 import Hero from "./components/Hero";
 import EditorialGrid from "./components/EditorialGrid";
@@ -107,6 +107,17 @@ function App() {
 
           {/* FAQ */}
           <Route path="/faqs" element={<FAQPage />} />
+
+          {/* MEN subcategory pages — placeholder, redirect to launching-soon */}
+          <Route path="/men" element={<Navigate to="/launching-soon" />} />
+          <Route path="/men/:subcategory" element={<Navigate to="/launching-soon" />} />
+
+          {/* WOMEN subcategory pages — placeholder */}
+          <Route path="/women" element={<Navigate to="/launching-soon" />} />
+
+          {/* FABRIC subcategory pages — placeholder */}
+          <Route path="/fabric" element={<Navigate to="/launching-soon" />} />
+          <Route path="/fabric/:subcategory" element={<Navigate to="/launching-soon" />} />
         </Routes>
       </main>
 
