@@ -3,6 +3,7 @@ import { createPortal } from "react-dom";
 import { useLocation, useNavigate } from "react-router-dom";
 import SearchOverlay from "./SearchOverlay";
 import MegaMenuPanel from "./MegaMenuPanel";
+import { getSession, SESSION_EVENT } from "../utils/auth";
 
 const Navbar = () => {
   // Images: Monogram.png and Logo.png are in public/images/
@@ -15,6 +16,44 @@ const Navbar = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const activePath = location.pathname;
+
+  // Session badge — account icon navigates to /account when logged in
+  const [isLoggedIn, setIsLoggedIn] = useState(() => !!getSession());
+  useEffect(() => {
+    const sync = () => setIsLoggedIn(!!getSession());
+    window.addEventListener(SESSION_EVENT, sync);
+    return () => window.removeEventListener(SESSION_EVENT, sync);
+  }, []);
+
+  // Cart badge — reads from localStorage, updates on the cart-updated event
+  const [cartCount, setCartCount] = useState(() => {
+    try {
+      const items = JSON.parse(localStorage.getItem("cogenesis_cart") || "[]");
+      return (items as { quantity: number }[]).reduce(
+        (s, i) => s + i.quantity,
+        0,
+      );
+    } catch {
+      return 0;
+    }
+  });
+
+  useEffect(() => {
+    const update = () => {
+      try {
+        const items = JSON.parse(
+          localStorage.getItem("cogenesis_cart") || "[]",
+        );
+        setCartCount(
+          (items as { quantity: number }[]).reduce((s, i) => s + i.quantity, 0),
+        );
+      } catch {
+        setCartCount(0);
+      }
+    };
+    window.addEventListener("cart-updated", update);
+    return () => window.removeEventListener("cart-updated", update);
+  }, []);
 
   // Helper: icon button class with active state (cherry-pick)
   const iconButtonClass = (isActive: boolean) =>
@@ -159,12 +198,14 @@ const Navbar = () => {
                 </svg>
               </button>
 
-              {/* Account */}
+              {/* Account — goes to dashboard if logged in, login drawer otherwise */}
               <button
-                className={iconButtonClass(activePath === "/login")}
+                className={iconButtonClass(
+                  activePath === "/login" || activePath === "/account",
+                )}
                 aria-label="Account"
                 id="navbar-account"
-                onClick={() => navigate("/login")}
+                onClick={() => navigate(isLoggedIn ? "/account" : "/login")}
               >
                 <svg
                   width="20"
@@ -184,6 +225,7 @@ const Navbar = () => {
                 className={iconButtonClass(activePath === "/wishlist")}
                 aria-label="Wishlist"
                 id="navbar-wishlist"
+                onClick={() => navigate("/wishlist")}
               >
                 <svg
                   width="22"
@@ -199,11 +241,12 @@ const Navbar = () => {
                 </svg>
               </button>
 
-              {/* Cart */}
+              {/* Cart — with live count badge */}
               <button
-                className={iconButtonClass(activePath === "/cart")}
+                className={`${iconButtonClass(activePath === "/cart")} relative`}
                 aria-label="Shopping bag"
                 id="navbar-cart"
+                onClick={() => navigate("/cart")}
               >
                 <svg
                   width="20"
@@ -217,6 +260,15 @@ const Navbar = () => {
                   <line x1="3" y1="6" x2="21" y2="6" />
                   <path d="M16 10a4 4 0 01-8 0" />
                 </svg>
+                {cartCount > 0 && (
+                  <span
+                    className="absolute -top-1.5 -right-1.5 min-w-[15px] h-[15px] px-0.5
+                               bg-[#111] text-white font-sans text-[9px] font-medium
+                               rounded-full flex items-center justify-center leading-none"
+                  >
+                    {cartCount > 9 ? "9+" : cartCount}
+                  </span>
+                )}
               </button>
             </div>
           </div>
@@ -234,7 +286,7 @@ const Navbar = () => {
         document.body,
       )}
 
-      {/* Search overlay — cherry-pick */}
+      {/* Search overlay */}
       <SearchOverlay isOpen={searchOpen} onClose={() => setSearchOpen(false)} />
     </>
   );
