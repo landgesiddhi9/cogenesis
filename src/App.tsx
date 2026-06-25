@@ -13,6 +13,14 @@ import CollectionPage from "./pages/CollectionPage";
 import LaunchingSoonPage from "./pages/LaunchingSoonPage";
 import ProductDetailPage from "./pages/ProductDetailPage";
 import LoginPage from "./components/LoginPage";
+import WishlistPage from "./pages/WishlistPage";
+import CartPage from "./pages/CartPage";
+import NewArrivalsPage from "./pages/NewArrivalsPage";
+import AccountPage from "./pages/AccountPage";
+import SearchPage from "./pages/SearchPage";
+import AIAssistant from "./components/AIAssistant";
+import PurchasesPage from "./pages/PurchasesPage";
+import ReturnsPage from "./pages/ReturnsPage";
 
 // Wrapper so CollectionPage receives its collectionHandle prop via React Router params
 const CollectionRouteWrapper = () => {
@@ -69,6 +77,27 @@ function App() {
             element={<CollectionRouteWrapper />}
           />
 
+          {/* Wishlist */}
+          <Route path="/wishlist" element={<WishlistPage />} />
+
+          {/* Account dashboard */}
+          <Route path="/account" element={<AccountPage />} />
+
+          {/* Cart */}
+          <Route path="/cart" element={<CartPage />} />
+
+          {/* Search */}
+          <Route path="/search" element={<SearchPage />} />
+
+          {/* Purchases */}
+          <Route path="/purchases" element={<PurchasesPage />} />
+
+          {/* Returns */}
+          <Route path="/returns" element={<ReturnsPage />} />
+
+          {/* New Arrivals */}
+          <Route path="/new-arrivals" element={<NewArrivalsPage />} />
+
           {/* Product Detail pages */}
           <Route path="/products/:handle" element={<ProductRouteWrapper />} />
 
@@ -90,6 +119,8 @@ function App() {
 
       {/* Hide footer while the login drawer is open */}
       {!isLoginPage && <Footer />}
+
+      <AIAssistant />
     </div>
   );
 }

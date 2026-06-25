@@ -132,7 +132,7 @@ const FilterPanel = ({ isOpen, onClose, onApply }: FilterPanelProps) => {
           {/* Size */}
           <FilterAccordion title="Size">
             <div className="space-y-3">
-              {["XS", "S", "M", "L", "XL"].map((size) => (
+              {["S", "M", "L", "XL"].map((size) => (
                 <label
                   key={size}
                   className="flex items-center gap-3 cursor-pointer"
@@ -234,9 +234,9 @@ const FilterPanel = ({ isOpen, onClose, onApply }: FilterPanelProps) => {
                   className="flex-1 h-1 bg-stone/10 rounded accent-warm-brown"
                 />
               </div>
-              <div className="text-sm text-charcoal/70 space-y-1">
-                <div>Min: ₹{filters.price[0]}</div>
-                <div>Max: ₹{filters.price[1]}</div>
+              <div className="font-sans text-[12px] text-[#888] tracking-[0.02em] tabular-nums space-y-1">
+                <div>Min: ₹{Number(filters.price[0]).toLocaleString("en-IN")}</div>
+                <div>Max: ₹{Number(filters.price[1]).toLocaleString("en-IN")}</div>
               </div>
             </div>
           </FilterAccordion>

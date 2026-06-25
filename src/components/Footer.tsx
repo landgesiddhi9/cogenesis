@@ -1,4 +1,5 @@
 import { useState } from "react";
+import allPaymentIcons from "../assets/payments/all in one.png";
 
 const Footer = () => {
   const [email, setEmail] = useState("");
@@ -18,29 +19,21 @@ const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-12 gap-10 md:gap-6">
           {/* Left — Logo + Description + Newsletter */}
           <div className="md:col-span-4 lg:col-span-4">
-            {/* Logo + Monogram — identical to header branding */}
-            <div className="flex items-center gap-tight mb-2">
-              <img
-                src="/images/Monogram.png"
-                alt="Cogenesis Monogram"
-                className="h-15 w-auto object-contain shrink-0 branding-dark monogram-trim"
-                id="footer-monogram"
-              />
-              <img
-                src="/images/Logo.png"
-                alt="Cogenesis"
-                className="h-32 w-auto object-contain shrink-0 branding-dark logo-trim"
-                id="footer-logo"
-              />
-            </div>
+            {/* Logo — tightly cropped version, -ml-1 compensates for logo's internal padding */}
+            <img
+              src="/images/logo-footer.png"
+              alt="Cogenesis"
+              className="w-[220px] md:w-[260px] h-auto mb-2 md:-ml-[38px]"
+              id="footer-logo"
+            />
             {/* Description — tighter to logo (mb-1.5 above), then large gap to newsletter */}
-            <p className="font-sans text-[13px] text-[#7a7260] leading-relaxed max-w-[280px] mb-14">
+            <p className="font-sans text-[13px] text-[#7a7260] leading-relaxed max-w-[280px] mb-14 md:-mt-[22px]">
               A premium menswear label devoted to timeless shirts and trousers
               for the modern gentleman.
             </p>
 
             {/* Newsletter — pushed further down via mb-14 above */}
-            <h3 className="font-sans text-[12px] tracking-[0.2em] uppercase text-[#8b7d3c] mb-1 font-semibold pb-1.5 border-b border-[#8b7d3c]/40 inline-block">
+            <h3 className="font-sans text-[12px] tracking-[0.2em] uppercase text-[#65220e] mb-1 font-semibold pb-1.5 border-b border-[#65220e]/40 inline-block">
               Newsletter
             </h3>
             <div className="mt-4">
@@ -58,7 +51,7 @@ const Footer = () => {
                 />
                 <button
                   type="submit"
-                  className="font-sans text-[11px] tracking-[0.15em] uppercase text-[#3d3929] hover:text-[#8b7d3c] transition-colors duration-300 py-2.5 pl-3 font-semibold"
+                  className="font-sans text-[11px] tracking-[0.15em] uppercase text-[#3d3929] hover:text-[#65220e] transition-colors duration-300 py-2.5 pl-3 font-semibold"
                   id="footer-subscribe-btn"
                 >
                   Subscribe
@@ -69,7 +62,7 @@ const Footer = () => {
 
           {/* Shop — even 2-col with left padding for breathing room */}
           <div className="md:col-span-2 lg:col-span-2 md:pl-6">
-            <h4 className="font-sans text-[12px] tracking-[0.2em] uppercase text-[#8b7d3c] mb-1 font-semibold pb-1.5 border-b border-[#8b7d3c]/40 inline-block">
+            <h4 className="font-sans text-[12px] tracking-[0.2em] uppercase text-[#65220e] mb-1 font-semibold pb-1.5 border-b border-[#65220e]/40 inline-block">
               Shop
             </h4>
             <ul className="space-y-3 mt-4">
@@ -102,7 +95,7 @@ const Footer = () => {
 
           {/* Customer Care */}
           <div className="md:col-span-3 lg:col-span-3 md:pl-4">
-            <h4 className="font-sans text-[12px] tracking-[0.2em] uppercase text-[#8b7d3c] mb-1 font-semibold pb-1.5 border-b border-[#8b7d3c]/40 inline-block">
+            <h4 className="font-sans text-[12px] tracking-[0.2em] uppercase text-[#65220e] mb-1 font-semibold pb-1.5 border-b border-[#65220e]/40 inline-block">
               Customer Care
             </h4>
             <ul className="space-y-3 mt-4">
@@ -159,7 +152,7 @@ const Footer = () => {
 
           {/* Company + Follow Us */}
           <div className="md:col-span-3 lg:col-span-3 md:pl-4">
-            <h4 className="font-sans text-[12px] tracking-[0.2em] uppercase text-[#8b7d3c] mb-1 font-semibold pb-1.5 border-b border-[#8b7d3c]/40 inline-block">
+            <h4 className="font-sans text-[12px] tracking-[0.2em] uppercase text-[#65220e] mb-1 font-semibold pb-1.5 border-b border-[#65220e]/40 inline-block">
               Company
             </h4>
             <ul className="space-y-3 mt-4 mb-20">
@@ -174,7 +167,7 @@ const Footer = () => {
             </ul>
 
             {/* Follow Us — pushed lower (mb-12 above), underline added to heading */}
-            <h4 className="font-sans text-[12px] tracking-[0.2em] uppercase text-[#8b7d3c] mb-1 font-semibold pb-1.5 border-b border-[#8b7d3c]/40 inline-block">
+            <h4 className="font-sans text-[12px] tracking-[0.2em] uppercase text-[#65220e] mb-1 font-semibold pb-1.5 border-b border-[#65220e]/40 inline-block">
               Follow Us
             </h4>
             <div className="flex items-center gap-3.5 mt-4">
@@ -183,7 +176,7 @@ const Footer = () => {
                 href="https://www.instagram.com/cogenesis"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-9 h-9 rounded-full bg-[#8b7d3c] flex items-center justify-center hover:bg-[#6e6330] transition-colors duration-300"
+                className="w-9 h-9 rounded-full bg-[#65220e] flex items-center justify-center hover:bg-[#5a2a2a] transition-colors duration-300"
                 aria-label="Instagram"
                 id="footer-instagram"
               >
@@ -214,7 +207,7 @@ const Footer = () => {
                 href="https://x.com/cogenesis"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-9 h-9 rounded-full bg-[#8b7d3c] flex items-center justify-center hover:bg-[#6e6330] transition-colors duration-300"
+                className="w-9 h-9 rounded-full bg-[#65220e] flex items-center justify-center hover:bg-[#5a2a2a] transition-colors duration-300"
                 aria-label="X"
                 id="footer-x"
               >
@@ -228,7 +221,7 @@ const Footer = () => {
                 href="https://www.youtube.com/@cogenesis"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-9 h-9 rounded-full bg-[#8b7d3c] flex items-center justify-center hover:bg-[#6e6330] transition-colors duration-300"
+                className="w-9 h-9 rounded-full bg-[#65220e] flex items-center justify-center hover:bg-[#5a2a2a] transition-colors duration-300"
                 aria-label="YouTube"
                 id="footer-youtube"
               >
@@ -242,7 +235,7 @@ const Footer = () => {
                 href="https://www.linkedin.com/company/cogenesis"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-9 h-9 rounded-full bg-[#8b7d3c] flex items-center justify-center hover:bg-[#6e6330] transition-colors duration-300"
+                className="w-9 h-9 rounded-full bg-[#65220e] flex items-center justify-center hover:bg-[#5a2a2a] transition-colors duration-300"
                 aria-label="LinkedIn"
                 id="footer-linkedin"
               >
@@ -256,7 +249,7 @@ const Footer = () => {
                 href="https://www.pinterest.com/cogenesis"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-9 h-9 rounded-full bg-[#8b7d3c] flex items-center justify-center hover:bg-[#6e6330] transition-colors duration-300"
+                className="w-9 h-9 rounded-full bg-[#65220e] flex items-center justify-center hover:bg-[#5a2a2a] transition-colors duration-300"
                 aria-label="Pinterest"
                 id="footer-pinterest"
               >
@@ -270,7 +263,7 @@ const Footer = () => {
                 href="https://www.threads.net/@cogenesis"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-9 h-9 rounded-full bg-[#8b7d3c] flex items-center justify-center hover:bg-[#6e6330] transition-colors duration-300"
+                className="w-9 h-9 rounded-full bg-[#65220e] flex items-center justify-center hover:bg-[#5a2a2a] transition-colors duration-300"
                 aria-label="Threads"
                 id="footer-threads"
               >
@@ -285,8 +278,11 @@ const Footer = () => {
 
       {/* Bottom bar */}
       <div className="border-t border-[#c9c0a8]/40">
-        <div className="max-w-[1400px] mx-auto px-6 md:px-12 lg:px-16 py-4 flex items-center justify-center">
-          <p className="font-sans text-[11px] tracking-[0.15em] uppercase text-[#a09882]">
+        <div className="max-w-[1400px] mx-auto px-6 md:px-12 lg:px-16 py-4 flex flex-col items-center">
+          <div className="flex items-center justify-center mb-3">
+            <img src={allPaymentIcons} alt="Accepted payment methods" className="h-8 w-auto" />
+          </div>
+          <p className="font-sans text-[11px] tracking-[0.15em] uppercase text-[#a09882] text-center">
             © {new Date().getFullYear()} Cogenesis. All rights reserved.
           </p>
         </div>
