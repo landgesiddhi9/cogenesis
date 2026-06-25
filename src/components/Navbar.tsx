@@ -99,15 +99,24 @@ const Navbar = () => {
   return (
     <>
       <nav
-        className={`fixed top-0 left-0 right-0 transition-all duration-500 ${
+        className={`fixed top-0 left-0 right-0 ${
           menuOpen ? "z-110" : "z-50"
-        } ${
-          menuOpen
-            ? "bg-[#FFF6ED] border-b border-[#D9D2C7]"
-            : !scrolled
-              ? "bg-transparent"
-              : "bg-ivory/90 backdrop-blur-md shadow-sm border-b border-stone/10"
-        }`}
+        } ${scrolled ? "backdrop-blur-md shadow-sm" : ""}`}
+        style={{
+          backgroundColor: menuOpen
+            ? '#FFF6ED'
+            : scrolled
+              ? 'rgba(250, 248, 245, 0.9)'
+              : 'transparent',
+          borderBottom: menuOpen
+            ? '1px solid #D9D2C7'
+            : scrolled
+              ? '1px solid rgba(122, 113, 104, 0.1)'
+              : '1px solid transparent',
+          transition: menuOpen
+            ? 'background-color 200ms cubic-bezier(0.22, 1, 0.36, 1), border-color 200ms cubic-bezier(0.22, 1, 0.36, 1)'
+            : 'background-color 200ms cubic-bezier(0.22, 1, 0.36, 1) 300ms, border-color 200ms cubic-bezier(0.22, 1, 0.36, 1) 300ms',
+        }}
       >
         <div className="w-full px-4 md:px-8">
           <div className="relative flex items-center justify-between h-14 md:h-16">
@@ -152,26 +161,24 @@ const Navbar = () => {
               />
             </button>
 
-            {/* Center logo - monogram + logo */}
+            {/* Center logo - monogram + wordmark */}
             <a
               href="/"
-              className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-60 flex items-center gap-tight"
+              className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-60 flex items-center gap-1"
               id="navbar-logo"
             >
-              {/* Monogram - reduced 15-20%, framed within header */}
               <img
                 src="/images/Monogram.png"
                 alt="Cogenesis Monogram"
-                className="h-15 w-auto object-contain shrink-0 branding-dark monogram-trim"
-                style={{ opacity: 1 }}
+                className="h-[58px] w-auto object-contain shrink-0 logo-monogram"
               />
-              {/* Logo - dominant wordmark, 30% larger */}
-              <img
-                src="/images/Logo.png"
-                alt="Cogenesis"
-                className="h-32 w-auto object-contain shrink-0 branding-dark logo-trim"
-                style={{ opacity: 1 }}
-              />
+              <div className="logo-wordmark" style={{ width: 180, height: 30, overflow: 'hidden', flexShrink: 0, marginLeft: -20 }}>
+                <img
+                  src="/images/logo.png"
+                  alt="COGENESIS"
+                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                />
+              </div>
             </a>
 
             {/* Right-side icons — cherry-pick active-state version */}
@@ -277,11 +284,35 @@ const Navbar = () => {
 
       {/* MEGA MENU — floating panel */}
       {createPortal(
-        <div
-          className="fixed left-0 right-0 z-100 top-14 md:top-16 flex justify-center"
-          id="navbar-dropdown"
-        >
-          {menuOpen && <MegaMenuPanel onNavigate={() => setMenuOpen(false)} />}
+        <div className="fixed inset-0 z-100 top-14 md:top-16" id="navbar-dropdown">
+          {/* Backdrop */}
+          <div
+            className="fixed inset-0 bg-black/20"
+            style={{
+              opacity: menuOpen ? 1 : 0,
+              transition: menuOpen
+                ? 'opacity 400ms cubic-bezier(0.22, 1, 0.36, 1) 150ms'
+                : 'opacity 200ms cubic-bezier(0.22, 1, 0.36, 1)',
+              willChange: 'opacity',
+              pointerEvents: menuOpen ? 'auto' : 'none',
+            }}
+            onClick={() => setMenuOpen(false)}
+          />
+          {/* Dropdown panel */}
+          <div
+            className="flex justify-center"
+            style={{
+              opacity: menuOpen ? 1 : 0,
+              transform: `translateY(${menuOpen ? '0px' : '-24px'})`,
+              transition: menuOpen
+                ? 'opacity 400ms cubic-bezier(0.22, 1, 0.36, 1) 150ms, transform 400ms cubic-bezier(0.22, 1, 0.36, 1) 150ms'
+                : 'opacity 300ms cubic-bezier(0.22, 1, 0.36, 1), transform 300ms cubic-bezier(0.22, 1, 0.36, 1)',
+              willChange: 'transform, opacity',
+              pointerEvents: menuOpen ? 'auto' : 'none',
+            }}
+          >
+            <MegaMenuPanel onNavigate={() => setMenuOpen(false)} />
+          </div>
         </div>,
         document.body,
       )}
