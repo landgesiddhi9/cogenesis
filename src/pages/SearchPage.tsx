@@ -49,9 +49,7 @@ const SearchPage = () => {
   };
 
   return (
-    <main className="bg-[#f8f8f8] min-h-[100svh]">
-      <div className="h-14 md:h-16" />
-
+    <main className="bg-[#f8f8f8] min-h-[100svh] pt-20 md:pt-24 pb-16">
       <div className="max-w-[1400px] mx-auto px-6 md:px-10 flex flex-col font-serif">
         {/* Search bar */}
         <div className="flex items-center justify-between pt-[0.3cm]">
@@ -126,8 +124,9 @@ const SearchPage = () => {
             {products.map((p: ShopifyProduct) => (
               <article
                 key={p.id}
-                className="flex-shrink-0 bg-transparent"
+                className="flex-shrink-0 bg-transparent group cursor-pointer"
                 style={{ width: 'clamp(280px, 18vw, 380px)' }}
+                onClick={() => navigate(`/products/${p.handle}`)}
               >
                 <div className="relative overflow-hidden bg-[#f5f0eb] aspect-[3/4]">
                   <img
@@ -136,6 +135,8 @@ const SearchPage = () => {
                     className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.02]"
                     loading="lazy"
                   />
+
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
 
                   <button
                     type="button"
