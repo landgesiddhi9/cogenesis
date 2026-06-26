@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import type { ShopifyProduct } from "../../types";
 
 const WL_KEY = "wishlist";
@@ -17,6 +18,7 @@ interface RecentlyViewedProps {
 }
 
 const RecentlyViewed = ({ currentProductId }: RecentlyViewedProps) => {
+  const navigate = useNavigate();
   const [recentlyViewed, setRecentlyViewed] = useState<ShopifyProduct[]>([]);
 
   useEffect(() => {
@@ -31,12 +33,7 @@ const RecentlyViewed = ({ currentProductId }: RecentlyViewedProps) => {
   }, [currentProductId]);
 
   const handleProductClick = (product: ShopifyProduct) => {
-    window.history.pushState(
-      { path: `/products/${product.handle}` },
-      "",
-      `/products/${product.handle}`,
-    );
-    window.dispatchEvent(new PopStateEvent("popstate"));
+    navigate(`/products/${product.handle}`);
   };
 
   if (recentlyViewed.length === 0) {

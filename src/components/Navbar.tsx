@@ -57,10 +57,9 @@ const Navbar = () => {
 
   // Helper: icon button class with active state (cherry-pick)
   const iconButtonClass = (isActive: boolean) =>
-    `p-1 transition-all duration-200 ease-out transform ${
-      isActive
-        ? "text-[#111] scale-110"
-        : "text-charcoal hover:text-[#111] hover:scale-[1.08]"
+    `p-1 transition-all duration-200 ease-out transform ${isActive
+      ? "text-[#111] scale-110"
+      : "text-charcoal hover:text-[#111] hover:scale-[1.08]"
     }`;
 
   // Helper: stroke weight for active icon (cherry-pick)
@@ -99,9 +98,8 @@ const Navbar = () => {
   return (
     <>
       <nav
-        className={`fixed top-0 left-0 right-0 ${
-          menuOpen ? "z-110" : "z-50"
-        } ${scrolled ? "backdrop-blur-md shadow-sm" : ""}`}
+        className={`fixed top-0 left-0 right-0 ${menuOpen ? "z-110" : "z-50"
+          } ${scrolled ? "backdrop-blur-md shadow-sm" : ""}`}
         style={{
           backgroundColor: menuOpen
             ? '#FFF6ED'
@@ -139,22 +137,19 @@ const Navbar = () => {
               }}
             >
               <span
-                className={`block w-5 h-px bg-charcoal transition-all duration-300 origin-center ${
-                  menuOpen ? "rotate-45 translate-y-1.5" : ""
-                }`}
+                className={`block w-5 h-px bg-charcoal transition-all duration-300 origin-center ${menuOpen ? "rotate-45 translate-y-1.5" : ""
+                  }`}
                 style={{
                   backgroundColor: menuOpen ? "#482C1B" : "currentColor",
                 }}
               />
               <span
-                className={`block w-5 h-px bg-charcoal transition-all duration-300 ${
-                  menuOpen ? "opacity-0 scale-x-0" : ""
-                }`}
+                className={`block w-5 h-px bg-charcoal transition-all duration-300 ${menuOpen ? "opacity-0 scale-x-0" : ""
+                  }`}
               />
               <span
-                className={`block w-5 h-px bg-charcoal transition-all duration-300 origin-center ${
-                  menuOpen ? "-rotate-45 -translate-y-1.5" : ""
-                }`}
+                className={`block w-5 h-px bg-charcoal transition-all duration-300 origin-center ${menuOpen ? "-rotate-45 -translate-y-1.5" : ""
+                  }`}
                 style={{
                   backgroundColor: menuOpen ? "#482C1B" : "currentColor",
                 }}
@@ -284,7 +279,13 @@ const Navbar = () => {
 
       {/* MEGA MENU — floating panel */}
       {createPortal(
-        <div className="fixed inset-0 z-100 top-14 md:top-16" id="navbar-dropdown">
+        <div
+          className="fixed inset-0 z-100 top-14 md:top-16"
+          id="navbar-dropdown"
+          style={{
+            pointerEvents: menuOpen ? "auto" : "none",
+          }}
+        >
           {/* Backdrop */}
           <div
             className="fixed inset-0 bg-black/20"

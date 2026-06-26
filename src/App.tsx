@@ -1,4 +1,6 @@
-import { useLocation, useParams, Routes, Route, Navigate } from "react-router-dom";
+import { useLocation, useParams } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
+
 import Navbar from "./components/Navbar";
 import Hero from "./components/Hero";
 import EditorialGrid from "./components/EditorialGrid";
@@ -9,27 +11,28 @@ import BrandStorySplitSection from "./components/BrandStorySplitSection";
 import GallerySection from "./components/GallerySection";
 import VideoSection from "./components/VideoSection";
 import Footer from "./components/Footer";
+
 import CollectionPage from "./pages/CollectionPage";
 import LaunchingSoonPage from "./pages/LaunchingSoonPage";
 import FAQPage from "./pages/FAQPage";
 import ProductDetailPage from "./pages/ProductDetailPage";
+
 import LoginPage from "./components/LoginPage";
 import WishlistPage from "./pages/WishlistPage";
 import CartPage from "./pages/CartPage";
 import NewArrivalsPage from "./pages/NewArrivalsPage";
 import AccountPage from "./pages/AccountPage";
 import SearchPage from "./pages/SearchPage";
-import AIAssistant from "./components/AIAssistant";
 import PurchasesPage from "./pages/PurchasesPage";
 import ReturnsPage from "./pages/ReturnsPage";
 
-// Wrapper so CollectionPage receives its collectionHandle prop via React Router params
+import AIAssistant from "./components/AIAssistant";
+
 const CollectionRouteWrapper = () => {
   const { handle } = useParams<{ handle: string }>();
   return <CollectionPage collectionHandle={handle ?? ""} />;
 };
 
-// Wrapper so ProductDetailPage receives its productHandle prop via React Router params
 const ProductRouteWrapper = () => {
   const { handle } = useParams<{ handle: string }>();
   return <ProductDetailPage productHandle={handle ?? ""} />;
@@ -42,9 +45,10 @@ function App() {
   return (
     <div className="section-content bg-ivory">
       <Navbar />
+
       <main>
         <Routes>
-          {/* Homepage */}
+          {/* Home */}
           <Route
             path="/"
             element={
@@ -61,7 +65,7 @@ function App() {
             }
           />
 
-          {/* Login — drawer overlaid on hero */}
+          {/* Login */}
           <Route
             path="/login"
             element={
@@ -72,16 +76,28 @@ function App() {
             }
           />
 
-          {/* Collection pages */}
+          {/* Collections */}
           <Route
             path="/collections/:handle"
             element={<CollectionRouteWrapper />}
           />
 
+          {/* Test Route */}
+          <Route
+            path="/test"
+            element={<ProductDetailPage productHandle="" />}
+          />
+
+          {/* Product Details */}
+          <Route
+            path="/products/:handle"
+            element={<ProductRouteWrapper />}
+          />
+
           {/* Wishlist */}
           <Route path="/wishlist" element={<WishlistPage />} />
 
-          {/* Account dashboard */}
+          {/* Account */}
           <Route path="/account" element={<AccountPage />} />
 
           {/* Cart */}
@@ -99,29 +115,47 @@ function App() {
           {/* New Arrivals */}
           <Route path="/new-arrivals" element={<NewArrivalsPage />} />
 
-          {/* Product Detail pages */}
-          <Route path="/products/:handle" element={<ProductRouteWrapper />} />
-
-          {/* Launching soon */}
-          <Route path="/launching-soon" element={<LaunchingSoonPage />} />
-
           {/* FAQ */}
           <Route path="/faqs" element={<FAQPage />} />
 
-          {/* MEN subcategory pages — placeholder, redirect to launching-soon */}
-          <Route path="/men" element={<Navigate to="/launching-soon" />} />
-          <Route path="/men/:subcategory" element={<Navigate to="/launching-soon" />} />
+          {/* Launching Soon */}
+          <Route path="/launching-soon" element={<LaunchingSoonPage />} />
 
-          {/* WOMEN subcategory pages — placeholder */}
-          <Route path="/women" element={<Navigate to="/launching-soon" />} />
+          {/* Men */}
+          <Route
+            path="/men"
+            element={<Navigate to="/launching-soon" replace />}
+          />
+          <Route
+            path="/men/:subcategory"
+            element={<Navigate to="/launching-soon" replace />}
+          />
 
-          {/* FABRIC subcategory pages — placeholder */}
-          <Route path="/fabric" element={<Navigate to="/launching-soon" />} />
-          <Route path="/fabric/:subcategory" element={<Navigate to="/launching-soon" />} />
+          {/* Women */}
+          <Route
+            path="/women"
+            element={<Navigate to="/launching-soon" replace />}
+          />
+          <Route
+            path="/women/:subcategory"
+            element={<Navigate to="/launching-soon" replace />}
+          />
+
+          {/* Fabric */}
+          <Route
+            path="/fabric"
+            element={<Navigate to="/launching-soon" replace />}
+          />
+          <Route
+            path="/fabric/:subcategory"
+            element={<Navigate to="/launching-soon" replace />}
+          />
+
+          {/* 404 */}
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>
 
-      {/* Hide footer while the login drawer is open */}
       {!isLoginPage && <Footer />}
 
       <AIAssistant />

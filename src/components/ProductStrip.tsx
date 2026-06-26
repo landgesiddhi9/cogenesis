@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useInView } from "../hooks/useInView";
 import { productStripItems } from "../data/mockData";
 import type { ShopifyProduct } from "../types";
@@ -21,6 +22,7 @@ const ProductCard = ({
   product: ShopifyProduct;
   index: number;
 }) => {
+  const navigate = useNavigate();
   const { ref, isInView } = useInView({ threshold: 0.1 });
   const [wishlisted, setWishlisted] = useState(() => readWL().includes(product.id));
 
@@ -35,12 +37,7 @@ const ProductCard = ({
   };
 
   const handleProductClick = () => {
-    window.history.pushState(
-      { path: `/products/${product.handle}` },
-      "",
-      `/products/${product.handle}`,
-    );
-    window.dispatchEvent(new PopStateEvent("popstate"));
+    navigate(`/products/${product.handle}`);
   };
 
   return (

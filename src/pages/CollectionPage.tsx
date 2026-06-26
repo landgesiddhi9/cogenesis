@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import { useInView } from "../hooks/useInView";
 import { getCollectionByHandle } from "../data/mockData";
 import SortDropdown from "../components/SortDropdown";
@@ -62,6 +63,7 @@ const CollectionProductCard = ({
   product: ShopifyProduct;
   index: number;
 }) => {
+  const navigate = useNavigate();
   const { ref, isInView } = useInView({ threshold: 0.1 });
   const [isHovered, setIsHovered] = useState(false);
   const [isWishlisted, setIsWishlisted] = useState(() => {
@@ -71,12 +73,9 @@ const CollectionProductCard = ({
   const [selectedColorIndex, setSelectedColorIndex] = useState(0);
 
   const handleProductClick = () => {
-    window.history.pushState(
-      { path: `/products/${product.handle}` },
-      "",
-      `/products/${product.handle}`,
-    );
-    window.dispatchEvent(new PopStateEvent("popstate"));
+    console.log("CARD CLICKED", product.handle);
+    navigate(`/products/${product.handle}`);
+
   };
 
   const handleWishlistToggle = (e: React.MouseEvent) => {
@@ -109,9 +108,8 @@ const CollectionProductCard = ({
   return (
     <div
       ref={ref}
-      className={`group relative overflow-hidden transition-all duration-700 cursor-pointer ${
-        isInView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
-      }`}
+      className={`group relative overflow-hidden transition-all duration-700 cursor-pointer ${isInView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
+        }`}
       style={{ transitionDelay: `${index * 50}ms` }}
       onClick={handleProductClick}
     >
@@ -136,11 +134,10 @@ const CollectionProductCard = ({
         {/* Wishlist button */}
         <button
           onClick={handleWishlistToggle}
-          className={`absolute top-5 right-5 p-0 bg-transparent border-none cursor-pointer transition-opacity duration-300 ${
-            isHovered
-              ? "opacity-100"
-              : "opacity-0 group-hover/image:opacity-100"
-          }`}
+          className={`absolute top-5 right-5 p-0 bg-transparent border-none cursor-pointer transition-opacity duration-300 ${isHovered
+            ? "opacity-100"
+            : "opacity-0 group-hover/image:opacity-100"
+            }`}
           aria-label="Add to wishlist"
         >
           <svg
@@ -184,11 +181,10 @@ const CollectionProductCard = ({
             {colors.slice(0, 5).map((color, idx) => (
               <button
                 key={color.name}
-                className={`w-4 h-4 rounded-full border transition-all duration-200 hover:scale-110 ${
-                  selectedColorIndex === idx
-                    ? "border-charcoal/60 ring-1 ring-charcoal/30"
-                    : "border-stone/30 hover:border-charcoal/40"
-                }`}
+                className={`w-4 h-4 rounded-full border transition-all duration-200 hover:scale-110 ${selectedColorIndex === idx
+                  ? "border-charcoal/60 ring-1 ring-charcoal/30"
+                  : "border-stone/30 hover:border-charcoal/40"
+                  }`}
                 style={{ backgroundColor: color.hex }}
                 onClick={() => setSelectedColorIndex(idx)}
                 title={color.name}
@@ -330,7 +326,7 @@ const CollectionPage = ({ collectionHandle }: CollectionPageProps) => {
       <FilterPanel
         isOpen={isFilterOpen}
         onClose={() => setIsFilterOpen(false)}
-        onApply={() => {}}
+        onApply={() => { }}
       />
     </main>
   );

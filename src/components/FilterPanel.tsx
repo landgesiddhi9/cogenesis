@@ -85,7 +85,7 @@ const FilterPanel = ({ isOpen, onClose, onApply }: FilterPanelProps) => {
       size: [],
       material: [],
       color: [],
-      price: [255, 320],
+      price: [1500, 5000],
       fit: [],
     });
   };
@@ -102,9 +102,8 @@ const FilterPanel = ({ isOpen, onClose, onApply }: FilterPanelProps) => {
 
       {/* Filter Panel */}
       <div
-        className={`fixed top-0 right-0 h-full bg-ivory border-l border-stone/10 shadow-xl transition-all duration-300 z-50 flex flex-col ${
-          isOpen ? "w-full md:w-[400px]" : "w-0"
-        } overflow-hidden`}
+        className={`fixed top-0 right-0 h-full bg-ivory border-l border-stone/10 shadow-xl transition-all duration-300 z-50 flex flex-col ${isOpen ? "w-full md:w-[400px]" : "w-0"
+          } overflow-hidden`}
       >
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-stone/10">
@@ -188,11 +187,10 @@ const FilterPanel = ({ isOpen, onClose, onApply }: FilterPanelProps) => {
                   className="flex flex-col items-center gap-2 group"
                 >
                   <div
-                    className={`w-8 h-8 rounded-full border-2 transition-all ${
-                      filters.color.includes(color.name)
-                        ? "border-warm-brown ring-2 ring-warm-brown/30"
-                        : "border-stone/20 group-hover:border-stone/40"
-                    }`}
+                    className={`w-8 h-8 rounded-full border-2 transition-all ${filters.color.includes(color.name)
+                      ? "border-warm-brown ring-2 ring-warm-brown/30"
+                      : "border-stone/20 group-hover:border-stone/40"
+                      }`}
                     style={{ backgroundColor: color.hex }}
                   />
                   <span className="text-xs text-charcoal/70">{color.name}</span>

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { products } from "../../data/mockData";
 import type { ShopifyProduct } from "../../types";
 
@@ -18,6 +19,7 @@ interface RelatedProductsProps {
 }
 
 const RelatedProducts = ({ currentProductId }: RelatedProductsProps) => {
+  const navigate = useNavigate();
   const [_hoveredId, setHoveredId] = useState<string | null>(null);
   const [wishlist, setWishlist] = useState<string[]>(() => readWL());
 
@@ -41,12 +43,7 @@ const RelatedProducts = ({ currentProductId }: RelatedProductsProps) => {
     .slice(0, 4);
 
   const handleProductClick = (product: ShopifyProduct) => {
-    window.history.pushState(
-      { path: `/products/${product.handle}` },
-      "",
-      `/products/${product.handle}`,
-    );
-    window.dispatchEvent(new PopStateEvent("popstate"));
+    navigate(`/products/${product.handle}`);
   };
 
   return (
