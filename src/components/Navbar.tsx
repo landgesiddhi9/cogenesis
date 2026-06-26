@@ -185,7 +185,7 @@ const Navbar = () => {
                 className={iconButtonClass(activePath === "/search")}
                 aria-label="Search"
                 id="navbar-search"
-                onClick={() => setSearchOpen(true)}
+                onClick={() => navigate("/search")}
               >
                 <svg
                   width="20"
