@@ -20,6 +20,7 @@ interface RecentlyViewedProps {
 const RecentlyViewed = ({ currentProductId }: RecentlyViewedProps) => {
   const navigate = useNavigate();
   const [recentlyViewed, setRecentlyViewed] = useState<ShopifyProduct[]>([]);
+  const [wishlist, setWishlist] = useState<string[]>(() => readWL());
 
   useEffect(() => {
     const stored = JSON.parse(
@@ -36,12 +37,6 @@ const RecentlyViewed = ({ currentProductId }: RecentlyViewedProps) => {
     navigate(`/products/${product.handle}`);
   };
 
-  if (recentlyViewed.length === 0) {
-    return null;
-  }
-
-  const [wishlist, setWishlist] = useState<string[]>(() => readWL());
-
   const toggleWishlist = (e: React.MouseEvent, id: string) => {
     e.stopPropagation();
     const next = wishlist.includes(id)
@@ -50,6 +45,10 @@ const RecentlyViewed = ({ currentProductId }: RecentlyViewedProps) => {
     writeWL(next);
     setWishlist(next);
   };
+
+  if (recentlyViewed.length === 0) {
+    return null;
+  }
 
   return (
     <div>

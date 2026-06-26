@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { products } from "../data/mockData";
+import { getShopifyProductByHandle } from "../lib/shopifyProducts";
 import ImageGallery from "../components/ProductDetail/ImageGallery";
 import ProductInfo from "../components/ProductDetail/ProductInfo";
 import ProductAccordion from "../components/ProductDetail/ProductAccordion";
@@ -13,36 +13,55 @@ interface ProductDetailPageProps {
 
 const ProductDetailPage = ({ productHandle }: ProductDetailPageProps) => {
   const [product, setProduct] = useState<ShopifyProduct | null>(null);
+  const [loading, setLoading] = useState(true);
   const [selectedColor, setSelectedColor] = useState(0);
   const [selectedSize, setSelectedSize] = useState("");
   const [quantity, setQuantity] = useState(1);
   const [isWishlisted, setIsWishlisted] = useState(false);
 
   useEffect(() => {
-    const foundProduct = products.find((p) => p.handle === productHandle);
-    if (foundProduct) {
-      setProduct(foundProduct);
-      // Track recently viewed
-      const recentlyViewedData = sessionStorage.getItem("recentlyViewed");
-      const recentlyViewed: ShopifyProduct[] = recentlyViewedData
-        ? JSON.parse(recentlyViewedData)
-        : [];
-      if (!recentlyViewed.find((p) => p.id === foundProduct.id)) {
-        recentlyViewed.unshift(foundProduct);
-        if (recentlyViewed.length > 10) recentlyViewed.pop();
-        sessionStorage.setItem(
-          "recentlyViewed",
-          JSON.stringify(recentlyViewed),
-        );
-      }
+    let active = true;
+    setLoading(true);
+    getShopifyProductByHandle(productHandle)
+      .then((foundProduct) => {
+        if (!active) return;
+        if (foundProduct) {
+          setProduct(foundProduct);
+          // Track recently viewed
+          const recentlyViewedData = sessionStorage.getItem("recentlyViewed");
+          const recentlyViewed: ShopifyProduct[] = recentlyViewedData
+            ? JSON.parse(recentlyViewedData)
+            : [];
+          if (!recentlyViewed.find((p) => p.id === foundProduct.id)) {
+            recentlyViewed.unshift(foundProduct);
+            if (recentlyViewed.length > 10) recentlyViewed.pop();
+            sessionStorage.setItem(
+              "recentlyViewed",
+              JSON.stringify(recentlyViewed),
+            );
+          }
 
-      // Check if wishlisted
-      const wishlistData = sessionStorage.getItem("wishlist");
-      const wishlisted: ShopifyProduct[] = wishlistData
-        ? JSON.parse(wishlistData)
-        : [];
-      setIsWishlisted(wishlisted.some((p) => p.id === foundProduct.id));
-    }
+          // Check if wishlisted
+          const wishlistData = sessionStorage.getItem("wishlist");
+          const wishlisted: ShopifyProduct[] = wishlistData
+            ? JSON.parse(wishlistData)
+            : [];
+          setIsWishlisted(wishlisted.some((p) => p.id === foundProduct.id));
+        } else {
+          setProduct(null);
+        }
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error("Error fetching product details:", err);
+        if (active) {
+          setProduct(null);
+          setLoading(false);
+        }
+      });
+    return () => {
+      active = false;
+    };
   }, [productHandle]);
 
   const toggleWishlist = () => {
@@ -76,10 +95,18 @@ const ProductDetailPage = ({ productHandle }: ProductDetailPageProps) => {
     alert(`Added ${quantity} ${product.title} (${selectedSize}) to cart`);
   };
 
-  if (!product) {
+  if (loading) {
     return (
       <div className="w-full h-screen flex items-center justify-center bg-[#f7f5f1]">
         <p className="text-charcoal text-lg font-sans">Loading...</p>
+      </div>
+    );
+  }
+
+  if (!product) {
+    return (
+      <div className="w-full h-screen flex items-center justify-center bg-[#f7f5f1]">
+        <p className="text-charcoal text-lg font-sans">Product not found</p>
       </div>
     );
   }
