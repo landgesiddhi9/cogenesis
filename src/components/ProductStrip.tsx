@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useInView } from "../hooks/useInView";
-import { productStripItems } from "../data/mockData";
+import { getShopifyProducts } from "../lib/shopifyProducts";
 import type { ShopifyProduct } from "../types";
 
 const WL_KEY = "wishlist";
@@ -102,12 +102,39 @@ const ProductCard = ({
 };
 
 const ProductStrip = () => {
+  const [products, setProducts] = useState<ShopifyProduct[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let active = true;
+    getShopifyProducts(12)
+      .then((data) => {
+        if (active) {
+          setProducts(data);
+          setLoading(false);
+        }
+      })
+      .catch((err) => {
+        console.error("Error fetching products for ProductStrip:", err);
+        if (active) {
+          setLoading(false);
+        }
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  if (loading || products.length === 0) {
+    return null;
+  }
+
   return (
     <section id="product-collection" className="section-content">
       {/* Horizontal scrolling editorial strip */}
       <div className="scroll-strip">
         <div className="scroll-strip__track">
-          {productStripItems.map((product, index) => (
+          {products.map((product, index) => (
             <ProductCard key={product.id} product={product} index={index} />
           ))}
         </div>
