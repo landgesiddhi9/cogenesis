@@ -358,7 +358,8 @@ const ProductInfo = ({
               strokeWidth="1.5"
               className="text-charcoal/50"
             >
-              <polyline points="23 6 13.46 15.89a1.94 1.94 0 0 1-2.92 0L1 6M17 6h6v6" />
+              <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+              <polyline points="3 3 3 8 8 8" />
             </svg>
           </div>
           <div>
