@@ -221,6 +221,75 @@ const PRODUCT_BY_HANDLE_QUERY = `
   }
 `;
 
+const PRODUCTS_BY_IDS_QUERY = `
+  query GetProductsByIds($ids: [ID!]!) {
+    nodes(ids: $ids) {
+      ... on Product {
+        id
+        title
+        handle
+        description
+        descriptionHtml
+        productType
+        tags
+        vendor
+        featuredImage {
+          id
+          url
+          altText
+          width
+          height
+        }
+        images(first: 10) {
+          edges {
+            node {
+              id
+              url
+              altText
+              width
+              height
+            }
+          }
+        }
+        variants(first: 10) {
+          edges {
+            node {
+              id
+              title
+              price {
+                amount
+                currencyCode
+              }
+              compareAtPrice {
+                amount
+                currencyCode
+              }
+              availableForSale
+              image {
+                id
+                url
+                altText
+                width
+                height
+              }
+            }
+          }
+        }
+        priceRange {
+          minVariantPrice {
+            amount
+            currencyCode
+          }
+          maxVariantPrice {
+            amount
+            currencyCode
+          }
+        }
+      }
+    }
+  }
+`;
+
 interface ProductsGraphQLResponse {
   products: {
     edges: Array<{
@@ -360,6 +429,24 @@ export async function getShopifyProductByHandle(handle: string): Promise<Shopify
     return transformShopifyProduct(data.product);
   } catch (error) {
     console.error(`Failed to fetch Shopify product with handle ${handle}:`, error);
+    throw error;
+  }
+}
+
+export async function getShopifyProductsByIds(ids: string[]): Promise<ShopifyProduct[]> {
+  if (!ids || ids.length === 0) {
+    return [];
+  }
+  try {
+    const data = await shopifyFetch<any>(PRODUCTS_BY_IDS_QUERY, { ids });
+    if (!data?.nodes) {
+      return [];
+    }
+    return data.nodes
+      .filter((node: any) => node && node.id)
+      .map((node: any) => transformShopifyProduct(node));
+  } catch (error) {
+    console.error("Failed to fetch Shopify products by IDs:", error);
     throw error;
   }
 }

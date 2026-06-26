@@ -43,10 +43,10 @@ const ProductDetailPage = ({ productHandle }: ProductDetailPageProps) => {
 
           // Check if wishlisted
           const wishlistData = sessionStorage.getItem("wishlist");
-          const wishlisted: ShopifyProduct[] = wishlistData
+          const wishlisted: string[] = wishlistData
             ? JSON.parse(wishlistData)
             : [];
-          setIsWishlisted(wishlisted.some((p) => p.id === foundProduct.id));
+          setIsWishlisted(wishlisted.includes(foundProduct.id));
         } else {
           setProduct(null);
         }
@@ -68,15 +68,15 @@ const ProductDetailPage = ({ productHandle }: ProductDetailPageProps) => {
     if (!product) return;
 
     const wishlistData = sessionStorage.getItem("wishlist");
-    const wishlisted: ShopifyProduct[] = wishlistData
+    const wishlisted: string[] = wishlistData
       ? JSON.parse(wishlistData)
       : [];
-    const index = wishlisted.findIndex((p) => p.id === product.id);
+    const index = wishlisted.indexOf(product.id);
 
     if (index > -1) {
       wishlisted.splice(index, 1);
     } else {
-      wishlisted.push(product);
+      wishlisted.push(product.id);
     }
 
     sessionStorage.setItem("wishlist", JSON.stringify(wishlisted));

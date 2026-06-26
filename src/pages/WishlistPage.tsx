@@ -1,5 +1,5 @@
-import { useState, useRef } from "react";
-import { productStripItems } from "../data/mockData";
+import { useState, useRef, useEffect } from "react";
+import { getShopifyProducts, getShopifyProductsByIds } from "../lib/shopifyProducts";
 import type { ShopifyProduct } from "../types";
 
 // ── Wishlist sessionStorage helpers ──────────────────────────────────────────
@@ -140,21 +140,46 @@ const ArrowBtn = ({
 // ── Wishlist page ─────────────────────────────────────────────────────────────
 const WishlistPage = () => {
   const [wishlistIds, setWishlistIds] = useState<string[]>(readIds);
+  const [wishlistProducts, setWishlistProducts] = useState<ShopifyProduct[]>([]);
+  const [popularProducts, setPopularProducts] = useState<ShopifyProduct[]>([]);
+  const [loading, setLoading] = useState(true);
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  const wishlistProducts = productStripItems.filter((p) =>
-    wishlistIds.includes(p.id)
-  );
+  useEffect(() => {
+    let active = true;
+    setLoading(true);
+    
+    Promise.all([
+      getShopifyProductsByIds(wishlistIds),
+      getShopifyProducts(12)
+    ])
+      .then(([wishlistData, popularData]) => {
+        if (active) {
+          setWishlistProducts(wishlistData);
+          setPopularProducts(popularData);
+          setLoading(false);
+        }
+      })
+      .catch((err) => {
+        console.error("Error fetching wishlist products:", err);
+        if (active) {
+          setLoading(false);
+        }
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [wishlistIds]);
 
   // Toggle wishlist membership and persist
   const toggle = (id: string) => {
-    setWishlistIds((prev) => {
-      const next = prev.includes(id)
-        ? prev.filter((x) => x !== id)
-        : [...prev, id];
-      writeIds(next);
-      return next;
-    });
+    const nextIds = wishlistIds.includes(id)
+      ? wishlistIds.filter((x) => x !== id)
+      : [...wishlistIds, id];
+    writeIds(nextIds);
+    setWishlistIds(nextIds);
+    setWishlistProducts((prev) => prev.filter((p) => p.id !== id));
   };
 
   // Scroll the Popular strip by exactly one card width
@@ -165,6 +190,24 @@ const WishlistPage = () => {
     const step = firstCard ? firstCard.offsetWidth + 1 : 280;
     el.scrollBy({ left: dir === "right" ? step : -step, behavior: "smooth" });
   };
+
+  if (loading) {
+    return (
+      <main className="bg-ivory min-h-[100svh] pb-24 flex flex-col">
+        <div className="h-14 md:h-16" />
+        <header className="px-10 md:px-16 pt-6 md:pt-8 pb-8">
+          <h1 className="font-sans text-[13px] font-semibold uppercase tracking-[0.22em] text-[#111]">
+            My Wishlist
+          </h1>
+        </header>
+        <section className="flex flex-col items-center justify-center pt-10 pb-16 px-6 flex-1">
+          <p className="font-sans text-[13px] text-[#888] tracking-[0.02em]">
+            Loading your favorites...
+          </p>
+        </section>
+      </main>
+    );
+  }
 
   return (
     <main className="bg-ivory min-h-[100svh] pb-24">
@@ -238,7 +281,7 @@ const WishlistPage = () => {
           style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
         >
           <div className="flex gap-[1px]">
-            {productStripItems.map((p) => (
+            {popularProducts.map((p) => (
               <div
                 key={p.id}
                 className="
