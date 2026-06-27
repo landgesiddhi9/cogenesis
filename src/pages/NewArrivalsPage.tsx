@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { getShopifyProducts } from "../lib/shopifyProducts";
+import { getOrCreateCart, addCartLine } from "../lib/shopifyCart";
 import type { ShopifyProduct } from "../types";
 
 
@@ -32,6 +33,19 @@ const ProductCard = ({
   const navigate = useNavigate();
   const [hovered, setHovered] = useState(false);
   const [addedSize, setAddedSize] = useState<string | null>(null);
+
+  const handleAddToBag = async (size: string) => {
+    try {
+      const variant = product.variants.find((v) => v.title === size);
+      if (!variant) return;
+      const cartId = await getOrCreateCart();
+      await addCartLine(cartId, variant.id, 1);
+      setAddedSize(size);
+      setTimeout(() => setAddedSize(null), 1800);
+    } catch {
+      // fail gracefully
+    }
+  };
 
   const handleProductClick = () => {
     navigate(`/products/${product.handle}`);
@@ -111,8 +125,7 @@ const ProductCard = ({
                       onClick={(e) => {
                         e.preventDefault();
                         e.stopPropagation();
-                        setAddedSize(size);
-                        setTimeout(() => setAddedSize(null), 1800);
+                        handleAddToBag(size);
                       }}
                       className="font-sans text-[11px] uppercase tracking-[0.1em] text-[#444]
                                  hover:text-[#111] hover:font-semibold transition-all duration-100
