@@ -374,9 +374,11 @@ export async function addCartLine(
   quantity: number,
 ): Promise<ShopifyCartDetails> {
   try {
+    console.log("ENTERED addCartLine");
     console.log("INPUT CART ID:", cartId);
     console.log("INPUT MERCHANDISE ID:", merchandiseId);
 
+    console.log("CALLING shopifyFetch CartLinesAdd");
     const data = await shopifyFetch<CartLinesAddResponse>(
       CART_LINES_ADD_MUTATION,
       {

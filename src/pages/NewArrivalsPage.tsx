@@ -33,14 +33,17 @@ const ProductCard = ({
   const [addedSize, setAddedSize] = useState<string | null>(null);
 
   const handleAddToBag = async (size: string) => {
-    console.log("HANDLE ADD TO BAG", product.title, size);
+    console.log("STEP 1");
     try {
       const cartId = await getOrCreateCart();
+      console.log("STEP 2", cartId);
       const merchandiseId = product.variants[0]?.id;
+      console.log("STEP 3", merchandiseId);
       if (!merchandiseId) {
         console.error("No variant found for product:", product.id);
         return;
       }
+      console.log("STEP 4 before addCartLine");
       await addCartLine(cartId, merchandiseId, 1);
       setAddedSize(size);
       setTimeout(() => setAddedSize(null), 1800);

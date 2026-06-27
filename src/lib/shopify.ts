@@ -38,12 +38,14 @@ export async function shopifyFetch<TData = unknown>(
 
   const json = (await response.json()) as ShopifyGraphQLResponse<TData>;
 
-  console.log("GRAPHQL QUERY:");
+  console.log("========================================");
+  console.log("SHOPIFY GRAPHQL QUERY");
   console.log(query);
-  console.log("GRAPHQL VARIABLES:");
-  console.log(variables);
-  console.log("GRAPHQL RESPONSE:");
-  console.log(json);
+  console.log("SHOPIFY GRAPHQL VARIABLES");
+  console.log(JSON.stringify(variables, null, 2));
+  console.log("SHOPIFY GRAPHQL RAW RESPONSE");
+  console.log(JSON.stringify(json, null, 2));
+  console.log("========================================");
 
   if (!response.ok) {
     const message = json.errors?.map((error) => error.message).join(", ") || response.statusText;
