@@ -1,7 +1,9 @@
-﻿import { useState, useRef } from "react";
+﻿import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { productStripItems } from "../data/mockData";
 import type { ShopifyProduct } from "../types";
+import { getOrCreateCart, getCart } from "../lib/shopifyCart";
+import type { Cart } from "../lib/shopifyCart";
 
 // ── Shared constants for the product strip ─────────────────────────────────────────
 const SIZES = ["S", "M", "L", "XL"];
@@ -30,7 +32,6 @@ const StripCard = ({
   const [addedSize, setAddedSize] = useState<string | null>(null);
 
   const handleAdd = async (size: string) => {
-    console.log("Cart integration temporarily removed.");
     setAddedSize(size);
     setTimeout(() => setAddedSize(null), 1800);
   };
@@ -151,9 +152,22 @@ const StripArrow = ({
   </button>
 );
 
+// ── Helpers ───────────────────────────────────────────────────────────────────
+const formatPrice = (amount: string, currency: string) => {
+  const locale = currency === "INR" ? "en-IN" : "en-US";
+  return new Intl.NumberFormat(locale, {
+    style: "currency",
+    currency,
+    minimumFractionDigits: 2,
+  }).format(Number(amount));
+};
+
 // ── Cart page ─────────────────────────────────────────────────────────────────
 const CartPage = () => {
   const navigate = useNavigate();
+  const [cart, setCart] = useState<Cart | null>(null);
+  const [loading, setLoading] = useState(true);
+
   // "May Interest You" strip state
   const stripRef = useRef<HTMLDivElement>(null);
   const [wlIds, setWlIds] = useState<string[]>(readWL);
@@ -176,30 +190,134 @@ const CartPage = () => {
     });
   };
 
+  useEffect(() => {
+    let active = true;
+    (async () => {
+      try {
+        const cartId = await getOrCreateCart();
+        const data = await getCart(cartId);
+        if (active) {
+          setCart(data);
+          setLoading(false);
+        }
+      } catch {
+        if (active) setLoading(false);
+      }
+    })();
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const hasItems = !loading && cart && cart.totalQuantity > 0;
+
   return (
     <main className="bg-[#F7F5F2] min-h-[100svh] pb-24 flex flex-col">
       <div className="h-14 md:h-16" />
 
-      {/* ── Hero empty-state message ───────────────────────────────────── */}
-      <div className="flex flex-col items-center justify-center text-center px-6 flex-1 py-16 md:py-28">
-        <div className="max-w-md">
-          <h1 className="font-sans text-[15px] font-bold uppercase tracking-[0.22em] text-[#111] mb-8">
-            Your Shopping Bag Is Empty
-          </h1>
-          <p className="font-sans text-[14px] text-[#777] tracking-[0.02em] mb-12 max-w-sm mx-auto">
-            Get inspiration for your new wardrobe from the latest looks
-          </p>
-          <button
-            type="button"
-            onClick={() => navigate("/new-arrivals")}
-            className="w-full max-w-[460px] h-[52px] bg-[#111] text-white font-sans
-                       text-[12px] font-semibold uppercase tracking-[0.2em]
-                       hover:bg-[#2a2a2a] transition-colors duration-200"
-          >
-            See What's New
-          </button>
-        </div>
-      </div>
+      {hasItems ? (
+        <>
+          {/* ── Filled cart ─────────────────────────────────────────────── */}
+          <div className="px-10 md:px-16 py-8">
+            <h1 className="font-sans text-[15px] font-bold uppercase tracking-[0.22em] text-[#111] mb-8">
+              Shopping Bag ({cart.totalQuantity})
+            </h1>
+
+            <div className="flex flex-col lg:flex-row gap-12">
+              {/* Line items */}
+              <div className="flex-1 space-y-6">
+                {cart.lines.map((line) => (
+                  <div
+                    key={line.id}
+                    className="flex gap-5 pb-6 border-b border-[#e0ddd8]"
+                  >
+                    <div className="w-24 h-28 flex-shrink-0 bg-[#f0ede8] overflow-hidden">
+                      <img
+                        src={line.merchandise.product.featuredImage?.url}
+                        alt={line.merchandise.product.featuredImage?.altText ?? ""}
+                        className="w-full h-full object-cover object-top"
+                      />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-sans text-[12px] tracking-[0.03em] text-[#111] truncate">
+                        {line.merchandise.product.title}
+                      </p>
+                      <p className="font-sans text-[11px] text-[#888] mt-1">
+                        {line.merchandise.title}
+                      </p>
+                      <p className="font-sans text-[11px] text-[#888] mt-1">
+                        Qty: {line.quantity}
+                      </p>
+                    </div>
+                    <p className="font-sans text-[12px] text-[#111] tabular-nums whitespace-nowrap">
+                      {formatPrice(
+                        (Number(line.merchandise.price.amount) * line.quantity).toString(),
+                        line.merchandise.price.currencyCode,
+                      )}
+                    </p>
+                  </div>
+                ))}
+              </div>
+
+              {/* Order summary */}
+              <div className="w-full lg:w-80">
+                <div className="bg-white p-6">
+                  <h2 className="font-sans text-[12px] font-semibold uppercase tracking-[0.15em] text-[#111] mb-5">
+                    Order Summary
+                  </h2>
+                  <div className="space-y-3">
+                    <div className="flex justify-between font-sans text-[12px] text-[#555]">
+                      <span>Subtotal</span>
+                      <span className="text-[#111] tabular-nums">
+                        {formatPrice(
+                          cart.cost.subtotalAmount.amount,
+                          cart.cost.subtotalAmount.currencyCode,
+                        )}
+                      </span>
+                    </div>
+                    <div className="flex justify-between font-sans text-[12px] text-[#555]">
+                      <span>Shipping</span>
+                      <span className="text-[#888]">Calculated at checkout</span>
+                    </div>
+                    <div className="border-t border-[#e0ddd8] pt-3 flex justify-between font-sans text-[13px] font-semibold text-[#111]">
+                      <span>Total</span>
+                      <span className="tabular-nums">
+                        {formatPrice(
+                          cart.cost.totalAmount.amount,
+                          cart.cost.totalAmount.currencyCode,
+                        )}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </>
+      ) : (
+        <>
+          {/* ── Hero empty-state message ────────────────────────────────── */}
+          <div className="flex flex-col items-center justify-center text-center px-6 flex-1 py-16 md:py-28">
+            <div className="max-w-md">
+              <h1 className="font-sans text-[15px] font-bold uppercase tracking-[0.22em] text-[#111] mb-8">
+                Your Shopping Bag Is Empty
+              </h1>
+              <p className="font-sans text-[14px] text-[#777] tracking-[0.02em] mb-12 max-w-sm mx-auto">
+                Get inspiration for your new wardrobe from the latest looks
+              </p>
+              <button
+                type="button"
+                onClick={() => navigate("/new-arrivals")}
+                className="w-full max-w-[460px] h-[52px] bg-[#111] text-white font-sans
+                           text-[12px] font-semibold uppercase tracking-[0.2em]
+                           hover:bg-[#2a2a2a] transition-colors duration-200"
+              >
+                See What's New
+              </button>
+            </div>
+          </div>
+        </>
+      )}
 
       {/* ── May Interest You strip ──────────────────────────────────────────── */}
       <section className="px-10 md:px-16">
