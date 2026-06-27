@@ -5,6 +5,7 @@ import { getShopifyProducts } from "../lib/shopifyProducts";
 import type { ShopifyProduct } from "../types";
 
 const WL_KEY = "wishlist";
+
 const readWL = (): string[] => {
   try {
     return JSON.parse(sessionStorage.getItem(WL_KEY) || "[]");
@@ -12,6 +13,7 @@ const readWL = (): string[] => {
     return [];
   }
 };
+
 const writeWL = (ids: string[]) =>
   sessionStorage.setItem(WL_KEY, JSON.stringify(ids));
 
@@ -24,16 +26,27 @@ const ProductCard = ({
 }) => {
   const navigate = useNavigate();
   const { ref, isInView } = useInView({ threshold: 0.1 });
-  const [wishlisted, setWishlisted] = useState(() => readWL().includes(product.id));
+
+  const [wishlisted, setWishlisted] = useState(() =>
+    readWL().includes(product.id)
+  );
+
+  useEffect(() => {
+    setWishlisted(readWL().includes(product.id));
+  }, [product.id]);
 
   const toggleWishlist = (e: React.MouseEvent) => {
+    e.preventDefault();
     e.stopPropagation();
+
     const ids = readWL();
+
     const next = ids.includes(product.id)
       ? ids.filter((id) => id !== product.id)
       : [...ids, product.id];
+
     writeWL(next);
-    setWishlisted(!ids.includes(product.id));
+    setWishlisted(next.includes(product.id));
   };
 
   const handleProductClick = () => {
@@ -62,10 +75,16 @@ const ProductCard = ({
         <button
           type="button"
           onClick={toggleWishlist}
-          className={`absolute top-3 right-3 p-0 bg-transparent border-none cursor-pointer transition-opacity duration-200 ${
-            wishlisted ? "opacity-100" : "opacity-0 group-hover:opacity-100"
+          className={`absolute top-3 right-3 z-20 p-0 bg-transparent border-none cursor-pointer transition-opacity duration-200 ${
+            wishlisted
+              ? "opacity-100"
+              : "opacity-0 group-hover:opacity-100"
           }`}
-          aria-label={wishlisted ? "Remove from wishlist" : "Add to wishlist"}
+          aria-label={
+            wishlisted
+              ? "Remove from wishlist"
+              : "Add to wishlist"
+          }
         >
           <svg
             width="22"
@@ -77,24 +96,29 @@ const ProductCard = ({
             strokeLinecap="round"
             strokeLinejoin="round"
           >
-            <path d="M6 2h12v16l-6-4l-6 4V2z" />
+            <path d="M6 2h12v16l-6-4-6 4V2z" />
           </svg>
         </button>
       </div>
 
-      {/* Hover overlay — subtle dark gradient from bottom */}
-      <div className="product-overlay absolute inset-0 bg-gradient-to-t from-black/45 via-black/8 to-transparent opacity-0 group-hover:opacity-100" />
+      {/* Hover overlay */}
+      <div className="product-overlay pointer-events-none absolute inset-0 bg-gradient-to-t from-black/45 via-black/8 to-transparent opacity-0 group-hover:opacity-100" />
 
-      {/* Product info — lower-left, revealed on hover */}
+      {/* Product info */}
       <div className="product-info absolute bottom-0 left-0 right-0 p-6 md:p-8 translate-y-2 opacity-0 group-hover:translate-y-0 group-hover:opacity-100">
         <span className="block font-sans text-[10px] tracking-[0.25em] uppercase text-white/70 mb-1.5">
           {product.productType}
         </span>
+
         <h3 className="font-sans text-[15px] md:text-base font-light tracking-wide text-white mb-1.5">
           {product.title}
         </h3>
+
         <p className="font-sans text-[12px] tracking-wider text-white/60 tabular-nums">
-          ₹{Number(product.priceRange.minVariantPrice.amount).toLocaleString("en-IN")}
+          ₹
+          {Number(
+            product.priceRange.minVariantPrice.amount
+          ).toLocaleString("en-IN")}
         </p>
       </div>
     </div>
@@ -107,6 +131,7 @@ const ProductStrip = () => {
 
   useEffect(() => {
     let active = true;
+
     getShopifyProducts(12)
       .then((data) => {
         if (active) {
@@ -116,10 +141,12 @@ const ProductStrip = () => {
       })
       .catch((err) => {
         console.error("Error fetching products for ProductStrip:", err);
+
         if (active) {
           setLoading(false);
         }
       });
+
     return () => {
       active = false;
     };
@@ -131,11 +158,14 @@ const ProductStrip = () => {
 
   return (
     <section id="product-collection" className="section-content">
-      {/* Horizontal scrolling editorial strip */}
       <div className="scroll-strip">
         <div className="scroll-strip__track">
           {products.map((product, index) => (
-            <ProductCard key={product.id} product={product} index={index} />
+            <ProductCard
+              key={product.id}
+              product={product}
+              index={index}
+            />
           ))}
         </div>
       </div>

@@ -73,12 +73,11 @@ const CollectionProductCard = ({
   const [selectedColorIndex, setSelectedColorIndex] = useState(0);
 
   const handleProductClick = () => {
-    console.log("CARD CLICKED", product.handle);
     navigate(`/products/${product.handle}`);
-
   };
 
   const handleWishlistToggle = (e: React.MouseEvent) => {
+    e.preventDefault();
     e.stopPropagation();
     const wishlist = JSON.parse(sessionStorage.getItem("wishlist") || "[]");
     if (isWishlisted) {
@@ -134,7 +133,7 @@ const CollectionProductCard = ({
         {/* Wishlist button */}
         <button
           onClick={handleWishlistToggle}
-          className={`absolute top-5 right-5 p-0 bg-transparent border-none cursor-pointer transition-opacity duration-300 ${isHovered
+          className={`absolute top-5 right-5 z-20 p-0 bg-transparent border-none cursor-pointer transition-opacity duration-300 ${isHovered
             ? "opacity-100"
             : "opacity-0 group-hover/image:opacity-100"
             }`}

@@ -24,6 +24,7 @@ const RelatedProducts = ({ currentProductId }: RelatedProductsProps) => {
   const [wishlist, setWishlist] = useState<string[]>(() => readWL());
 
   const toggleWishlist = (e: React.MouseEvent, id: string) => {
+    e.preventDefault();
     e.stopPropagation();
     const next = wishlist.includes(id)
       ? wishlist.filter((wid) => wid !== id)
@@ -75,7 +76,7 @@ const RelatedProducts = ({ currentProductId }: RelatedProductsProps) => {
                 <button
                   type="button"
                   onClick={(e) => toggleWishlist(e, product.id)}
-                  className={`absolute top-3 right-3 p-0 bg-transparent border-none cursor-pointer transition-opacity duration-200 ${
+                  className={`absolute top-3 right-3 z-20 p-0 bg-transparent border-none cursor-pointer transition-opacity duration-200 ${
                     wishlisted ? "opacity-100" : "opacity-0 group-hover:opacity-100"
                   }`}
                   aria-label={wishlisted ? "Remove from wishlist" : "Add to wishlist"}
