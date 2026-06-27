@@ -4,6 +4,9 @@ import { shopifyFetch } from "./shopify";
 const CART_ID_KEY = "cogenesis_shopify_cart_id";
 const CHECKOUT_URL_KEY = "cogenesis_shopify_checkout_url";
 
+/** In-flight cart creation; concurrent callers share this promise. */
+let pendingGetOrCreateCart: Promise<string> | null = null;
+
 // ── Types ─────────────────────────────────────────────────────────────────────
 
 export interface ShopifyCart {
@@ -321,12 +324,27 @@ export async function getOrCreateCart(): Promise<string> {
     return storedId;
   }
 
-  const cart = await createCart();
+  if (!pendingGetOrCreateCart) {
+    pendingGetOrCreateCart = (async () => {
+      try {
+        const storedIdAfterWait = localStorage.getItem(CART_ID_KEY);
+        if (storedIdAfterWait) {
+          return storedIdAfterWait;
+        }
 
-  localStorage.setItem(CART_ID_KEY, cart.id);
-  localStorage.setItem(CHECKOUT_URL_KEY, cart.checkoutUrl);
+        const cart = await createCart();
 
-  return cart.id;
+        localStorage.setItem(CART_ID_KEY, cart.id);
+        localStorage.setItem(CHECKOUT_URL_KEY, cart.checkoutUrl);
+
+        return cart.id;
+      } finally {
+        pendingGetOrCreateCart = null;
+      }
+    })();
+  }
+
+  return pendingGetOrCreateCart;
 }
 
 /**
