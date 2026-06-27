@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { getShopifyProducts } from "../lib/shopifyProducts";
-import { getOrCreateCart, addCartLine } from "../lib/shopifyCart";
 import type { ShopifyProduct } from "../types";
 
 
@@ -33,28 +32,6 @@ const ProductCard = ({
   const navigate = useNavigate();
   const [hovered, setHovered] = useState(false);
   const [addedSize, setAddedSize] = useState<string | null>(null);
-
-  const handleAddToBag = async (size: string) => {
-    console.log("STEP 1");
-    try {
-      const cartId = await getOrCreateCart();
-      console.log("STEP 2", cartId);
-      const merchandiseId = product.variants[0]?.id;
-      if (!merchandiseId) {
-        console.error("No variant found for product:", product.id);
-        return;
-      }
-      console.log("STEP 3");
-      const result = await addCartLine(cartId, merchandiseId, 1);
-      console.log("STEP 4", result);
-      console.log("STEP 5", result);
-      window.open(result, "_blank");
-      setAddedSize(size);
-      setTimeout(() => setAddedSize(null), 1800);
-    } catch (err) {
-      console.error("HANDLE ADD TO BAG ERROR", err);
-    }
-  };
 
   const handleProductClick = () => {
     navigate(`/products/${product.handle}`);
@@ -131,7 +108,12 @@ const ProductCard = ({
                     <button
                       key={size}
                       type="button"
-                      onClick={() => { console.log("BUTTON CLICKED", size); handleAddToBag(size); }}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        setAddedSize(size);
+                        setTimeout(() => setAddedSize(null), 1800);
+                      }}
                       className="font-sans text-[11px] uppercase tracking-[0.1em] text-[#444]
                                  hover:text-[#111] hover:font-semibold transition-all duration-100
                                  py-0.5"
