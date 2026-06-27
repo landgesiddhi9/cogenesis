@@ -38,6 +38,13 @@ export async function shopifyFetch<TData = unknown>(
 
   const json = (await response.json()) as ShopifyGraphQLResponse<TData>;
 
+  console.log("GRAPHQL QUERY:");
+  console.log(query);
+  console.log("GRAPHQL VARIABLES:");
+  console.log(variables);
+  console.log("GRAPHQL RESPONSE:");
+  console.log(json);
+
   if (!response.ok) {
     const message = json.errors?.map((error) => error.message).join(", ") || response.statusText;
     throw new Error(`Shopify request failed: ${message}`);
