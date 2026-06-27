@@ -1,10 +1,10 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useInView } from "../hooks/useInView";
-import { getCollectionByHandle } from "../data/mockData";
+import { getShopifyCollectionByHandle } from "../lib/shopifyProducts";
 import SortDropdown from "../components/SortDropdown";
 import FilterPanel from "../components/FilterPanel";
-import type { ShopifyProduct } from "../types";
+import type { ShopifyProduct, ShopifyCollection } from "../types";
 
 interface CollectionPageProps {
   collectionHandle: string;
@@ -73,12 +73,11 @@ const CollectionProductCard = ({
   const [selectedColorIndex, setSelectedColorIndex] = useState(0);
 
   const handleProductClick = () => {
-    console.log("CARD CLICKED", product.handle);
     navigate(`/products/${product.handle}`);
-
   };
 
   const handleWishlistToggle = (e: React.MouseEvent) => {
+    e.preventDefault();
     e.stopPropagation();
     const wishlist = JSON.parse(sessionStorage.getItem("wishlist") || "[]");
     if (isWishlisted) {
@@ -134,7 +133,7 @@ const CollectionProductCard = ({
         {/* Wishlist button */}
         <button
           onClick={handleWishlistToggle}
-          className={`absolute top-5 right-5 p-0 bg-transparent border-none cursor-pointer transition-opacity duration-300 ${isHovered
+          className={`absolute top-5 right-5 z-20 p-0 bg-transparent border-none cursor-pointer transition-opacity duration-300 ${isHovered
             ? "opacity-100"
             : "opacity-0 group-hover/image:opacity-100"
             }`}
@@ -204,9 +203,34 @@ const CollectionProductCard = ({
 };
 
 const CollectionPage = ({ collectionHandle }: CollectionPageProps) => {
-  const collection = getCollectionByHandle(collectionHandle);
+  const [collection, setCollection] = useState<ShopifyCollection | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState("featured");
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+    setLoading(true);
+    setError(null);
+    getShopifyCollectionByHandle(collectionHandle)
+      .then((data) => {
+        if (active) {
+          setCollection(data);
+          setLoading(false);
+        }
+      })
+      .catch((err) => {
+        console.error("Error fetching collection:", err);
+        if (active) {
+          setError(err instanceof Error ? err.message : String(err));
+          setLoading(false);
+        }
+      });
+    return () => {
+      active = false;
+    };
+  }, [collectionHandle]);
 
   // Sort options
   const sortOptions = [
@@ -221,6 +245,7 @@ const CollectionPage = ({ collectionHandle }: CollectionPageProps) => {
 
   // Sort products
   const sortedProducts = useMemo(() => {
+    if (!collection?.products) return [];
     const products = [...collection.products];
 
     switch (sortBy) {
@@ -243,9 +268,21 @@ const CollectionPage = ({ collectionHandle }: CollectionPageProps) => {
       default:
         return products;
     }
-  }, [sortBy, collection.products]);
+  }, [sortBy, collection?.products]);
 
-  if (!collection.products.length) {
+  if (loading) {
+    return (
+      <main className="bg-ivory min-h-[100svh]">
+        <div className="max-w-7xl mx-auto px-4 md:px-8 py-20 flex items-center justify-center">
+          <p className="text-center text-lg text-charcoal font-sans">
+            Loading collection...
+          </p>
+        </div>
+      </main>
+    );
+  }
+
+  if (error || !collection || !collection.products.length) {
     return (
       <main className="bg-ivory min-h-[100svh]">
         <div className="max-w-7xl mx-auto px-4 md:px-8 py-20">

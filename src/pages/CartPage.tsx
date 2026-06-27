@@ -1,13 +1,14 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  readCart,
-  removeFromCart,
-  updateCartQty,
-  addToCart,
-  CART_EVENT,
-  type CartItem,
-} from "../utils/cart";
+  getOrCreateCart,
+  getCart,
+  addCartLine,
+  updateCartLine,
+  removeCartLine,
+  type ShopifyCartDetails,
+  type ShopifyCartLineItem,
+} from "../lib/shopifyCart";
 import { productStripItems } from "../data/mockData";
 import type { ShopifyProduct } from "../types";
 
@@ -29,25 +30,31 @@ const StripCard = ({
   product,
   wishlisted,
   onToggle,
+  onCartChange,
 }: {
   product: ShopifyProduct;
   wishlisted: boolean;
   onToggle: (id: string) => void;
+  onCartChange?: () => void | Promise<void>;
 }) => {
   const [hovered, setHovered] = useState(false);
   const [addedSize, setAddedSize] = useState<string | null>(null);
 
-  const handleAdd = (size: string) => {
-    addToCart({
-      productId: product.id,
-      title: product.title,
-      price: product.priceRange.minVariantPrice.amount,
-      image: product.featuredImage.url,
-      imageAlt: product.featuredImage.altText,
-      size,
-    });
-    setAddedSize(size);
-    setTimeout(() => setAddedSize(null), 1800);
+  const handleAdd = async (size: string) => {
+    try {
+      const cartId = await getOrCreateCart();
+      const merchandiseId = product.variants[0]?.id;
+      if (!merchandiseId) {
+        console.error("No variant found for product:", product.id);
+        return;
+      }
+      await addCartLine(cartId, merchandiseId, 1);
+      await onCartChange?.();
+      setAddedSize(size);
+      setTimeout(() => setAddedSize(null), 1800);
+    } catch (error) {
+      console.error("Failed to add to Shopify cart:", error);
+    }
   };
 
   return (
@@ -223,26 +230,30 @@ const PromoAccordion = () => {
 
 // ── Cart item row ─────────────────────────────────────────────────────────────
 const CartItemRow = ({
-  item,
+  line,
   onRemove,
   onQtyChange,
 }: {
-  item: CartItem;
-  onRemove: (id: string, size: string) => void;
-  onQtyChange: (id: string, size: string, qty: number) => void;
-}) => (
+  line: ShopifyCartLineItem;
+  onRemove: (lineId: string) => void;
+  onQtyChange: (lineId: string, qty: number) => void;
+}) => {
+  const image = line.merchandise.product.featuredImage;
+  const unitPrice = parseFloat(line.merchandise.price.amount);
+
+  return (
   <div className="flex gap-6 md:gap-8 pb-10 mb-10 border-b border-[#ebebeb]">
     {/* Product image */}
     <div className="relative flex-none w-[160px] md:w-[220px] aspect-[3/4] bg-[#eeece8] overflow-hidden">
       <img
-        src={item.image}
-        alt={item.imageAlt}
+        src={image?.url ?? ""}
+        alt={image?.altText ?? line.merchandise.product.title}
         className="w-full h-full object-cover object-top"
       />
       {/* Remove button */}
       <button
         type="button"
-        onClick={() => onRemove(item.productId, item.size)}
+        onClick={() => onRemove(line.id)}
         className="absolute top-3 right-3 w-7 h-7 bg-white flex items-center justify-center
                    text-[#111] hover:bg-[#111] hover:text-white transition-colors duration-150"
         aria-label="Remove item"
@@ -262,16 +273,16 @@ const CartItemRow = ({
     <div className="flex flex-col justify-between py-1 min-w-0">
       <div>
         <p className="font-sans text-[14px] text-[#111] tracking-[0.02em] leading-snug mb-1">
-          {item.title}
+          {line.merchandise.product.title}
         </p>
         <p className="font-sans text-[12px] text-[#999] tracking-[0.02em] mb-3">
-          Size: <span className="text-[#555]">{item.size}</span>
+          Size: <span className="text-[#555]">{line.merchandise.title}</span>
         </p>
         <p className="font-sans text-[12px] text-[#888] tracking-[0.02em] tabular-nums">
-          ₹{(parseFloat(item.price) * item.quantity).toLocaleString("en-IN")}
+          ₹{(unitPrice * line.quantity).toLocaleString("en-IN")}
         </p>
         <p className="font-sans text-[12px] text-[#888] tracking-[0.02em] tabular-nums">
-          ₹{parseFloat(item.price).toLocaleString("en-IN")} each
+          ₹{unitPrice.toLocaleString("en-IN")} each
         </p>
       </div>
 
@@ -279,9 +290,7 @@ const CartItemRow = ({
       <div className="flex items-center gap-4 mt-6">
         <button
           type="button"
-          onClick={() =>
-            onQtyChange(item.productId, item.size, item.quantity - 1)
-          }
+          onClick={() => onQtyChange(line.id, line.quantity - 1)}
           className="w-7 h-7 flex items-center justify-center border border-[#ddd]
                      font-sans text-[16px] text-[#111] hover:border-[#111] transition-colors"
           aria-label="Decrease quantity"
@@ -289,13 +298,11 @@ const CartItemRow = ({
           −
         </button>
         <span className="font-sans text-[13px] text-[#111] w-5 text-center select-none">
-          {item.quantity}
+          {line.quantity}
         </span>
         <button
           type="button"
-          onClick={() =>
-            onQtyChange(item.productId, item.size, item.quantity + 1)
-          }
+          onClick={() => onQtyChange(line.id, line.quantity + 1)}
           className="w-7 h-7 flex items-center justify-center border border-[#ddd]
                      font-sans text-[16px] text-[#111] hover:border-[#111] transition-colors"
           aria-label="Increase quantity"
@@ -305,12 +312,14 @@ const CartItemRow = ({
       </div>
     </div>
   </div>
-);
+  );
+};
 
 // ── Cart page ─────────────────────────────────────────────────────────────────
 const CartPage = () => {
   const navigate = useNavigate();
-  const [cart, setCart] = useState<CartItem[]>(readCart);
+  const [cart, setCart] = useState<ShopifyCartDetails | null>(null);
+  const [cartId, setCartId] = useState<string | null>(null);
   // "May Interest You" strip state
   const stripRef = useRef<HTMLDivElement>(null);
   const [wlIds, setWlIds] = useState<string[]>(readWL);
@@ -333,33 +342,54 @@ const CartPage = () => {
     });
   };
 
-  // Re-sync whenever any tab/component writes to the cart
+  const refreshCart = async () => {
+    const id = await getOrCreateCart();
+    setCartId(id);
+    const updated = await getCart(id);
+    setCart(updated);
+  };
+
   useEffect(() => {
-    const sync = () => setCart(readCart());
-    window.addEventListener(CART_EVENT, sync);
-    return () => window.removeEventListener(CART_EVENT, sync);
+    refreshCart();
   }, []);
 
-  const handleRemove = (id: string, size: string) => {
-    removeFromCart(id, size);
-    setCart(readCart());
+  const handleRemove = async (lineId: string) => {
+    if (!cartId) return;
+    await removeCartLine(cartId, lineId);
+    const updated = await getCart(cartId);
+    setCart(updated);
   };
 
-  const handleQty = (id: string, size: string, qty: number) => {
-    updateCartQty(id, size, qty);
-    setCart(readCart());
+  const handleQty = async (lineId: string, qty: number) => {
+    if (!cartId) return;
+    if (qty <= 0) {
+      await removeCartLine(cartId, lineId);
+    } else {
+      await updateCartLine(cartId, lineId, qty);
+    }
+    const updated = await getCart(cartId);
+    setCart(updated);
   };
 
-  const totalItems = cart.reduce((s, i) => s + i.quantity, 0);
-  const subtotal = cart.reduce(
-    (s, i) => s + parseFloat(i.price) * i.quantity,
+  if (cart === null) {
+    return (
+      <main className="bg-[#F7F5F2] min-h-[100svh] pb-24">
+        <div className="h-14 md:h-16" />
+      </main>
+    );
+  }
+
+  const lines = cart.lines;
+  const totalItems = lines.reduce((s, i) => s + i.quantity, 0);
+  const subtotal = lines.reduce(
+    (s, i) => s + parseFloat(i.merchandise.price.amount) * i.quantity,
     0,
   );
   const shipping = subtotal > 0 && subtotal < 4999 ? 299 : 0;
   const total = subtotal + shipping;
 
   // ── Empty state ─────────────────────────────────────────────────────────────────
-  if (cart.length === 0) {
+  if (lines.length === 0) {
     return (
       <main className="bg-[#F7F5F2] min-h-[100svh] pb-24 flex flex-col">
         <div className="h-14 md:h-16" />
@@ -415,6 +445,7 @@ const CartPage = () => {
                     product={p}
                     wishlisted={wlIds.includes(p.id)}
                     onToggle={toggleWl}
+                    onCartChange={refreshCart}
                   />
                 </div>
               ))}
@@ -439,10 +470,10 @@ const CartPage = () => {
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-12 xl:gap-20">
           {/* ── Left: line items ──────────────────────────────────────────── */}
           <div>
-            {cart.map((item) => (
+            {lines.map((line) => (
               <CartItemRow
-                key={`${item.productId}-${item.size}`}
-                item={item}
+                key={line.id}
+                line={line}
                 onRemove={handleRemove}
                 onQtyChange={handleQty}
               />
@@ -504,9 +535,9 @@ const CartPage = () => {
               {/* Checkout CTA */}
               <button
                 type="button"
-                onClick={() =>
-                  alert("Shopify checkout will be integrated here.")
-                }
+                onClick={() => {
+                  window.location.href = cart.checkoutUrl;
+                }}
                 className="w-full h-[52px] bg-[#111] text-white font-sans
                            text-[12px] font-semibold uppercase tracking-[0.2em]
                            hover:bg-[#2a2a2a] transition-colors duration-200 mb-6"

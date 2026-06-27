@@ -1,7 +1,8 @@
-import { useState } from "react";
-import { productStripItems } from "../data/mockData";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { getShopifyProducts } from "../lib/shopifyProducts";
 import type { ShopifyProduct } from "../types";
-import { addToCart } from "../utils/cart";
+import { getOrCreateCart, addCartLine } from "../lib/shopifyCart";
 
 // ── Shirt sizes shown in the hover panel ──────────────────────────────────────
 const SIZES = ["S", "M", "L", "XL"];
@@ -27,30 +28,43 @@ const ProductCard = ({
   wishlisted: boolean;
   onWishlistToggle: (id: string) => void;
 }) => {
+  const navigate = useNavigate();
   const [hovered, setHovered] = useState(false);
   const [addedSize, setAddedSize] = useState<string | null>(null);
 
-  const handleAddToBag = (size: string) => {
-    addToCart({
-      productId: product.id,
-      title: product.title,
-      price: product.priceRange.minVariantPrice.amount,
-      image: product.featuredImage.url,
-      imageAlt: product.featuredImage.altText,
-      size,
-    });
-    setAddedSize(size);
-    setTimeout(() => setAddedSize(null), 1800);
+  const handleAddToBag = async (size: string) => {
+    console.log("STEP 1");
+    try {
+      const cartId = await getOrCreateCart();
+      console.log("STEP 2", cartId);
+      const merchandiseId = product.variants[0]?.id;
+      console.log("STEP 3", merchandiseId);
+      if (!merchandiseId) {
+        console.error("No variant found for product:", product.id);
+        return;
+      }
+      console.log("STEP 4 before addCartLine");
+      await addCartLine(cartId, merchandiseId, 1);
+      setAddedSize(size);
+      setTimeout(() => setAddedSize(null), 1800);
+    } catch (error) {
+      console.error("Failed to add to Shopify cart:", error);
+    }
+  };
+
+  const handleProductClick = () => {
+    navigate(`/products/${product.handle}`);
   };
 
   return (
     <article
-      className="group relative flex flex-col"
+      className="group relative flex flex-col cursor-pointer"
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => {
         setHovered(false);
         setAddedSize(null);
       }}
+      onClick={handleProductClick}
     >
       {/* Image wrapper */}
       <div className="relative overflow-hidden aspect-[3/4] bg-[#f0ede8]">
@@ -66,10 +80,11 @@ const ProductCard = ({
         <button
           type="button"
           onClick={(e) => {
+            e.preventDefault();
             e.stopPropagation();
             onWishlistToggle(product.id);
           }}
-          className={`absolute top-3 right-3 p-0 bg-transparent border-none cursor-pointer transition-opacity duration-200
+          className={`absolute top-3 right-3 z-20 p-0 bg-transparent border-none cursor-pointer transition-opacity duration-200
             ${wishlisted ? "opacity-100" : "opacity-0 group-hover:opacity-100"}`}
           aria-label={wishlisted ? "Remove from wishlist" : "Add to wishlist"}
         >
@@ -91,6 +106,7 @@ const ProductCard = ({
         <div
           className={`absolute bottom-0 left-0 right-0 transition-transform duration-300 ease-out
             ${hovered ? "translate-y-0" : "translate-y-full"}`}
+          onClick={(e) => e.stopPropagation()}
         >
           <div className="bg-[#f5f2ed]/96 backdrop-blur-sm px-4 pt-4 pb-3">
             {addedSize ? (
@@ -154,8 +170,28 @@ const NewArrivalsPage = () => {
     });
   };
 
-  // Only the first 4 products are featured on this page
-  const featured = productStripItems.slice(0, 4);
+  const [products, setProducts] = useState<ShopifyProduct[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let active = true;
+
+    getShopifyProducts(4)
+      .then((data) => {
+        if (active) {
+          setProducts(data);
+          setLoading(false);
+        }
+      })
+      .catch((err) => {
+        console.error(err);
+        if (active) setLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   return (
     <main className="bg-[#F7F5F2] min-h-[100svh] pb-24">
@@ -173,21 +209,25 @@ const NewArrivalsPage = () => {
 
       {/* ── 4-product editorial grid ─────────────────────────────────────── */}
       <section className="px-10 md:px-16" aria-label="New arrivals products">
-        {/*
-         * 1-px gap achieved by setting the wrapper background to a warm-gray
-         * and each cell to the page background — the gap becomes the "border".
-         */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-[1px] bg-[#e0ddd8]">
-          {featured.map((product) => (
-            <div key={product.id} className="bg-[#F7F5F2] p-0">
-              <ProductCard
-                product={product}
-                wishlisted={wishlistIds.includes(product.id)}
-                onWishlistToggle={toggleWishlist}
-              />
-            </div>
-          ))}
-        </div>
+        {loading ? (
+          <div className="text-center py-20">
+            <p className="font-sans text-[13px] text-[#888] tracking-[0.02em]">
+              Loading...
+            </p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-[1px] bg-[#e0ddd8]">
+            {products.map((product) => (
+              <div key={product.id} className="bg-[#F7F5F2] p-0">
+                <ProductCard
+                  product={product}
+                  wishlisted={wishlistIds.includes(product.id)}
+                  onWishlistToggle={toggleWishlist}
+                />
+              </div>
+            ))}
+          </div>
+        )}
       </section>
     </main>
   );
