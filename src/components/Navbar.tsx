@@ -25,35 +25,6 @@ const Navbar = () => {
     return () => window.removeEventListener(SESSION_EVENT, sync);
   }, []);
 
-  // Cart badge — reads from localStorage, updates on the cart-updated event
-  const [cartCount, setCartCount] = useState(() => {
-    try {
-      const items = JSON.parse(localStorage.getItem("cogenesis_cart") || "[]");
-      return (items as { quantity: number }[]).reduce(
-        (s, i) => s + i.quantity,
-        0,
-      );
-    } catch {
-      return 0;
-    }
-  });
-
-  useEffect(() => {
-    const update = () => {
-      try {
-        const items = JSON.parse(
-          localStorage.getItem("cogenesis_cart") || "[]",
-        );
-        setCartCount(
-          (items as { quantity: number }[]).reduce((s, i) => s + i.quantity, 0),
-        );
-      } catch {
-        setCartCount(0);
-      }
-    };
-    window.addEventListener("cart-updated", update);
-    return () => window.removeEventListener("cart-updated", update);
-  }, []);
 
   // Helper: icon button class with active state (cherry-pick)
   const iconButtonClass = (isActive: boolean) =>
@@ -245,7 +216,7 @@ const Navbar = () => {
 
               {/* Cart — with live count badge */}
               <button
-                className={`${iconButtonClass(activePath === "/cart")} relative`}
+                className={iconButtonClass(activePath === "/cart")}
                 aria-label="Shopping bag"
                 id="navbar-cart"
                 onClick={() => navigate("/cart")}
@@ -262,15 +233,6 @@ const Navbar = () => {
                   <line x1="3" y1="6" x2="21" y2="6" />
                   <path d="M16 10a4 4 0 01-8 0" />
                 </svg>
-                {cartCount > 0 && (
-                  <span
-                    className="absolute -top-1.5 -right-1.5 min-w-[15px] h-[15px] px-0.5
-                               bg-[#111] text-white font-sans text-[9px] font-medium
-                               rounded-full flex items-center justify-center leading-none"
-                  >
-                    {cartCount > 9 ? "9+" : cartCount}
-                  </span>
-                )}
               </button>
             </div>
           </div>
