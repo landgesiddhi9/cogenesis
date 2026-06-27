@@ -374,6 +374,9 @@ export async function addCartLine(
   quantity: number,
 ): Promise<ShopifyCartDetails> {
   try {
+    console.log("INPUT CART ID:", cartId);
+    console.log("INPUT MERCHANDISE ID:", merchandiseId);
+
     const data = await shopifyFetch<CartLinesAddResponse>(
       CART_LINES_ADD_MUTATION,
       {
@@ -382,11 +385,17 @@ export async function addCartLine(
       },
     );
 
+    console.log(JSON.stringify(data, null, 2));
+
     if (!data?.cartLinesAdd) {
       throw new Error("Shopify cartLinesAdd returned no data.");
     }
 
     const { cart, userErrors } = data.cartLinesAdd;
+
+    console.log("RETURNED CART ID:", cart.id);
+    console.log("RETURNED LINES:", cart.lines.edges.length);
+    console.log("SAME CART?", cart.id === cartId);
 
     if (userErrors && userErrors.length > 0) {
       const messages = userErrors.map((e) => e.message).join("; ");

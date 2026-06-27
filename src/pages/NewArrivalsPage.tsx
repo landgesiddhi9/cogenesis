@@ -33,6 +33,7 @@ const ProductCard = ({
   const [addedSize, setAddedSize] = useState<string | null>(null);
 
   const handleAddToBag = async (size: string) => {
+    console.log("HANDLE ADD TO BAG", product.title, size);
     try {
       const cartId = await getOrCreateCart();
       const merchandiseId = product.variants[0]?.id;
