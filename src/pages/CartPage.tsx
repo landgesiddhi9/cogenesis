@@ -4,10 +4,10 @@ import {
   readCart,
   removeFromCart,
   updateCartQty,
-  addToCart,
   CART_EVENT,
   type CartItem,
 } from "../utils/cart";
+import { getOrCreateCart, addCartLine } from "../lib/shopifyCart";
 import { productStripItems } from "../data/mockData";
 import type { ShopifyProduct } from "../types";
 
@@ -37,17 +37,20 @@ const StripCard = ({
   const [hovered, setHovered] = useState(false);
   const [addedSize, setAddedSize] = useState<string | null>(null);
 
-  const handleAdd = (size: string) => {
-    addToCart({
-      productId: product.id,
-      title: product.title,
-      price: product.priceRange.minVariantPrice.amount,
-      image: product.featuredImage.url,
-      imageAlt: product.featuredImage.altText,
-      size,
-    });
-    setAddedSize(size);
-    setTimeout(() => setAddedSize(null), 1800);
+  const handleAdd = async (size: string) => {
+    try {
+      const cartId = await getOrCreateCart();
+      const merchandiseId = product.variants[0]?.id;
+      if (!merchandiseId) {
+        console.error("No variant found for product:", product.id);
+        return;
+      }
+      await addCartLine(cartId, merchandiseId, 1);
+      setAddedSize(size);
+      setTimeout(() => setAddedSize(null), 1800);
+    } catch (error) {
+      console.error("Failed to add to Shopify cart:", error);
+    }
   };
 
   return (
