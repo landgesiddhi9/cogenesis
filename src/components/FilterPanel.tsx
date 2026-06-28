@@ -80,6 +80,14 @@ const FilterPanel = ({ isOpen, onClose, onApply }: FilterPanelProps) => {
     setFilters((prev) => ({ ...prev, price: newPrice }));
   };
 
+  const hasActiveFilters =
+    filters.size.length > 0 ||
+    filters.material.length > 0 ||
+    filters.color.length > 0 ||
+    filters.price[0] !== 1500 ||
+    filters.price[1] !== 5000 ||
+    filters.fit.length > 0;
+
   const handleClearAll = () => {
     setFilters({
       size: [],
@@ -261,19 +269,20 @@ const FilterPanel = ({ isOpen, onClose, onApply }: FilterPanelProps) => {
         </div>
 
         {/* Footer Buttons */}
-        <div className="border-t border-stone/10 p-6 space-y-3 bg-stone/2">
+        <div className="border-t border-stone/10 p-6 pr-20 md:pr-16 flex gap-3 bg-stone/2">
           <button
             onClick={handleClearAll}
-            className="w-full py-3 text-sm font-medium text-charcoal border border-stone/20 rounded-lg hover:bg-stone/5 transition-colors tracking-wide"
+            className="flex-1 py-3 text-sm font-medium text-charcoal border border-stone/20 rounded-lg hover:bg-stone/5 transition-colors tracking-wide"
           >
             Clear All
           </button>
           <button
             onClick={() => {
+              if (!hasActiveFilters) return;
               onApply(filters);
               onClose();
             }}
-            className="w-full py-3 text-sm font-medium text-white bg-warm-brown rounded-lg hover:bg-warm-brown/90 transition-colors tracking-wide"
+            className="flex-1 py-3 text-sm font-medium rounded-lg tracking-wide text-white bg-warm-brown border border-warm-brown/80 hover:bg-warm-brown/90 transition-colors"
           >
             Apply Filters
           </button>

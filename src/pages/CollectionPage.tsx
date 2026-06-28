@@ -1,13 +1,29 @@
-import { useState, useMemo, useEffect, useCallback } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useInView } from "../hooks/useInView";
 import { useWishlist } from "../hooks/useWishlist";
-import { useCart } from "../hooks/useCart";
-import { getCollectionByHandle } from "../services/collection.service";
+import { getCollectionByHandle, getProductsByCollection } from "../services/collection.service";
 import { logProductImageFailure } from "../lib/shopifyImageDiagnostics";
 import SortDropdown from "../components/SortDropdown";
 import FilterPanel from "../components/FilterPanel";
 import type { ShopifyProduct, ShopifyCollection } from "../types";
+import type { ShopifyApiProductFilter, ShopifyProductSortKeys } from "../graphql/queries/getProductsByCollection";
+
+const SORT_CONFIG: Record<string, { sortKey: ShopifyProductSortKeys; reverse: boolean } | null> = {
+  featured: null,
+  newest: { sortKey: "CREATED", reverse: true },
+  "best-selling": { sortKey: "BEST_SELLING", reverse: false },
+  "price-low": { sortKey: "PRICE", reverse: false },
+  "price-high": { sortKey: "PRICE", reverse: true },
+  "a-z": { sortKey: "TITLE", reverse: false },
+  "z-a": { sortKey: "TITLE", reverse: true },
+};
+
+const MATERIAL_TAG_MAP: Record<string, string> = {
+  Linen: "linen",
+  Cotton: "cotton",
+  "Cotton Linen Blend": "linen-blend",
+};
 
 interface CollectionPageProps {
   collectionHandle: string;
@@ -71,7 +87,6 @@ const CollectionProductCard = ({
   const navigate = useNavigate();
   const { ref, isInView } = useInView({ threshold: 0.1 });
   const { isWishlisted, toggleWishlist } = useWishlist();
-  const { addToCart } = useCart();
   const [isHovered, setIsHovered] = useState(false);
   const wishlisted = isWishlisted(product.id);
   const [selectedColorIndex, setSelectedColorIndex] = useState(0);
@@ -86,19 +101,6 @@ const CollectionProductCard = ({
     toggleWishlist(product.id);
   };
 
-  const handleAddToCart = useCallback(
-    (e: React.MouseEvent) => {
-      e.preventDefault();
-      e.stopPropagation();
-
-      const variant = product.variants[0];
-      if (variant) {
-        addToCart(variant.id, 1).catch(() => {});
-      }
-    },
-    [product, addToCart],
-  );
-
   // Extract fabric from description or tags
   const fabric = product.tags
     .find((tag) => ["cotton", "linen", "linen-blend"].includes(tag))
@@ -111,7 +113,8 @@ const CollectionProductCard = ({
   const modelImageUrl = getModelImageUrl(product.tags);
 
   // Determine which image to show
-  const displayImage = isHovered ? modelImageUrl : product.featuredImage.url;
+  const imageUrl = product.featuredImage.url || null;
+  const displayImage = isHovered ? modelImageUrl : imageUrl;
 
   return (
     <div
@@ -128,24 +131,26 @@ const CollectionProductCard = ({
         onMouseLeave={() => setIsHovered(false)}
       >
         {/* Base image */}
-        <img
-          src={displayImage}
-          alt={product.featuredImage.altText}
-          style={{
-            transform: isHovered ? "scale(1.03)" : "scale(1)",
-            transition: "transform 300ms ease-in-out",
-          }}
-          className="w-full h-full object-cover object-center"
-          loading="lazy"
-          onError={() => {
-            logProductImageFailure(
-              `collection-card:${product.handle}`,
-              rawProduct,
-              product,
-              displayImage,
-            );
-          }}
-        />
+        {displayImage && (
+          <img
+            src={displayImage}
+            alt={product.featuredImage.altText}
+            style={{
+              transform: isHovered ? "scale(1.03)" : "scale(1)",
+              transition: "transform 300ms ease-in-out",
+            }}
+            className="w-full h-full object-cover object-center"
+            loading="lazy"
+            onError={() => {
+              logProductImageFailure(
+                `collection-card:${product.handle}`,
+                rawProduct,
+                product,
+                displayImage,
+              );
+            }}
+          />
+        )}
 
         {/* Wishlist button */}
         <button
@@ -171,18 +176,6 @@ const CollectionProductCard = ({
           </svg>
         </button>
 
-        {/* Add to Cart button */}
-        <button
-          onClick={handleAddToCart}
-          className={`absolute bottom-0 left-0 right-0 z-20 w-full py-3 bg-black/60 text-white font-sans text-[11px] uppercase tracking-[0.15em] transition-all duration-300 ${
-            isHovered
-              ? "opacity-100 translate-y-0"
-              : "opacity-0 translate-y-2"
-          }`}
-          aria-label="Add to cart"
-        >
-          Add to Cart
-        </button>
       </div>
 
       {/* Product info */}
@@ -240,8 +233,14 @@ const CollectionPage = ({ collectionHandle }: CollectionPageProps) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState("featured");
+  const [activeFilters, setActiveFilters] = useState<ShopifyApiProductFilter[] | null>(null);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [productsLoading, setProductsLoading] = useState(false);
 
+  const lastFetchRef = useRef(0);
+  const initializedHandle = useRef<string | null>(null);
+
+  // Initial load: collection metadata + products
   useEffect(() => {
     let active = true;
 
@@ -249,6 +248,8 @@ const CollectionPage = ({ collectionHandle }: CollectionPageProps) => {
     setError(null);
     setCollection(null);
     setRawProductsByHandle({});
+    setSortBy("featured");
+    setActiveFilters(null);
 
     getCollectionByHandle(collectionHandle)
       .then(({ collection: data, raw }) => {
@@ -279,6 +280,47 @@ const CollectionPage = ({ collectionHandle }: CollectionPageProps) => {
     };
   }, [collectionHandle]);
 
+  // Re-fetch products when sort or filters change
+  useEffect(() => {
+    if (loading) return;
+
+    if (initializedHandle.current !== collectionHandle) {
+      initializedHandle.current = collectionHandle;
+      return;
+    }
+
+    const sortConfig = SORT_CONFIG[sortBy];
+    const fetchId = ++lastFetchRef.current;
+    setProductsLoading(true);
+
+    getProductsByCollection({
+      handle: collectionHandle,
+      sortKey: sortConfig?.sortKey ?? null,
+      reverse: sortConfig?.reverse ?? null,
+      filters: activeFilters ?? undefined,
+    })
+      .then(({ products, raw }) => {
+        if (fetchId !== lastFetchRef.current) return;
+        const rawMap: Record<string, unknown> = {};
+        raw.forEach((node) => {
+          rawMap[node.handle] = node;
+        });
+        setRawProductsByHandle(rawMap);
+        setCollection((prev) =>
+          prev ? { ...prev, products } : null,
+        );
+      })
+      .catch((err) => {
+        if (fetchId !== lastFetchRef.current) return;
+        setError(err instanceof Error ? err.message : String(err));
+      })
+      .finally(() => {
+        if (fetchId === lastFetchRef.current) {
+          setProductsLoading(false);
+        }
+      });
+  }, [sortBy, activeFilters, collectionHandle, loading]);
+
   // Sort options
   const sortOptions = [
     { id: "featured", label: "Featured" },
@@ -290,32 +332,30 @@ const CollectionPage = ({ collectionHandle }: CollectionPageProps) => {
     { id: "z-a", label: "Alphabetically Z–A" },
   ];
 
-  // Sort products
-  const sortedProducts = useMemo(() => {
-    if (!collection?.products) return [];
-    const products = [...collection.products];
+  // Convert UI filters to Shopify API filters
+  const handleApplyFilters = (uiFilters: {
+    size: string[];
+    material: string[];
+    color: string[];
+    price: [number, number];
+    fit: string[];
+  }) => {
+    const shopifyFilters: ShopifyApiProductFilter[] = [];
 
-    switch (sortBy) {
-      case "price-low":
-        return products.sort(
-          (a, b) =>
-            parseFloat(a.priceRange.minVariantPrice.amount) -
-            parseFloat(b.priceRange.minVariantPrice.amount),
-        );
-      case "price-high":
-        return products.sort(
-          (a, b) =>
-            parseFloat(b.priceRange.minVariantPrice.amount) -
-            parseFloat(a.priceRange.minVariantPrice.amount),
-        );
-      case "a-z":
-        return products.sort((a, b) => a.title.localeCompare(b.title));
-      case "z-a":
-        return products.sort((a, b) => b.title.localeCompare(a.title));
-      default:
-        return products;
-    }
-  }, [sortBy, collection]);
+    uiFilters.size.forEach((size) => {
+      shopifyFilters.push({ variantOption: { name: "Size", value: size } });
+    });
+
+    uiFilters.material.forEach((mat) => {
+      const tag = MATERIAL_TAG_MAP[mat];
+      if (tag) shopifyFilters.push({ tag });
+    });
+
+    const [priceMin, priceMax] = uiFilters.price;
+    shopifyFilters.push({ price: { min: priceMin, max: priceMax } });
+
+    setActiveFilters(shopifyFilters.length > 0 ? shopifyFilters : null);
+  };
 
   if (loading) {
     return (
@@ -334,8 +374,13 @@ const CollectionPage = ({ collectionHandle }: CollectionPageProps) => {
       <main className="bg-ivory min-h-[100svh]">
         <div className="max-w-7xl mx-auto px-4 md:px-8 py-20">
           <h1 className="text-center text-2xl text-charcoal font-sans">
-            Collection not found
+            {error ? "Error loading collection" : "Collection not found"}
           </h1>
+          {error && (
+            <p className="text-center text-sm text-charcoal/60 mt-2 font-sans">
+              {error}
+            </p>
+          )}
         </div>
       </main>
     );
@@ -370,7 +415,10 @@ const CollectionPage = ({ collectionHandle }: CollectionPageProps) => {
         {/* Filter bar */}
         <div className="border-t border-stone/10 py-4 mb-12 flex items-center justify-between">
           <div className="text-sm text-charcoal/70 tracking-wide font-sans">
-            Products ({sortedProducts.length})
+            Products ({collection.products.length})
+            {productsLoading && (
+              <span className="ml-2 text-warm-brown/60">Loading...</span>
+            )}
           </div>
 
           <div className="flex items-center gap-6 md:gap-8">
@@ -396,7 +444,7 @@ const CollectionPage = ({ collectionHandle }: CollectionPageProps) => {
 
         {/* Product grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
-          {sortedProducts.map((product, index) => (
+          {collection.products.map((product, index) => (
             <CollectionProductCard
               key={product.id}
               product={product}
@@ -411,7 +459,7 @@ const CollectionPage = ({ collectionHandle }: CollectionPageProps) => {
       <FilterPanel
         isOpen={isFilterOpen}
         onClose={() => setIsFilterOpen(false)}
-        onApply={() => { }}
+        onApply={handleApplyFilters}
       />
     </main>
   );

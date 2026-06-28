@@ -164,7 +164,7 @@ const formatPrice = (amount: string, currency: string) => {
 // ── Cart page ─────────────────────────────────────────────────────────────────
 const CartPage = () => {
   const navigate = useNavigate();
-  const { cart, updateCartLine, removeCartLine } = useCart();
+  const { cart } = useCart();
 
   // "May Interest You" strip state
   const stripRef = useRef<HTMLDivElement>(null);
@@ -224,35 +224,9 @@ const CartPage = () => {
                       <p className="font-sans text-[11px] text-[#888] mt-1">
                         {line.merchandise.title}
                       </p>
-                      <div className="flex items-center gap-2 mt-1.5">
-                        <button
-                          type="button"
-                          onClick={() => updateCartLine(line.id, Math.max(1, line.quantity - 1))}
-                          className="w-6 h-6 flex items-center justify-center border border-stone/20 hover:border-charcoal/40 transition-colors rounded-sm text-xs font-sans text-[#888]"
-                          aria-label="Decrease quantity"
-                        >
-                          −
-                        </button>
-                        <span className="font-sans text-[11px] text-[#888] min-w-[14px] text-center">
-                          {line.quantity}
-                        </span>
-                        <button
-                          type="button"
-                          onClick={() => updateCartLine(line.id, line.quantity + 1)}
-                          className="w-6 h-6 flex items-center justify-center border border-stone/20 hover:border-charcoal/40 transition-colors rounded-sm text-xs font-sans text-[#888]"
-                          aria-label="Increase quantity"
-                        >
-                          +
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => removeCartLine(line.id)}
-                          className="ml-2 font-sans text-[10px] uppercase tracking-[0.1em] text-[#888] hover:text-[#111] transition-colors"
-                          aria-label="Remove item"
-                        >
-                          Remove
-                        </button>
-                      </div>
+                      <p className="font-sans text-[11px] text-[#888] mt-1">
+                        Qty: {line.quantity}
+                      </p>
                     </div>
                     <p className="font-sans text-[12px] text-[#111] tabular-nums whitespace-nowrap">
                       {formatPrice(
@@ -294,14 +268,6 @@ const CartPage = () => {
                       </span>
                     </div>
 
-                    <a
-                      href={cart.checkoutUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="block w-full h-[52px] bg-[#111] text-white font-sans text-[12px] font-semibold uppercase tracking-[0.2em] hover:bg-[#2a2a2a] transition-colors duration-200 flex items-center justify-center mt-6"
-                    >
-                      Checkout
-                    </a>
                   </div>
                 </div>
               </div>

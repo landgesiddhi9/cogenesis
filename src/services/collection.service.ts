@@ -13,6 +13,8 @@ import {
   GET_PRODUCTS_BY_COLLECTION_QUERY,
   type GetProductsByCollectionResponse,
   type GetProductsByCollectionVariables,
+  type ShopifyApiProductFilter,
+  type ShopifyProductSortKeys,
 } from "../graphql/queries/getProductsByCollection";
 import type { ShopifyApiCollection, ShopifyApiProduct } from "../types/shopify-api";
 import type { ShopifyCollection, ShopifyProduct } from "../types";
@@ -67,15 +69,29 @@ export async function getCollectionByHandle(
   return { collection, raw };
 }
 
+export interface GetProductsByCollectionParams {
+  handle: string;
+  first?: number;
+  sortKey?: ShopifyProductSortKeys | null;
+  reverse?: boolean | null;
+  filters?: ShopifyApiProductFilter[] | null;
+  options?: ShopifyRequestOptions;
+}
+
 export async function getProductsByCollection(
-  handle: string,
-  first: number = DEFAULT_COLLECTION_PRODUCTS_LIMIT,
-  options: ShopifyRequestOptions = {},
+  params: GetProductsByCollectionParams,
 ): Promise<CollectionProductsResult> {
+  const { handle, first = DEFAULT_COLLECTION_PRODUCTS_LIMIT, sortKey, reverse, filters, options = {} } = params;
+
+  const variables: GetProductsByCollectionVariables = { handle, first };
+  if (sortKey) variables.sortKey = sortKey;
+  if (reverse != null) variables.reverse = reverse;
+  if (filters && filters.length > 0) variables.filters = filters;
+
   const data = await shopifyRequest<
     GetProductsByCollectionResponse,
     GetProductsByCollectionVariables
-  >(GET_PRODUCTS_BY_COLLECTION_QUERY, { handle, first }, options);
+  >(GET_PRODUCTS_BY_COLLECTION_QUERY, variables, options);
 
   const raw =
     data.collection?.products.edges.map(({ node }) => node) ?? [];

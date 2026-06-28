@@ -8,11 +8,17 @@ export const GET_PRODUCTS_BY_COLLECTION_QUERY = `
   ${PRODUCT_VARIANT_FIELDS_FRAGMENT}
   ${PRODUCT_FIELDS_FRAGMENT}
 
-  query GetProductsByCollection($handle: String!, $first: Int!) {
+  query GetProductsByCollection(
+    $handle: String!,
+    $first: Int!,
+    $sortKey: ProductCollectionSortKeys,
+    $reverse: Boolean,
+    $filters: [ProductFilter!]
+  ) {
     collection(handle: $handle) {
       id
       handle
-      products(first: $first) {
+      products(first: $first, sortKey: $sortKey, reverse: $reverse, filters: $filters) {
         edges {
           node {
             ...ProductFields
@@ -23,9 +29,40 @@ export const GET_PRODUCTS_BY_COLLECTION_QUERY = `
   }
 `;
 
+export type ShopifyProductSortKeys =
+  | "BEST_SELLING"
+  | "COLLECTION_DEFAULT"
+  | "CREATED"
+  | "ID"
+  | "MANUAL"
+  | "PRICE"
+  | "RELEVANCE"
+  | "TITLE";
+
+export interface ShopifyApiPriceRangeFilter {
+  min?: number | null;
+  max?: number | null;
+}
+
+export interface ShopifyApiVariantOptionFilter {
+  name: string;
+  value: string;
+}
+
+export interface ShopifyApiProductFilter {
+  available?: boolean | null;
+  price?: ShopifyApiPriceRangeFilter | null;
+  productType?: string | null;
+  tag?: string | null;
+  variantOption?: ShopifyApiVariantOptionFilter | null;
+}
+
 export interface GetProductsByCollectionVariables {
   handle: string;
   first: number;
+  sortKey?: ShopifyProductSortKeys | null;
+  reverse?: boolean | null;
+  filters?: ShopifyApiProductFilter[] | null;
 }
 
 export interface GetProductsByCollectionResponse {
