@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { useWishlist } from "../hooks/useWishlist";
 import { getFeaturedProducts } from "../services/product.service";
 import { getWishlistProductsByIds } from "../services/wishlist.service";
@@ -29,8 +30,14 @@ const ProductCard = ({
   product: ShopifyProduct;
   wishlisted: boolean;
   onToggle: (id: string) => void;
-}) => (
-  <article className="group relative flex flex-col">
+}) => {
+  const navigate = useNavigate();
+
+  return (
+  <article
+    className="group relative flex flex-col cursor-pointer"
+    onClick={() => navigate(`/products/${product.handle}`)}
+  >
     {/* Image container — editorial portrait ratio, zero borders */}
     <div className="relative overflow-hidden aspect-[3/4] bg-[#eeece8]">
       <img
@@ -66,7 +73,8 @@ const ProductCard = ({
       </p>
     </div>
   </article>
-);
+  );
+};
 
 // ── Checkmark row ─────────────────────────────────────────────────────────────
 const CheckRow = ({ text }: { text: string }) => (
