@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { getShopifyProducts, getShopifyProductsByIds } from "../lib/shopifyProducts";
+import { allProducts } from "../data/mockData";
 import type { ShopifyProduct } from "../types";
 
 // ── Wishlist sessionStorage helpers ──────────────────────────────────────────
@@ -148,25 +148,18 @@ const WishlistPage = () => {
 
   useEffect(() => {
     let active = true;
-    setLoading(true);
     
-    Promise.all([
-      getShopifyProductsByIds(wishlistIds),
-      getShopifyProducts(12)
-    ])
-      .then(([wishlistData, popularData]) => {
-        if (active) {
-          setWishlistProducts(wishlistData);
-          setPopularProducts(popularData);
-          setLoading(false);
-        }
-      })
-      .catch((err) => {
-        console.error("Error fetching wishlist products:", err);
-        if (active) {
-          setLoading(false);
-        }
-      });
+    // Simulate network request
+    setTimeout(() => {
+      if (active) {
+        const wishlistData = allProducts.filter(p => wishlistIds.includes(p.id));
+        const popularData = allProducts.slice(0, 12);
+        
+        setWishlistProducts(wishlistData);
+        setPopularProducts(popularData);
+        setLoading(false);
+      }
+    }, 300);
 
     return () => {
       active = false;

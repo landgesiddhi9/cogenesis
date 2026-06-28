@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { getShopifyProductByHandle } from "../lib/shopifyProducts";
+import { getProductByHandle } from "../data/mockData";
 import ImageGallery from "../components/ProductDetail/ImageGallery";
 import ProductInfo from "../components/ProductDetail/ProductInfo";
 import ProductAccordion from "../components/ProductDetail/ProductAccordion";
@@ -21,44 +21,40 @@ const ProductDetailPage = ({ productHandle }: ProductDetailPageProps) => {
 
   useEffect(() => {
     let active = true;
-    setLoading(true);
-    getShopifyProductByHandle(productHandle)
-      .then((foundProduct) => {
-        if (!active) return;
-        if (foundProduct) {
-          setProduct(foundProduct);
-          // Track recently viewed
-          const recentlyViewedData = sessionStorage.getItem("recentlyViewed");
-          const recentlyViewed: ShopifyProduct[] = recentlyViewedData
-            ? JSON.parse(recentlyViewedData)
-            : [];
-          if (!recentlyViewed.find((p) => p.id === foundProduct.id)) {
-            recentlyViewed.unshift(foundProduct);
-            if (recentlyViewed.length > 10) recentlyViewed.pop();
-            sessionStorage.setItem(
-              "recentlyViewed",
-              JSON.stringify(recentlyViewed),
-            );
-          }
+    
+    // Simulate network request to keep loading state UI identical
+    setTimeout(() => {
+      if (!active) return;
+      const foundProduct = getProductByHandle(productHandle);
+      
+      if (foundProduct) {
+        setProduct(foundProduct);
+        // Track recently viewed
+        const recentlyViewedData = sessionStorage.getItem("recentlyViewed");
+        const recentlyViewed: ShopifyProduct[] = recentlyViewedData
+          ? JSON.parse(recentlyViewedData)
+          : [];
+        if (!recentlyViewed.find((p) => p.id === foundProduct.id)) {
+          recentlyViewed.unshift(foundProduct);
+          if (recentlyViewed.length > 10) recentlyViewed.pop();
+          sessionStorage.setItem(
+            "recentlyViewed",
+            JSON.stringify(recentlyViewed),
+          );
+        }
 
-          // Check if wishlisted
-          const wishlistData = sessionStorage.getItem("wishlist");
-          const wishlisted: string[] = wishlistData
-            ? JSON.parse(wishlistData)
-            : [];
-          setIsWishlisted(wishlisted.includes(foundProduct.id));
-        } else {
-          setProduct(null);
-        }
-        setLoading(false);
-      })
-      .catch((err) => {
-        console.error("Error fetching product details:", err);
-        if (active) {
-          setProduct(null);
-          setLoading(false);
-        }
-      });
+        // Check if wishlisted
+        const wishlistData = sessionStorage.getItem("wishlist");
+        const wishlisted: string[] = wishlistData
+          ? JSON.parse(wishlistData)
+          : [];
+        setIsWishlisted(wishlisted.includes(foundProduct.id));
+      } else {
+        setProduct(null);
+      }
+      setLoading(false);
+    }, 300);
+
     return () => {
       active = false;
     };

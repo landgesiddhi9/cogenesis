@@ -19,19 +19,16 @@ interface RecentlyViewedProps {
 
 const RecentlyViewed = ({ currentProductId }: RecentlyViewedProps) => {
   const navigate = useNavigate();
-  const [recentlyViewed, setRecentlyViewed] = useState<ShopifyProduct[]>([]);
-  const [wishlist, setWishlist] = useState<string[]>(() => readWL());
-
-  useEffect(() => {
+  const [recentlyViewed, setRecentlyViewed] = useState<ShopifyProduct[]>(() => {
     const stored = JSON.parse(
       sessionStorage.getItem("recentlyViewed") || "[]",
     ) as ShopifyProduct[];
-    // Filter out current product and get last 6 items
-    const filtered = stored
+    return stored
       .filter((p) => p.id !== currentProductId)
       .slice(0, 6);
-    setRecentlyViewed(filtered);
-  }, [currentProductId]);
+  });
+  const [wishlist, setWishlist] = useState<string[]>(() => readWL());
+
 
   const handleProductClick = (product: ShopifyProduct) => {
     navigate(`/products/${product.handle}`);

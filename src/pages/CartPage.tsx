@@ -1,9 +1,28 @@
-﻿import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { productStripItems } from "../data/mockData";
 import type { ShopifyProduct } from "../types";
-import { getOrCreateCart, getCart } from "../lib/shopifyCart";
-import type { Cart } from "../lib/shopifyCart";
+type Cart = {
+  id: string;
+  checkoutUrl: string;
+  totalQuantity: number;
+  lines: Array<{
+    id: string;
+    quantity: number;
+    merchandise: {
+      title: string;
+      price: { amount: string; currencyCode: string };
+      product: {
+        title: string;
+        featuredImage: { url: string; altText?: string } | null;
+      };
+    };
+  }>;
+  cost: {
+    subtotalAmount: { amount: string; currencyCode: string };
+    totalAmount: { amount: string; currencyCode: string };
+  };
+};
 
 // ── Shared constants for the product strip ─────────────────────────────────────────
 const SIZES = ["S", "M", "L", "XL"];
@@ -192,18 +211,23 @@ const CartPage = () => {
 
   useEffect(() => {
     let active = true;
-    (async () => {
-      try {
-        const cartId = await getOrCreateCart();
-        const data = await getCart(cartId);
-        if (active) {
-          setCart(data);
-          setLoading(false);
-        }
-      } catch {
-        if (active) setLoading(false);
+    // Simulate network request
+    setTimeout(() => {
+      if (active) {
+        // Mock an empty cart since there is no backend
+        setCart({
+          id: "mock-cart-id",
+          checkoutUrl: "#",
+          totalQuantity: 0,
+          lines: [],
+          cost: {
+            subtotalAmount: { amount: "0", currencyCode: "INR" },
+            totalAmount: { amount: "0", currencyCode: "INR" },
+          }
+        });
+        setLoading(false);
       }
-    })();
+    }, 300);
     return () => {
       active = false;
     };

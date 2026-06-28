@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { getShopifyProducts } from "../lib/shopifyProducts";
-import { getOrCreateCart, addCartLine } from "../lib/shopifyCart";
+import { allProducts } from "../data/mockData";
 import type { ShopifyProduct } from "../types";
 
 
@@ -38,8 +37,10 @@ const ProductCard = ({
     try {
       const variant = product.variants.find((v) => v.title === size);
       if (!variant) return;
-      const cartId = await getOrCreateCart();
-      await addCartLine(cartId, variant.id, 1);
+      
+      // Simulate backend cart addition
+      await new Promise(resolve => setTimeout(resolve, 300));
+      
       setAddedSize(size);
       setTimeout(() => setAddedSize(null), 1800);
     } catch {
@@ -175,17 +176,13 @@ const NewArrivalsPage = () => {
   useEffect(() => {
     let active = true;
 
-    getShopifyProducts(4)
-      .then((data) => {
-        if (active) {
-          setProducts(data);
-          setLoading(false);
-        }
-      })
-      .catch((err) => {
-        console.error(err);
-        if (active) setLoading(false);
-      });
+    // Simulate network request
+    setTimeout(() => {
+      if (active) {
+        setProducts(allProducts.slice(0, 4));
+        setLoading(false);
+      }
+    }, 300);
 
     return () => {
       active = false;

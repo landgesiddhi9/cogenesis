@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useInView } from "../hooks/useInView";
-import { getShopifyCollectionByHandle } from "../lib/shopifyProducts";
+import { getCollectionByHandle } from "../data/mockData";
 import SortDropdown from "../components/SortDropdown";
 import FilterPanel from "../components/FilterPanel";
 import type { ShopifyProduct, ShopifyCollection } from "../types";
@@ -211,22 +211,21 @@ const CollectionPage = ({ collectionHandle }: CollectionPageProps) => {
 
   useEffect(() => {
     let active = true;
-    setLoading(true);
-    setError(null);
-    getShopifyCollectionByHandle(collectionHandle)
-      .then((data) => {
-        if (active) {
+    
+    // Simulate network request to keep loading state UI identical
+    setTimeout(() => {
+      if (active) {
+        try {
+          const data = getCollectionByHandle(collectionHandle);
           setCollection(data);
-          setLoading(false);
-        }
-      })
-      .catch((err) => {
-        console.error("Error fetching collection:", err);
-        if (active) {
+        } catch (err) {
           setError(err instanceof Error ? err.message : String(err));
+        } finally {
           setLoading(false);
         }
-      });
+      }
+    }, 300);
+
     return () => {
       active = false;
     };
@@ -268,7 +267,7 @@ const CollectionPage = ({ collectionHandle }: CollectionPageProps) => {
       default:
         return products;
     }
-  }, [sortBy, collection?.products]);
+  }, [sortBy, collection]);
 
   if (loading) {
     return (

@@ -1,8 +1,6 @@
 import { useState } from "react";
 
-import { createCart } from "../lib/shopifyCart";
-
-type Cart = Awaited<ReturnType<typeof createCart>>;
+type Cart = { id: string; checkoutUrl: string };
 
 function TestCartPage() {
   const [cart, setCart] = useState<Cart | null>(null);
@@ -11,10 +9,14 @@ function TestCartPage() {
   const handleCreateCart = async () => {
     try {
       setErrorMessage("");
-      const cart = await createCart();
+      // Mock cart creation
+      const mockCart = {
+        id: "mock-cart-id-" + Math.random().toString(36).substring(7),
+        checkoutUrl: "https://mock-checkout-url.com"
+      };
 
-      console.log(cart);
-      setCart(cart);
+      console.log(mockCart);
+      setCart(mockCart);
     } catch (error) {
       console.error(error);
       setCart(null);
