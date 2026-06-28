@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { getProductByHandle } from "../../services/product.service";
 import type { ShopifyProduct } from "../../types";
 
 const WL_KEY = "wishlist";
@@ -19,15 +20,40 @@ interface RecentlyViewedProps {
 
 const RecentlyViewed = ({ currentProductId }: RecentlyViewedProps) => {
   const navigate = useNavigate();
-  const [recentlyViewed] = useState<ShopifyProduct[]>(() => {
+  const [recentlyViewed, setRecentlyViewed] = useState<ShopifyProduct[]>([]);
+  const [wishlist, setWishlist] = useState<string[]>(() => readWL());
+
+  useEffect(() => {
+    let active = true;
     const stored = JSON.parse(
       sessionStorage.getItem("recentlyViewed") || "[]",
     ) as ShopifyProduct[];
-    return stored
-      .filter((p) => p.id !== currentProductId)
+    const handles = stored
+      .filter((product) => product.id !== currentProductId)
+      .map((product) => product.handle)
+      .filter((handle, index, allHandles) => allHandles.indexOf(handle) === index)
       .slice(0, 6);
-  });
-  const [wishlist, setWishlist] = useState<string[]>(() => readWL());
+
+    Promise.all(handles.map((handle) => getProductByHandle(handle)))
+      .then((results) => {
+        if (!active) return;
+
+        setRecentlyViewed(
+          results
+            .map(({ product }) => product)
+            .filter((product): product is ShopifyProduct => product !== null),
+        );
+      })
+      .catch(() => {
+        if (active) {
+          setRecentlyViewed([]);
+        }
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [currentProductId]);
 
 
   const handleProductClick = (product: ShopifyProduct) => {

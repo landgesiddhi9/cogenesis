@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { products } from "../../data/mockData";
+import { getFeaturedProducts } from "../../services/product.service";
 import type { ShopifyProduct } from "../../types";
 
 const WL_KEY = "wishlist";
@@ -15,13 +15,62 @@ const writeWL = (ids: string[]) =>
   sessionStorage.setItem(WL_KEY, JSON.stringify(ids));
 
 interface RelatedProductsProps {
-  currentProductId: string;
+  currentProduct: ShopifyProduct;
 }
 
-const RelatedProducts = ({ currentProductId }: RelatedProductsProps) => {
+const RelatedProducts = ({ currentProduct }: RelatedProductsProps) => {
   const navigate = useNavigate();
   const [_hoveredId, setHoveredId] = useState<string | null>(null);
   const [wishlist, setWishlist] = useState<string[]>(() => readWL());
+  const [relatedProducts, setRelatedProducts] = useState<ShopifyProduct[]>([]);
+
+  useEffect(() => {
+    let active = true;
+
+    getFeaturedProducts(24)
+      .then(({ products }) => {
+        if (!active) return;
+
+        const candidates = products.filter(
+          (product) => product.id !== currentProduct.id,
+        );
+        const selected: ShopifyProduct[] = [];
+        const addProducts = (matches: ShopifyProduct[]) => {
+          matches.forEach((product) => {
+            if (
+              selected.length < 4 &&
+              !selected.some((selectedProduct) => selectedProduct.id === product.id)
+            ) {
+              selected.push(product);
+            }
+          });
+        };
+
+        addProducts(
+          candidates.filter(
+            (product) => product.productType === currentProduct.productType,
+          ),
+        );
+
+        addProducts(
+          candidates.filter((product) =>
+            product.tags.some((tag) => currentProduct.tags.includes(tag)),
+          ),
+        );
+
+        addProducts(candidates);
+        setRelatedProducts(selected);
+      })
+      .catch(() => {
+        if (active) {
+          setRelatedProducts([]);
+        }
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [currentProduct]);
 
   const toggleWishlist = (e: React.MouseEvent, id: string) => {
     e.preventDefault();
@@ -32,16 +81,6 @@ const RelatedProducts = ({ currentProductId }: RelatedProductsProps) => {
     writeWL(next);
     setWishlist(next);
   };
-
-  // Get related products (same category, different product)
-  const currentProduct = products.find((p) => p.id === currentProductId);
-  const relatedProducts = products
-    .filter(
-      (p) =>
-        p.productType === currentProduct?.productType &&
-        p.id !== currentProductId,
-    )
-    .slice(0, 4);
 
   const handleProductClick = (product: ShopifyProduct) => {
     navigate(`/products/${product.handle}`);

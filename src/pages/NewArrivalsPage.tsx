@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { allProducts } from "../data/mockData";
+import { getFeaturedProducts } from "../services/product.service";
 import type { ShopifyProduct } from "../types";
 
 
@@ -176,13 +176,22 @@ const NewArrivalsPage = () => {
   useEffect(() => {
     let active = true;
 
-    // Simulate network request
-    setTimeout(() => {
-      if (active) {
-        setProducts(allProducts.slice(0, 4));
-        setLoading(false);
-      }
-    }, 300);
+    getFeaturedProducts(4)
+      .then(({ products: featuredProducts }) => {
+        if (active) {
+          setProducts(featuredProducts);
+        }
+      })
+      .catch(() => {
+        if (active) {
+          setProducts([]);
+        }
+      })
+      .finally(() => {
+        if (active) {
+          setLoading(false);
+        }
+      });
 
     return () => {
       active = false;

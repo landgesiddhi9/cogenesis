@@ -182,7 +182,7 @@ const ProductDetailPage = ({ productHandle }: ProductDetailPageProps) => {
 
       {/* Related Products */}
       <div className="max-w-[1600px] mx-auto px-6 md:px-12 lg:px-16 py-16 border-t border-[#e7e1d8]">
-        <RelatedProducts currentProductId={product.id} />
+        <RelatedProducts currentProduct={product} />
       </div>
 
       {/* Recently Viewed */}
