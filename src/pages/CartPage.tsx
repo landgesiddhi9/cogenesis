@@ -1,28 +1,8 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import { useCart } from "../hooks/useCart";
 import { productStripItems } from "../data/mockData";
 import type { ShopifyProduct } from "../types";
-type Cart = {
-  id: string;
-  checkoutUrl: string;
-  totalQuantity: number;
-  lines: Array<{
-    id: string;
-    quantity: number;
-    merchandise: {
-      title: string;
-      price: { amount: string; currencyCode: string };
-      product: {
-        title: string;
-        featuredImage: { url: string; altText?: string } | null;
-      };
-    };
-  }>;
-  cost: {
-    subtotalAmount: { amount: string; currencyCode: string };
-    totalAmount: { amount: string; currencyCode: string };
-  };
-};
 
 // ── Shared constants for the product strip ─────────────────────────────────────────
 const SIZES = ["S", "M", "L", "XL"];
@@ -184,8 +164,7 @@ const formatPrice = (amount: string, currency: string) => {
 // ── Cart page ─────────────────────────────────────────────────────────────────
 const CartPage = () => {
   const navigate = useNavigate();
-  const [cart, setCart] = useState<Cart | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { cart, updateCartLine, removeCartLine } = useCart();
 
   // "May Interest You" strip state
   const stripRef = useRef<HTMLDivElement>(null);
@@ -209,31 +188,7 @@ const CartPage = () => {
     });
   };
 
-  useEffect(() => {
-    let active = true;
-    // Simulate network request
-    setTimeout(() => {
-      if (active) {
-        // Mock an empty cart since there is no backend
-        setCart({
-          id: "mock-cart-id",
-          checkoutUrl: "#",
-          totalQuantity: 0,
-          lines: [],
-          cost: {
-            subtotalAmount: { amount: "0", currencyCode: "INR" },
-            totalAmount: { amount: "0", currencyCode: "INR" },
-          }
-        });
-        setLoading(false);
-      }
-    }, 300);
-    return () => {
-      active = false;
-    };
-  }, []);
-
-  const hasItems = !loading && cart && cart.totalQuantity > 0;
+  const hasItems = cart && cart.lines.length > 0;
 
   return (
     <main className="bg-[#F7F5F2] min-h-[100svh] pb-24 flex flex-col">
@@ -269,9 +224,35 @@ const CartPage = () => {
                       <p className="font-sans text-[11px] text-[#888] mt-1">
                         {line.merchandise.title}
                       </p>
-                      <p className="font-sans text-[11px] text-[#888] mt-1">
-                        Qty: {line.quantity}
-                      </p>
+                      <div className="flex items-center gap-2 mt-1.5">
+                        <button
+                          type="button"
+                          onClick={() => updateCartLine(line.id, Math.max(1, line.quantity - 1))}
+                          className="w-6 h-6 flex items-center justify-center border border-stone/20 hover:border-charcoal/40 transition-colors rounded-sm text-xs font-sans text-[#888]"
+                          aria-label="Decrease quantity"
+                        >
+                          −
+                        </button>
+                        <span className="font-sans text-[11px] text-[#888] min-w-[14px] text-center">
+                          {line.quantity}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => updateCartLine(line.id, line.quantity + 1)}
+                          className="w-6 h-6 flex items-center justify-center border border-stone/20 hover:border-charcoal/40 transition-colors rounded-sm text-xs font-sans text-[#888]"
+                          aria-label="Increase quantity"
+                        >
+                          +
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => removeCartLine(line.id)}
+                          className="ml-2 font-sans text-[10px] uppercase tracking-[0.1em] text-[#888] hover:text-[#111] transition-colors"
+                          aria-label="Remove item"
+                        >
+                          Remove
+                        </button>
+                      </div>
                     </div>
                     <p className="font-sans text-[12px] text-[#111] tabular-nums whitespace-nowrap">
                       {formatPrice(
@@ -312,6 +293,15 @@ const CartPage = () => {
                         )}
                       </span>
                     </div>
+
+                    <a
+                      href={cart.checkoutUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="block w-full h-[52px] bg-[#111] text-white font-sans text-[12px] font-semibold uppercase tracking-[0.2em] hover:bg-[#2a2a2a] transition-colors duration-200 flex items-center justify-center mt-6"
+                    >
+                      Checkout
+                    </a>
                   </div>
                 </div>
               </div>

@@ -1,7 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useInView } from "../hooks/useInView";
 import { useWishlist } from "../hooks/useWishlist";
+import { useCart } from "../hooks/useCart";
 import { getFeaturedProducts } from "../services/product.service";
 import type { ShopifyProduct } from "../types";
 
@@ -15,6 +16,7 @@ const ProductCard = ({
   const navigate = useNavigate();
   const { ref, isInView } = useInView({ threshold: 0.1 });
   const { isWishlisted, toggleWishlist: toggleWishlistItem } = useWishlist();
+  const { addToCart } = useCart();
   const wishlisted = isWishlisted(product.id);
 
   const handleWishlistToggle = (e: React.MouseEvent) => {
@@ -22,6 +24,19 @@ const ProductCard = ({
     e.stopPropagation();
     toggleWishlistItem(product.id);
   };
+
+  const handleAddToCart = useCallback(
+    (e: React.MouseEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+
+      const variant = product.variants[0];
+      if (variant) {
+        addToCart(variant.id, 1).catch(() => {});
+      }
+    },
+    [product, addToCart],
+  );
 
   const handleProductClick = () => {
     navigate(`/products/${product.handle}`);
@@ -94,6 +109,14 @@ const ProductCard = ({
             product.priceRange.minVariantPrice.amount
           ).toLocaleString("en-IN")}
         </p>
+
+        <button
+          type="button"
+          onClick={handleAddToCart}
+          className="mt-3 w-full py-2 bg-white/20 text-white font-sans text-[10px] uppercase tracking-[0.2em] hover:bg-white/30 transition-all duration-300 border border-white/30"
+        >
+          Add to Cart
+        </button>
       </div>
     </div>
   );

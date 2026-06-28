@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useWishlist } from "../hooks/useWishlist";
+import { useCart } from "../hooks/useCart";
 import { getProductByHandle } from "../services/product.service";
 import ImageGallery from "../components/ProductDetail/ImageGallery";
 import ProductInfo from "../components/ProductDetail/ProductInfo";
@@ -19,6 +20,8 @@ const ProductDetailPage = ({ productHandle }: ProductDetailPageProps) => {
   const [selectedSize, setSelectedSize] = useState("");
   const [quantity, setQuantity] = useState(1);
   const { isWishlisted, toggleWishlist } = useWishlist();
+  const { addToCart: addToCartService } = useCart();
+  const [addingToCart, setAddingToCart] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -69,7 +72,7 @@ const ProductDetailPage = ({ productHandle }: ProductDetailPageProps) => {
     toggleWishlist(product.id);
   };
 
-  const addToCart = () => {
+  const handleAddToCart = async () => {
     if (!selectedSize) {
       alert("Please select a size");
       return;
@@ -78,7 +81,24 @@ const ProductDetailPage = ({ productHandle }: ProductDetailPageProps) => {
       alert("Product not found");
       return;
     }
-    alert(`Added ${quantity} ${product.title} (${selectedSize}) to cart`);
+
+    const variant = product.variants.find((v) => v.title === selectedSize);
+    if (!variant) {
+      alert("Selected size is not available");
+      return;
+    }
+
+    if (addingToCart) return;
+
+    setAddingToCart(true);
+
+    try {
+      await addToCartService(variant.id, quantity);
+    } catch {
+      alert("Failed to add to cart. Please try again.");
+    } finally {
+      setAddingToCart(false);
+    }
   };
 
   if (loading) {
@@ -127,7 +147,7 @@ const ProductDetailPage = ({ productHandle }: ProductDetailPageProps) => {
               setQuantity={setQuantity}
               isWishlisted={isWishlisted(product.id)}
               toggleWishlist={handleWishlistToggle}
-              addToCart={addToCart}
+              addToCart={handleAddToCart}
               description={productDescription}
             />
 

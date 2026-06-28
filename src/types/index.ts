@@ -50,6 +50,32 @@ export interface ShopifyCollection {
   products: ShopifyProduct[];
 }
 
+export interface ShopifyCart {
+  id: string;
+  checkoutUrl: string;
+  totalQuantity: number;
+  lines: ShopifyCartLine[];
+  cost: {
+    subtotalAmount: ShopifyPrice;
+    totalAmount: ShopifyPrice;
+  };
+}
+
+export interface ShopifyCartLine {
+  id: string;
+  quantity: number;
+  merchandise: {
+    id: string;
+    title: string;
+    price: ShopifyPrice;
+    image?: ShopifyImage | null;
+    product: {
+      title: string;
+      featuredImage?: ShopifyImage | null;
+    };
+  };
+}
+
 // UI-specific types
 export interface NavLink {
   label: string;

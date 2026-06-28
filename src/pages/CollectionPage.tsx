@@ -1,7 +1,8 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useInView } from "../hooks/useInView";
 import { useWishlist } from "../hooks/useWishlist";
+import { useCart } from "../hooks/useCart";
 import { getCollectionByHandle } from "../services/collection.service";
 import { logProductImageFailure } from "../lib/shopifyImageDiagnostics";
 import SortDropdown from "../components/SortDropdown";
@@ -70,6 +71,7 @@ const CollectionProductCard = ({
   const navigate = useNavigate();
   const { ref, isInView } = useInView({ threshold: 0.1 });
   const { isWishlisted, toggleWishlist } = useWishlist();
+  const { addToCart } = useCart();
   const [isHovered, setIsHovered] = useState(false);
   const wishlisted = isWishlisted(product.id);
   const [selectedColorIndex, setSelectedColorIndex] = useState(0);
@@ -83,6 +85,19 @@ const CollectionProductCard = ({
     e.stopPropagation();
     toggleWishlist(product.id);
   };
+
+  const handleAddToCart = useCallback(
+    (e: React.MouseEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+
+      const variant = product.variants[0];
+      if (variant) {
+        addToCart(variant.id, 1).catch(() => {});
+      }
+    },
+    [product, addToCart],
+  );
 
   // Extract fabric from description or tags
   const fabric = product.tags
@@ -154,6 +169,19 @@ const CollectionProductCard = ({
           >
             <path d="M6 2h12v16l-6-4l-6 4V2z" />
           </svg>
+        </button>
+
+        {/* Add to Cart button */}
+        <button
+          onClick={handleAddToCart}
+          className={`absolute bottom-0 left-0 right-0 z-20 w-full py-3 bg-black/60 text-white font-sans text-[11px] uppercase tracking-[0.15em] transition-all duration-300 ${
+            isHovered
+              ? "opacity-100 translate-y-0"
+              : "opacity-0 translate-y-2"
+          }`}
+          aria-label="Add to cart"
+        >
+          Add to Cart
         </button>
       </div>
 
