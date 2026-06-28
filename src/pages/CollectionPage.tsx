@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useInView } from "../hooks/useInView";
+import { useWishlist } from "../hooks/useWishlist";
 import { getCollectionByHandle } from "../services/collection.service";
 import { logProductImageFailure } from "../lib/shopifyImageDiagnostics";
 import SortDropdown from "../components/SortDropdown";
@@ -68,11 +69,9 @@ const CollectionProductCard = ({
 }) => {
   const navigate = useNavigate();
   const { ref, isInView } = useInView({ threshold: 0.1 });
+  const { isWishlisted, toggleWishlist } = useWishlist();
   const [isHovered, setIsHovered] = useState(false);
-  const [isWishlisted, setIsWishlisted] = useState(() => {
-    const wishlist = JSON.parse(sessionStorage.getItem("wishlist") || "[]");
-    return wishlist.includes(product.id);
-  });
+  const wishlisted = isWishlisted(product.id);
   const [selectedColorIndex, setSelectedColorIndex] = useState(0);
 
   const handleProductClick = () => {
@@ -82,15 +81,7 @@ const CollectionProductCard = ({
   const handleWishlistToggle = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    const wishlist = JSON.parse(sessionStorage.getItem("wishlist") || "[]");
-    if (isWishlisted) {
-      const updated = wishlist.filter((id: string) => id !== product.id);
-      sessionStorage.setItem("wishlist", JSON.stringify(updated));
-    } else {
-      wishlist.push(product.id);
-      sessionStorage.setItem("wishlist", JSON.stringify(wishlist));
-    }
-    setIsWishlisted(!isWishlisted);
+    toggleWishlist(product.id);
   };
 
   // Extract fabric from description or tags
@@ -154,8 +145,8 @@ const CollectionProductCard = ({
             width="22"
             height="22"
             viewBox="0 0 24 24"
-            fill={isWishlisted ? "#431c1c" : "none"}
-            stroke={isWishlisted ? "#431c1c" : "#431c1c"}
+            fill={wishlisted ? "#431c1c" : "none"}
+            stroke={wishlisted ? "#431c1c" : "#431c1c"}
             strokeWidth="1.5"
             strokeLinecap="round"
             strokeLinejoin="round"

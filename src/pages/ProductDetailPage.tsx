@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useWishlist } from "../hooks/useWishlist";
 import { getProductByHandle } from "../services/product.service";
 import ImageGallery from "../components/ProductDetail/ImageGallery";
 import ProductInfo from "../components/ProductDetail/ProductInfo";
@@ -17,7 +18,7 @@ const ProductDetailPage = ({ productHandle }: ProductDetailPageProps) => {
   const [selectedColor, setSelectedColor] = useState(0);
   const [selectedSize, setSelectedSize] = useState("");
   const [quantity, setQuantity] = useState(1);
-  const [isWishlisted, setIsWishlisted] = useState(false);
+  const { isWishlisted, toggleWishlist } = useWishlist();
 
   useEffect(() => {
     let active = true;
@@ -44,11 +45,6 @@ const ProductDetailPage = ({ productHandle }: ProductDetailPageProps) => {
             );
           }
 
-          const wishlistData = sessionStorage.getItem("wishlist");
-          const wishlisted: string[] = wishlistData
-            ? JSON.parse(wishlistData)
-            : [];
-          setIsWishlisted(wishlisted.includes(foundProduct.id));
         } else {
           setProduct(null);
         }
@@ -68,23 +64,9 @@ const ProductDetailPage = ({ productHandle }: ProductDetailPageProps) => {
     };
   }, [productHandle]);
 
-  const toggleWishlist = () => {
+  const handleWishlistToggle = () => {
     if (!product) return;
-
-    const wishlistData = sessionStorage.getItem("wishlist");
-    const wishlisted: string[] = wishlistData
-      ? JSON.parse(wishlistData)
-      : [];
-    const index = wishlisted.indexOf(product.id);
-
-    if (index > -1) {
-      wishlisted.splice(index, 1);
-    } else {
-      wishlisted.push(product.id);
-    }
-
-    sessionStorage.setItem("wishlist", JSON.stringify(wishlisted));
-    setIsWishlisted(!isWishlisted);
+    toggleWishlist(product.id);
   };
 
   const addToCart = () => {
@@ -143,8 +125,8 @@ const ProductDetailPage = ({ productHandle }: ProductDetailPageProps) => {
               setSelectedSize={setSelectedSize}
               quantity={quantity}
               setQuantity={setQuantity}
-              isWishlisted={isWishlisted}
-              toggleWishlist={toggleWishlist}
+              isWishlisted={isWishlisted(product.id)}
+              toggleWishlist={handleWishlistToggle}
               addToCart={addToCart}
               description={productDescription}
             />

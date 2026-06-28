@@ -1,36 +1,17 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useWishlist } from '../hooks/useWishlist';
 import { productStripItems } from '../data/mockData';
 import type { ShopifyProduct } from '../types';
 
-const WL_KEY = "wishlist";
-const readWL = (): string[] => {
-  try {
-    return JSON.parse(sessionStorage.getItem(WL_KEY) || "[]");
-  } catch {
-    return [];
-  }
-};
-const writeWL = (ids: string[]) =>
-  sessionStorage.setItem(WL_KEY, JSON.stringify(ids));
-
 const SearchPage = () => {
+  const { isWishlisted, toggleWishlist } = useWishlist();
+
   const products = useMemo(() => productStripItems.slice(0, 7), []);
   const railRef = useRef<HTMLDivElement | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
   const [hasText, setHasText] = useState(false);
-  const [wishlist, setWishlist] = useState<string[]>(() => readWL());
   const navigate = useNavigate();
-
-  const toggleWishlist = (e: React.MouseEvent, id: string) => {
-    e.stopPropagation();
-    e.preventDefault();
-    const next = wishlist.includes(id)
-      ? wishlist.filter((wid) => wid !== id)
-      : [...wishlist, id];
-    writeWL(next);
-    setWishlist(next);
-  };
 
   useEffect(() => {
     inputRef.current?.focus();
@@ -138,27 +119,27 @@ const SearchPage = () => {
 
                   <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
 
-                  <button
-                    type="button"
-                    onClick={(e) => toggleWishlist(e, p.id)}
-                    className={`absolute top-3 right-3 p-0 bg-transparent border-none cursor-pointer transition-opacity duration-200 z-10 ${
-                      wishlist.includes(p.id) ? "opacity-100" : "opacity-0 group-hover:opacity-100"
-                    }`}
-                    aria-label={wishlist.includes(p.id) ? "Remove from wishlist" : "Add to wishlist"}
-                  >
-                    <svg
-                      width="22"
-                      height="22"
-                      viewBox="0 0 24 24"
-                      fill={wishlist.includes(p.id) ? "#431c1c" : "none"}
-                      stroke={wishlist.includes(p.id) ? "#431c1c" : "#2A2420"}
-                      strokeWidth="1.8"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
+                    <button
+                      type="button"
+                      onClick={(e) => { e.stopPropagation(); e.preventDefault(); toggleWishlist(p.id); }}
+                      className={`absolute top-3 right-3 p-0 bg-transparent border-none cursor-pointer transition-opacity duration-200 z-10 ${
+                        isWishlisted(p.id) ? "opacity-100" : "opacity-0 group-hover:opacity-100"
+                      }`}
+                      aria-label={isWishlisted(p.id) ? "Remove from wishlist" : "Add to wishlist"}
                     >
-                      <path d="M6 2h12v16l-6-4l-6 4V2z" />
-                    </svg>
-                  </button>
+                      <svg
+                        width="22"
+                        height="22"
+                        viewBox="0 0 24 24"
+                        fill={isWishlisted(p.id) ? "#431c1c" : "none"}
+                        stroke={isWishlisted(p.id) ? "#431c1c" : "#2A2420"}
+                        strokeWidth="1.8"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <path d="M6 2h12v16l-6-4l-6 4V2z" />
+                      </svg>
+                    </button>
                 </div>
                 <div className="mt-3">
                   <h3 className="text-[15px] font-normal tracking-[0.02em] leading-[1.2] text-charcoal">

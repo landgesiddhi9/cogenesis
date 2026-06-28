@@ -1,18 +1,8 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useWishlist } from "../../hooks/useWishlist";
 import { getFeaturedProducts } from "../../services/product.service";
 import type { ShopifyProduct } from "../../types";
-
-const WL_KEY = "wishlist";
-const readWL = (): string[] => {
-  try {
-    return JSON.parse(sessionStorage.getItem(WL_KEY) || "[]");
-  } catch {
-    return [];
-  }
-};
-const writeWL = (ids: string[]) =>
-  sessionStorage.setItem(WL_KEY, JSON.stringify(ids));
 
 interface RelatedProductsProps {
   currentProduct: ShopifyProduct;
@@ -21,7 +11,7 @@ interface RelatedProductsProps {
 const RelatedProducts = ({ currentProduct }: RelatedProductsProps) => {
   const navigate = useNavigate();
   const [_hoveredId, setHoveredId] = useState<string | null>(null);
-  const [wishlist, setWishlist] = useState<string[]>(() => readWL());
+  const { isWishlisted, toggleWishlist: toggleWishlistItem } = useWishlist();
   const [relatedProducts, setRelatedProducts] = useState<ShopifyProduct[]>([]);
 
   useEffect(() => {
@@ -72,14 +62,10 @@ const RelatedProducts = ({ currentProduct }: RelatedProductsProps) => {
     };
   }, [currentProduct]);
 
-  const toggleWishlist = (e: React.MouseEvent, id: string) => {
+  const handleWishlistToggle = (e: React.MouseEvent, id: string) => {
     e.preventDefault();
     e.stopPropagation();
-    const next = wishlist.includes(id)
-      ? wishlist.filter((wid) => wid !== id)
-      : [...wishlist, id];
-    writeWL(next);
-    setWishlist(next);
+    toggleWishlistItem(id);
   };
 
   const handleProductClick = (product: ShopifyProduct) => {
@@ -94,7 +80,7 @@ const RelatedProducts = ({ currentProduct }: RelatedProductsProps) => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
         {relatedProducts.map((product) => {
-          const wishlisted = wishlist.includes(product.id);
+          const wishlisted = isWishlisted(product.id);
           return (
             <div
               key={product.id}
@@ -114,7 +100,7 @@ const RelatedProducts = ({ currentProduct }: RelatedProductsProps) => {
 
                 <button
                   type="button"
-                  onClick={(e) => toggleWishlist(e, product.id)}
+                  onClick={(e) => handleWishlistToggle(e, product.id)}
                   className={`absolute top-3 right-3 z-20 p-0 bg-transparent border-none cursor-pointer transition-opacity duration-200 ${
                     wishlisted ? "opacity-100" : "opacity-0 group-hover:opacity-100"
                   }`}

@@ -1,22 +1,12 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useWishlist } from "../hooks/useWishlist";
 import { getFeaturedProducts } from "../services/product.service";
 import type { ShopifyProduct } from "../types";
 
 
 // ── Shirt sizes shown in the hover panel ──────────────────────────────────────
 const SIZES = ["S", "M", "L", "XL"];
-const WISHLIST_KEY = "wishlist";
-
-const readWishlist = (): string[] => {
-  try {
-    return JSON.parse(sessionStorage.getItem(WISHLIST_KEY) || "[]");
-  } catch {
-    return [];
-  }
-};
-const writeWishlist = (ids: string[]) =>
-  sessionStorage.setItem(WISHLIST_KEY, JSON.stringify(ids));
 
 // ── Product card ──────────────────────────────────────────────────────────────
 const ProductCard = ({
@@ -158,17 +148,7 @@ const ProductCard = ({
 // ── New Arrivals page ─────────────────────────────────────────────────────────────────
 // Shows exactly 4 featured products in a full-width editorial grid.
 const NewArrivalsPage = () => {
-  const [wishlistIds, setWishlistIds] = useState<string[]>(readWishlist);
-
-  const toggleWishlist = (id: string) => {
-    setWishlistIds((prev) => {
-      const next = prev.includes(id)
-        ? prev.filter((x) => x !== id)
-        : [...prev, id];
-      writeWishlist(next);
-      return next;
-    });
-  };
+  const { isWishlisted, toggleWishlist } = useWishlist();
 
   const [products, setProducts] = useState<ShopifyProduct[]>([]);
   const [loading, setLoading] = useState(true);
@@ -226,7 +206,7 @@ const NewArrivalsPage = () => {
               <div key={product.id} className="bg-[#F7F5F2] p-0">
                 <ProductCard
                   product={product}
-                  wishlisted={wishlistIds.includes(product.id)}
+                  wishlisted={isWishlisted(product.id)}
                   onWishlistToggle={toggleWishlist}
                 />
               </div>

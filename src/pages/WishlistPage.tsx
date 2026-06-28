@@ -1,21 +1,8 @@
 import { useState, useRef, useEffect } from "react";
-import { allProducts } from "../data/mockData";
+import { useWishlist } from "../hooks/useWishlist";
+import { getFeaturedProducts } from "../services/product.service";
+import { getWishlistProductsByIds } from "../services/wishlist.service";
 import type { ShopifyProduct } from "../types";
-
-// ── Wishlist sessionStorage helpers ──────────────────────────────────────────
-// Matches the key used in CollectionPage so wishlist state is shared site-wide
-const WISHLIST_KEY = "wishlist";
-
-const readIds = (): string[] => {
-  try {
-    return JSON.parse(sessionStorage.getItem(WISHLIST_KEY) || "[]");
-  } catch {
-    return [];
-  }
-};
-
-const writeIds = (ids: string[]) =>
-  sessionStorage.setItem(WISHLIST_KEY, JSON.stringify(ids));
 
 // ── Bookmark icon ─────────────────────────────────────────────────────────────
 const BookmarkIcon = ({ filled }: { filled: boolean }) => (
@@ -140,7 +127,7 @@ const ArrowBtn = ({
 
 // ── Wishlist page ─────────────────────────────────────────────────────────────
 const WishlistPage = () => {
-  const [wishlistIds, setWishlistIds] = useState<string[]>(readIds);
+  const { wishlistIds, toggleWishlist, isWishlisted } = useWishlist();
   const [wishlistProducts, setWishlistProducts] = useState<ShopifyProduct[]>([]);
   const [popularProducts, setPopularProducts] = useState<ShopifyProduct[]>([]);
   const [loading, setLoading] = useState(true);
@@ -148,18 +135,30 @@ const WishlistPage = () => {
 
   useEffect(() => {
     let active = true;
-    
-    // Simulate network request
-    setTimeout(() => {
-      if (active) {
-        const wishlistData = allProducts.filter(p => wishlistIds.includes(p.id));
-        const popularData = allProducts.slice(0, 12);
-        
+
+    setLoading(true);
+
+    Promise.all([
+      getWishlistProductsByIds(wishlistIds),
+      getFeaturedProducts(12),
+    ])
+      .then(([wishlistData, { products: popularData }]) => {
+        if (!active) return;
+
         setWishlistProducts(wishlistData);
         setPopularProducts(popularData);
-        setLoading(false);
-      }
-    }, 300);
+      })
+      .catch(() => {
+        if (!active) return;
+
+        setWishlistProducts([]);
+        setPopularProducts([]);
+      })
+      .finally(() => {
+        if (active) {
+          setLoading(false);
+        }
+      });
 
     return () => {
       active = false;
@@ -168,11 +167,7 @@ const WishlistPage = () => {
 
   // Toggle wishlist membership and persist
   const toggle = (id: string) => {
-    const nextIds = wishlistIds.includes(id)
-      ? wishlistIds.filter((x) => x !== id)
-      : [...wishlistIds, id];
-    writeIds(nextIds);
-    setWishlistIds(nextIds);
+    toggleWishlist(id);
     setWishlistProducts((prev) => prev.filter((p) => p.id !== id));
   };
 
@@ -288,7 +283,7 @@ const WishlistPage = () => {
               >
                 <ProductCard
                   product={p}
-                  wishlisted={wishlistIds.includes(p.id)}
+                  wishlisted={isWishlisted(p.id)}
                   onToggle={toggle}
                 />
               </div>
