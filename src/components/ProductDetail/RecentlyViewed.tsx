@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import type { ShopifyProduct } from "../../types";
 
@@ -19,7 +19,7 @@ interface RecentlyViewedProps {
 
 const RecentlyViewed = ({ currentProductId }: RecentlyViewedProps) => {
   const navigate = useNavigate();
-  const [recentlyViewed, setRecentlyViewed] = useState<ShopifyProduct[]>(() => {
+  const [recentlyViewed] = useState<ShopifyProduct[]>(() => {
     const stored = JSON.parse(
       sessionStorage.getItem("recentlyViewed") || "[]",
     ) as ShopifyProduct[];
