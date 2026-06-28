@@ -1,7 +1,7 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCart } from "../hooks/useCart";
-import { productStripItems } from "../data/mockData";
+import { getFeaturedProducts } from "../services/product.service";
 import type { ShopifyProduct } from "../types";
 
 // ── Shared constants for the product strip ─────────────────────────────────────────
@@ -27,6 +27,7 @@ const StripCard = ({
   wishlisted: boolean;
   onToggle: (id: string) => void;
 }) => {
+  const navigate = useNavigate();
   const [hovered, setHovered] = useState(false);
   const [addedSize, setAddedSize] = useState<string | null>(null);
 
@@ -37,12 +38,13 @@ const StripCard = ({
 
   return (
     <article
-      className="group relative flex flex-col"
+      className="group relative flex flex-col cursor-pointer"
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => {
         setHovered(false);
         setAddedSize(null);
       }}
+      onClick={() => navigate(`/products/${product.handle}`)}
     >
       <div className="relative overflow-hidden aspect-[3/4] bg-[#f0ede8]">
         <img
@@ -168,6 +170,7 @@ const CartPage = () => {
 
   // "May Interest You" strip state
   const stripRef = useRef<HTMLDivElement>(null);
+  const [stripProducts, setStripProducts] = useState<ShopifyProduct[]>([]);
   const [wlIds, setWlIds] = useState<string[]>(readWL);
   const toggleWl = (id: string) =>
     setWlIds((p) => {
@@ -187,6 +190,27 @@ const CartPage = () => {
       behavior: "smooth",
     });
   };
+
+  // Fetch live products for "May Interest You" strip
+  useEffect(() => {
+    let active = true;
+
+    getFeaturedProducts(12)
+      .then(({ products }) => {
+        if (active) {
+          setStripProducts(products);
+        }
+      })
+      .catch(() => {
+        if (active) {
+          setStripProducts([]);
+        }
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const hasItems = cart && cart.lines.length > 0;
 
@@ -317,7 +341,7 @@ const CartPage = () => {
           style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
         >
           <div className="flex gap-[1px]">
-            {productStripItems.map((p) => (
+            {stripProducts.map((p) => (
               <div
                 key={p.id}
                 className="flex-none

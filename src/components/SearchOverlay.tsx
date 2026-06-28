@@ -1,6 +1,8 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { productStripItems } from '../data/mockData';
+import { useNavigate } from 'react-router-dom';
+import { searchProducts } from '../services/search.service';
+import { getFeaturedProducts } from '../services/product.service';
 import type { ShopifyProduct } from '../types';
 
 const WL_KEY = "wishlist";
@@ -20,11 +22,43 @@ type Props = {
 };
 
 const SearchOverlay: React.FC<Props> = ({ isOpen, onClose }) => {
-  const products = useMemo(() => productStripItems.slice(0, 7), []);
+  const navigate = useNavigate();
   const railRef = useRef<HTMLDivElement | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
-  const [hasText, setHasText] = useState(false);
+  const [query, setQuery] = useState('');
+  const [results, setResults] = useState<ShopifyProduct[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [searched, setSearched] = useState(false);
   const [wishlist, setWishlist] = useState<string[]>(() => readWL());
+
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Load featured products on mount
+  useEffect(() => {
+    if (!isOpen) return;
+    setInitialLoading(true);
+    getFeaturedProducts(7)
+      .then(({ products }) => {
+        setResults(products);
+      })
+      .catch(() => {})
+      .finally(() => {
+        setInitialLoading(false);
+      });
+  }, [isOpen]);
+
+  // Reset state when overlay opens
+  useEffect(() => {
+    if (isOpen) {
+      setQuery('');
+      setSearched(false);
+      setError(null);
+      // Focus after a short delay to allow the animation to start
+      setTimeout(() => inputRef.current?.focus(), 100);
+    }
+  }, [isOpen]);
 
   const toggleWishlist = (e: React.MouseEvent, id: string) => {
     e.stopPropagation();
@@ -45,24 +79,67 @@ const SearchOverlay: React.FC<Props> = ({ isOpen, onClose }) => {
     return () => window.removeEventListener('keydown', onKey);
   }, [isOpen, onClose]);
 
+  // Debounced search
+  useEffect(() => {
+    const trimmed = query.trim();
+    if (!trimmed) {
+      setSearched(false);
+      return;
+    }
+
+    if (debounceRef.current) {
+      clearTimeout(debounceRef.current);
+    }
+
+    debounceRef.current = setTimeout(() => {
+      setSearched(true);
+      setLoading(true);
+      setError(null);
+
+      searchProducts(trimmed, 20)
+        .then(({ products }) => {
+          setResults(products);
+        })
+        .catch((err) => {
+          setError(err instanceof Error ? err.message : String(err));
+          setResults([]);
+        })
+        .finally(() => {
+          setLoading(false);
+        });
+    }, 300);
+
+    return () => {
+      if (debounceRef.current) {
+        clearTimeout(debounceRef.current);
+      }
+    };
+  }, [query]);
+
   const onOverlayClick = () => onClose();
 
-  const focusSearchInput = () => {
-    inputRef.current?.focus();
+  const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setQuery(event.target.value);
   };
 
-  const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setHasText(event.target.value.trim().length > 0);
-  };
+  const hasText = query.trim().length > 0;
 
   const onRailWheel = (e: React.WheelEvent<HTMLDivElement>) => {
-    // Horizontal scroll with mouse wheel
     if (!railRef.current) return;
     if (Math.abs(e.deltaY) > 0) {
       e.preventDefault();
       railRef.current.scrollBy({ left: e.deltaY, behavior: 'smooth' });
     }
   };
+
+  const handleProductClick = (handle: string) => {
+    onClose();
+    navigate(`/products/${handle}`);
+  };
+
+  const showInitial = !hasText && !searched;
+  const showNoResults = hasText && !loading && results.length === 0 && !error;
+  const showError = hasText && error;
 
   const overlay = (
     <div
@@ -79,7 +156,7 @@ const SearchOverlay: React.FC<Props> = ({ isOpen, onClose }) => {
         onClick={(e) => e.stopPropagation()}
       >
         <div className="max-w-[1400px] mx-auto px-6 md:px-10 h-full flex flex-col justify-start">
-          {/* Search bar - left aligned with close button on right */}
+          {/* Search bar */}
           <div className="flex items-center justify-between pt-[0.3cm]">
             <div className="w-[25vw] min-w-[240px]">
               <label className="relative block pb-1 text-stone/70">
@@ -89,11 +166,12 @@ const SearchOverlay: React.FC<Props> = ({ isOpen, onClose }) => {
                   placeholder="Search"
                   aria-label="Search"
                   autoFocus={isOpen}
+                  value={query}
                   onChange={handleInputChange}
                 />
                 <button
                   type="button"
-                  onClick={focusSearchInput}
+                  onClick={() => inputRef.current?.focus()}
                   className={`absolute right-0 top-1/2 -translate-y-1/2 h-8 w-8 flex items-center justify-center ${
                     hasText ? 'text-black' : 'text-current'
                   } hover:text-black`}
@@ -137,75 +215,87 @@ const SearchOverlay: React.FC<Props> = ({ isOpen, onClose }) => {
           {/* Heading */}
           <div className="mt-6">
             <h2 className="text-[13px] uppercase tracking-[0.3em] font-semibold text-stone">
-              May interest you
+              {showNoResults ? 'No results found' : showError ? 'Search error' : loading ? 'Searching...' : showInitial ? 'May interest you' : `Results (${results.length})`}
             </h2>
           </div>
 
-          {/* Horizontal product rail (only horizontally scrollable) */}
+          {/* Product rail or empty/error state */}
           <div className="mt-6 flex-1">
-            <div
-              ref={railRef}
-              className="flex gap-0 overflow-x-auto overflow-y-hidden pb-4 scroll-smooth -mx-6 md:-mx-10 pl-10 search-rail"
-              onWheel={onRailWheel}
-              style={{ scrollbarWidth: 'none' as any }}
-            >
-              <style>{`.search-rail::-webkit-scrollbar{display:none}`}</style>
-              {products.map((p: ShopifyProduct) => (
-                <article
-                  key={p.id}
-                  className="flex-shrink-0 bg-transparent"
-                  style={{ width: 'clamp(280px, 18vw, 380px)' }}
-                >
-                  <div className="relative overflow-hidden bg-[#f5f0eb] aspect-[3/4]">
-                    <img
-                      src={p.featuredImage.url}
-                      alt={p.featuredImage.altText}
-                      className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.02]"
-                      loading="lazy"
-                    />
-
-                    <button
-                      type="button"
-                      onClick={(e) => toggleWishlist(e, p.id)}
-                      className={`absolute top-3 right-3 p-0 bg-transparent border-none cursor-pointer transition-opacity duration-200 z-10 ${
-                        wishlist.includes(p.id) ? "opacity-100" : "opacity-0 group-hover:opacity-100"
-                      }`}
-                      aria-label={wishlist.includes(p.id) ? "Remove from wishlist" : "Add to wishlist"}
-                    >
-                      <svg
-                        width="22"
-                        height="22"
-                        viewBox="0 0 24 24"
-                        fill={wishlist.includes(p.id) ? "#431c1c" : "none"}
-                        stroke={wishlist.includes(p.id) ? "#431c1c" : "#2A2420"}
-                        strokeWidth="1.8"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
+            {initialLoading || loading ? (
+              <div className="flex items-center justify-center py-20">
+                <p className="text-stone/60 text-sm tracking-wide">Loading...</p>
+              </div>
+            ) : showNoResults ? (
+              <div className="flex items-center justify-center py-20">
+                <p className="text-stone/60 text-sm tracking-wide">No products match your search. Try a different term.</p>
+              </div>
+            ) : showError ? (
+              <div className="flex items-center justify-center py-20">
+                <p className="text-stone/60 text-sm tracking-wide">Something went wrong. Please try again.</p>
+              </div>
+            ) : (
+              <div
+                ref={railRef}
+                className="flex gap-0 overflow-x-auto overflow-y-hidden pb-4 scroll-smooth -mx-6 md:-mx-10 pl-10 search-rail"
+                onWheel={onRailWheel}
+                style={{ scrollbarWidth: 'none' as any }}
+              >
+                <style>{`.search-rail::-webkit-scrollbar{display:none}`}</style>
+                {results.map((p: ShopifyProduct) => (
+                  <article
+                    key={p.id}
+                    className="flex-shrink-0 bg-transparent group cursor-pointer"
+                    style={{ width: 'clamp(280px, 18vw, 380px)' }}
+                    onClick={() => handleProductClick(p.handle)}
+                  >
+                    <div className="relative overflow-hidden bg-[#f5f0eb] aspect-[3/4]">
+                      <img
+                        src={p.featuredImage.url}
+                        alt={p.featuredImage.altText}
+                        className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.02]"
+                        loading="lazy"
+                      />
+                      <button
+                        type="button"
+                        onClick={(e) => toggleWishlist(e, p.id)}
+                        className={`absolute top-3 right-3 p-0 bg-transparent border-none cursor-pointer transition-opacity duration-200 z-10 ${
+                          wishlist.includes(p.id) ? "opacity-100" : "opacity-0 group-hover:opacity-100"
+                        }`}
+                        aria-label={wishlist.includes(p.id) ? "Remove from wishlist" : "Add to wishlist"}
                       >
-                        <path d="M6 2h12v16l-6-4l-6 4V2z" />
-                      </svg>
-                    </button>
-
-                    <div className="absolute inset-x-2 bottom-3 z-10 flex items-center justify-center bg-[#f5f0eb]/95 px-3 py-1.5 text-[13px] text-charcoal opacity-0 transition-all duration-300 ease-out hover:opacity-100">
-                      <span className="mx-1">S</span>
-                      <span className="mx-1">M</span>
-                      <span className="mx-1">L</span>
-                      <span className="mx-1">XL</span>
+                        <svg
+                          width="22"
+                          height="22"
+                          viewBox="0 0 24 24"
+                          fill={wishlist.includes(p.id) ? "#431c1c" : "none"}
+                          stroke={wishlist.includes(p.id) ? "#431c1c" : "#2A2420"}
+                          strokeWidth="1.8"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
+                          <path d="M6 2h12v16l-6-4l-6 4V2z" />
+                        </svg>
+                      </button>
+                      <div className="absolute inset-x-2 bottom-3 z-10 flex items-center justify-center bg-[#f5f0eb]/95 px-3 py-1.5 text-[13px] text-charcoal opacity-0 transition-all duration-300 ease-out hover:opacity-100">
+                        <span className="mx-1">S</span>
+                        <span className="mx-1">M</span>
+                        <span className="mx-1">L</span>
+                        <span className="mx-1">XL</span>
+                      </div>
                     </div>
-                  </div>
-
-                  <div className="mt-3">
-                    <h3 className="text-[15px] font-normal tracking-[0.02em] leading-[1.2] text-charcoal">
-                      {p.title}
-                    </h3>
-                    <p className="font-sans text-[12px] text-[#888] tracking-[0.02em] tabular-nums">₹{Number(p.priceRange.minVariantPrice.amount).toLocaleString("en-IN")}</p>
-                  </div>
-                </article>
-              ))}
-            </div>
+                    <div className="mt-3">
+                      <h3 className="text-[15px] font-normal tracking-[0.02em] leading-[1.2] text-charcoal">
+                        {p.title}
+                      </h3>
+                      <p className="font-sans text-[12px] text-[#888] tracking-[0.02em] tabular-nums">₹{Number(p.priceRange.minVariantPrice.amount).toLocaleString("en-IN")}</p>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            )}
           </div>
 
-          {/* CTA pinned ~18px above bottom, visible without vertical scroll */}
+          {/* CTA pinned ~18px above bottom */}
           <div className="absolute left-0 right-0 flex justify-center" style={{ bottom: '18px' }}>
             <button className="px-6 py-2.5 border border-charcoal bg-transparent text-charcoal text-[11px] font-semibold uppercase tracking-[0.12em] hover:bg-charcoal hover:text-white transition-colors duration-200">
               View All Products
