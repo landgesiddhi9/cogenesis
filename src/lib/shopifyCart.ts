@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import { shopifyFetch } from "./shopify";
 
 const CART_ID_KEY = "cogenesis_shopify_cart_id";
@@ -202,10 +203,67 @@ export async function getCart(cartId: string): Promise<Cart> {
   const cart = data.cart;
   console.log("🔍 CART_QUERY — id:", cart.id, "totalQuantity:", cart.totalQuantity, "checkoutUrl:", cart.checkoutUrl);
   console.log("🔍 CART_QUERY — lines edge count:", cart.lines?.edges?.length);
+=======
+type CartCreateResponse = {
+  data?: {
+    cartCreate?: {
+      cart?: {
+        id: string;
+        checkoutUrl: string;
+      } | null;
+      userErrors?: Array<{
+        message: string;
+      }>;
+    } | null;
+  };
+  errors?: Array<{
+    message: string;
+  }>;
+};
+
+export async function createCart() {
+  const response = await fetch(
+    `https://${import.meta.env.VITE_SHOPIFY_STORE_DOMAIN}/api/2025-01/graphql.json`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Shopify-Storefront-Access-Token": import.meta.env.VITE_SHOPIFY_STOREFRONT_ACCESS_TOKEN,
+      },
+      body: JSON.stringify({
+        query: `
+          mutation cartCreate {
+            cartCreate {
+              cart {
+                id
+                checkoutUrl
+              }
+              userErrors {
+                message
+              }
+            }
+          }
+        `,
+      }),
+    },
+  );
+
+  if (!response.ok) {
+    throw new Error("Unable to create Shopify cart.");
+  }
+
+  const result = (await response.json()) as CartCreateResponse;
+  const cart = result.data?.cartCreate?.cart;
+
+  if (!cart || result.errors?.length || result.data?.cartCreate?.userErrors?.length) {
+    throw new Error("Unable to create Shopify cart.");
+  }
+>>>>>>> 3686bba (WIP: local cart changes)
 
   return {
     id: cart.id,
     checkoutUrl: cart.checkoutUrl,
+<<<<<<< HEAD
     totalQuantity: cart.totalQuantity,
     cost: {
       subtotalAmount: cart.cost.subtotalAmount,
@@ -226,5 +284,7 @@ export async function getCart(cartId: string): Promise<Cart> {
         },
       },
     })),
+=======
+>>>>>>> 3686bba (WIP: local cart changes)
   };
 }
