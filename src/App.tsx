@@ -104,6 +104,7 @@ function App() {
           {/* Cart */}
           <Route path="/cart" element={<CartPage />} />
 
+          {/* Test Cart */}
           <Route path="/test-cart" element={<TestCartPage />} />
 
           {/* Search */}
