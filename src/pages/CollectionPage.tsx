@@ -1,7 +1,8 @@
 import { useState, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useInView } from "../hooks/useInView";
-import { getCollectionByHandle } from "../data/mockData";
+import { getCollectionByHandle } from "../services/collection.service";
+import { logProductImageFailure } from "../lib/shopifyImageDiagnostics";
 import SortDropdown from "../components/SortDropdown";
 import FilterPanel from "../components/FilterPanel";
 import type { ShopifyProduct, ShopifyCollection } from "../types";
@@ -59,9 +60,11 @@ const getModelImageUrl = (tags: string[]) => {
 const CollectionProductCard = ({
   product,
   index,
+  rawProduct,
 }: {
   product: ShopifyProduct;
   index: number;
+  rawProduct: unknown;
 }) => {
   const navigate = useNavigate();
   const { ref, isInView } = useInView({ threshold: 0.1 });
@@ -128,6 +131,14 @@ const CollectionProductCard = ({
           }}
           className="w-full h-full object-cover object-center"
           loading="lazy"
+          onError={() => {
+            logProductImageFailure(
+              `collection-card:${product.handle}`,
+              rawProduct,
+              product,
+              displayImage,
+            );
+          }}
         />
 
         {/* Wishlist button */}
@@ -204,6 +215,9 @@ const CollectionProductCard = ({
 
 const CollectionPage = ({ collectionHandle }: CollectionPageProps) => {
   const [collection, setCollection] = useState<ShopifyCollection | null>(null);
+  const [rawProductsByHandle, setRawProductsByHandle] = useState<
+    Record<string, unknown>
+  >({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState("featured");
@@ -211,20 +225,35 @@ const CollectionPage = ({ collectionHandle }: CollectionPageProps) => {
 
   useEffect(() => {
     let active = true;
-    
-    // Simulate network request to keep loading state UI identical
-    setTimeout(() => {
-      if (active) {
-        try {
-          const data = getCollectionByHandle(collectionHandle);
-          setCollection(data);
-        } catch (err) {
-          setError(err instanceof Error ? err.message : String(err));
-        } finally {
+
+    setLoading(true);
+    setError(null);
+    setCollection(null);
+    setRawProductsByHandle({});
+
+    getCollectionByHandle(collectionHandle)
+      .then(({ collection: data, raw }) => {
+        if (!active) return;
+
+        if (raw?.products?.edges) {
+          const rawMap: Record<string, unknown> = {};
+          raw.products.edges.forEach(({ node }) => {
+            rawMap[node.handle] = node;
+          });
+          setRawProductsByHandle(rawMap);
+        }
+
+        setCollection(data);
+      })
+      .catch((err) => {
+        if (!active) return;
+        setError(err instanceof Error ? err.message : String(err));
+      })
+      .finally(() => {
+        if (active) {
           setLoading(false);
         }
-      }
-    }, 300);
+      });
 
     return () => {
       active = false;
@@ -353,6 +382,7 @@ const CollectionPage = ({ collectionHandle }: CollectionPageProps) => {
               key={product.id}
               product={product}
               index={index}
+              rawProduct={rawProductsByHandle[product.handle] ?? null}
             />
           ))}
         </div>
