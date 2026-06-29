@@ -1,44 +1,88 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { productStripItems } from '../data/mockData';
+import { useWishlist } from '../hooks/useWishlist';
+import { searchProducts } from '../services/search.service';
+import { getFeaturedProducts } from '../services/product.service';
 import type { ShopifyProduct } from '../types';
 
-const WL_KEY = "wishlist";
-const readWL = (): string[] => {
-  try {
-    return JSON.parse(sessionStorage.getItem(WL_KEY) || "[]");
-  } catch {
-    return [];
-  }
-};
-const writeWL = (ids: string[]) =>
-  sessionStorage.setItem(WL_KEY, JSON.stringify(ids));
-
 const SearchPage = () => {
-  const products = useMemo(() => productStripItems.slice(0, 7), []);
+  const { isWishlisted, toggleWishlist } = useWishlist();
+
+  const [query, setQuery] = useState('');
+  const [results, setResults] = useState<ShopifyProduct[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [searched, setSearched] = useState(false);
+
   const railRef = useRef<HTMLDivElement | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
-  const [hasText, setHasText] = useState(false);
-  const [wishlist, setWishlist] = useState<string[]>(() => readWL());
   const navigate = useNavigate();
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const toggleWishlist = (e: React.MouseEvent, id: string) => {
-    e.stopPropagation();
-    e.preventDefault();
-    const next = wishlist.includes(id)
-      ? wishlist.filter((wid) => wid !== id)
-      : [...wishlist, id];
-    writeWL(next);
-    setWishlist(next);
-  };
+  // Load featured products on mount as default "May interest you"
+  useEffect(() => {
+    setInitialLoading(true);
+    getFeaturedProducts(7)
+      .then(({ products }) => {
+        setResults(products);
+      })
+      .catch(() => {
+        // silently fail - show empty state
+      })
+      .finally(() => {
+        setInitialLoading(false);
+      });
+  }, []);
 
+  // Focus input on mount
   useEffect(() => {
     inputRef.current?.focus();
   }, []);
 
+  // Debounced search
+  useEffect(() => {
+    const trimmed = query.trim();
+    if (!trimmed) {
+      // Restore featured products when query is cleared
+      setSearched(false);
+      return;
+    }
+
+    if (debounceRef.current) {
+      clearTimeout(debounceRef.current);
+    }
+
+    debounceRef.current = setTimeout(() => {
+      setSearched(true);
+      setLoading(true);
+      setError(null);
+
+      searchProducts(trimmed, 20)
+        .then(({ products }) => {
+          setResults(products);
+        })
+        .catch((err) => {
+          setError(err instanceof Error ? err.message : String(err));
+          setResults([]);
+        })
+        .finally(() => {
+          setLoading(false);
+        });
+    }, 300);
+
+    return () => {
+      if (debounceRef.current) {
+        clearTimeout(debounceRef.current);
+      }
+    };
+  }, [query]);
+
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setHasText(event.target.value.trim().length > 0);
+    setQuery(event.target.value);
   };
+
+  const hasText = query.trim().length > 0;
 
   const onRailWheel = (e: React.WheelEvent<HTMLDivElement>) => {
     if (!railRef.current) return;
@@ -47,6 +91,10 @@ const SearchPage = () => {
       railRef.current.scrollBy({ left: e.deltaY, behavior: 'smooth' });
     }
   };
+
+  const showInitial = !hasText && !searched;
+  const showNoResults = hasText && !loading && results.length === 0 && !error;
+  const showError = hasText && error;
 
   return (
     <main className="bg-[#f8f8f8] min-h-[100svh] pt-20 md:pt-24 pb-16">
@@ -60,6 +108,7 @@ const SearchPage = () => {
                 className="w-full bg-transparent text-[24px] md:text-[28px] leading-none font-serif font-normal text-black placeholder:text-[#c4aea3] outline-none pr-8 pb-1"
                 placeholder="Search"
                 aria-label="Search"
+                value={query}
                 onChange={handleInputChange}
               />
               <button
@@ -108,67 +157,79 @@ const SearchPage = () => {
         {/* Heading */}
         <div className="mt-6">
           <h2 className="text-[13px] uppercase tracking-[0.3em] font-semibold text-stone">
-            May interest you
+            {showNoResults ? 'No results found' : showError ? 'Search error' : loading ? 'Searching...' : showInitial ? 'May interest you' : `Results (${results.length})`}
           </h2>
         </div>
 
-        {/* Horizontal product rail */}
+        {/* Product rail or empty/error state */}
         <div className="mt-6">
-          <div
-            ref={railRef}
-            className="flex gap-0 overflow-x-auto overflow-y-hidden pb-4 scroll-smooth -mx-6 md:-mx-10 pl-10 search-rail"
-            onWheel={onRailWheel}
-            style={{ scrollbarWidth: 'none' as any }}
-          >
-            <style>{`.search-rail::-webkit-scrollbar{display:none}`}</style>
-            {products.map((p: ShopifyProduct) => (
-              <article
-                key={p.id}
-                className="flex-shrink-0 bg-transparent group cursor-pointer"
-                style={{ width: 'clamp(280px, 18vw, 380px)' }}
-                onClick={() => navigate(`/products/${p.handle}`)}
-              >
-                <div className="relative overflow-hidden bg-[#f5f0eb] aspect-[3/4]">
-                  <img
-                    src={p.featuredImage.url}
-                    alt={p.featuredImage.altText}
-                    className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.02]"
-                    loading="lazy"
-                  />
-
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
-
-                  <button
-                    type="button"
-                    onClick={(e) => toggleWishlist(e, p.id)}
-                    className={`absolute top-3 right-3 p-0 bg-transparent border-none cursor-pointer transition-opacity duration-200 z-10 ${
-                      wishlist.includes(p.id) ? "opacity-100" : "opacity-0 group-hover:opacity-100"
-                    }`}
-                    aria-label={wishlist.includes(p.id) ? "Remove from wishlist" : "Add to wishlist"}
-                  >
-                    <svg
-                      width="22"
-                      height="22"
-                      viewBox="0 0 24 24"
-                      fill={wishlist.includes(p.id) ? "#431c1c" : "none"}
-                      stroke={wishlist.includes(p.id) ? "#431c1c" : "#2A2420"}
-                      strokeWidth="1.8"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
+          {initialLoading || loading ? (
+            <div className="flex items-center justify-center py-20">
+              <p className="text-stone/60 text-sm tracking-wide">Loading...</p>
+            </div>
+          ) : showNoResults ? (
+            <div className="flex items-center justify-center py-20">
+              <p className="text-stone/60 text-sm tracking-wide">No products match your search. Try a different term.</p>
+            </div>
+          ) : showError ? (
+            <div className="flex items-center justify-center py-20">
+              <p className="text-stone/60 text-sm tracking-wide">Something went wrong. Please try again.</p>
+            </div>
+          ) : (
+            <div
+              ref={railRef}
+              className="flex gap-0 overflow-x-auto overflow-y-hidden pb-4 scroll-smooth -mx-6 md:-mx-10 pl-10 search-rail"
+              onWheel={onRailWheel}
+              style={{ scrollbarWidth: 'none' as any }}
+            >
+              <style>{`.search-rail::-webkit-scrollbar{display:none}`}</style>
+              {results.map((p: ShopifyProduct) => (
+                <article
+                  key={p.id}
+                  className="flex-shrink-0 bg-transparent group cursor-pointer"
+                  style={{ width: 'clamp(280px, 18vw, 380px)' }}
+                  onClick={() => navigate(`/products/${p.handle}`)}
+                >
+                  <div className="relative overflow-hidden bg-[#f5f0eb] aspect-[3/4]">
+                    <img
+                      src={p.featuredImage.url}
+                      alt={p.featuredImage.altText}
+                      className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.02]"
+                      loading="lazy"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+                    <button
+                      type="button"
+                      onClick={(e) => { e.stopPropagation(); e.preventDefault(); toggleWishlist(p.id); }}
+                      className={`absolute top-3 right-3 p-0 bg-transparent border-none cursor-pointer transition-opacity duration-200 z-10 ${
+                        isWishlisted(p.id) ? "opacity-100" : "opacity-0 group-hover:opacity-100"
+                      }`}
+                      aria-label={isWishlisted(p.id) ? "Remove from wishlist" : "Add to wishlist"}
                     >
-                      <path d="M6 2h12v16l-6-4l-6 4V2z" />
-                    </svg>
-                  </button>
-                </div>
-                <div className="mt-3">
-                  <h3 className="text-[15px] font-normal tracking-[0.02em] leading-[1.2] text-charcoal">
-                    {p.title}
-                  </h3>
-                  <p className="font-sans text-[12px] text-[#888] tracking-[0.02em] tabular-nums">₹{Number(p.priceRange.minVariantPrice.amount).toLocaleString("en-IN")}</p>
-                </div>
-              </article>
-            ))}
-          </div>
+                      <svg
+                        width="22"
+                        height="22"
+                        viewBox="0 0 24 24"
+                        fill={isWishlisted(p.id) ? "#431c1c" : "none"}
+                        stroke={isWishlisted(p.id) ? "#431c1c" : "#2A2420"}
+                        strokeWidth="1.8"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <path d="M6 2h12v16l-6-4l-6 4V2z" />
+                      </svg>
+                    </button>
+                  </div>
+                  <div className="mt-3">
+                    <h3 className="text-[15px] font-normal tracking-[0.02em] leading-[1.2] text-charcoal">
+                      {p.title}
+                    </h3>
+                    <p className="font-sans text-[12px] text-[#888] tracking-[0.02em] tabular-nums">₹{Number(p.priceRange.minVariantPrice.amount).toLocaleString("en-IN")}</p>
+                  </div>
+                </article>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* CTA */}

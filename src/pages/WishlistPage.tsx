@@ -1,21 +1,9 @@
 import { useState, useRef, useEffect } from "react";
-import { getShopifyProducts, getShopifyProductsByIds } from "../lib/shopifyProducts";
+import { useNavigate } from "react-router-dom";
+import { useWishlist } from "../hooks/useWishlist";
+import { getFeaturedProducts } from "../services/product.service";
+import { getWishlistProductsByIds } from "../services/wishlist.service";
 import type { ShopifyProduct } from "../types";
-
-// ── Wishlist sessionStorage helpers ──────────────────────────────────────────
-// Matches the key used in CollectionPage so wishlist state is shared site-wide
-const WISHLIST_KEY = "wishlist";
-
-const readIds = (): string[] => {
-  try {
-    return JSON.parse(sessionStorage.getItem(WISHLIST_KEY) || "[]");
-  } catch {
-    return [];
-  }
-};
-
-const writeIds = (ids: string[]) =>
-  sessionStorage.setItem(WISHLIST_KEY, JSON.stringify(ids));
 
 // ── Bookmark icon ─────────────────────────────────────────────────────────────
 const BookmarkIcon = ({ filled }: { filled: boolean }) => (
@@ -42,8 +30,14 @@ const ProductCard = ({
   product: ShopifyProduct;
   wishlisted: boolean;
   onToggle: (id: string) => void;
-}) => (
-  <article className="group relative flex flex-col">
+}) => {
+  const navigate = useNavigate();
+
+  return (
+  <article
+    className="group relative flex flex-col cursor-pointer"
+    onClick={() => navigate(`/products/${product.handle}`)}
+  >
     {/* Image container — editorial portrait ratio, zero borders */}
     <div className="relative overflow-hidden aspect-[3/4] bg-[#eeece8]">
       <img
@@ -79,7 +73,8 @@ const ProductCard = ({
       </p>
     </div>
   </article>
-);
+  );
+};
 
 // ── Checkmark row ─────────────────────────────────────────────────────────────
 const CheckRow = ({ text }: { text: string }) => (
@@ -140,7 +135,7 @@ const ArrowBtn = ({
 
 // ── Wishlist page ─────────────────────────────────────────────────────────────
 const WishlistPage = () => {
-  const [wishlistIds, setWishlistIds] = useState<string[]>(readIds);
+  const { wishlistIds, toggleWishlist, isWishlisted } = useWishlist();
   const [wishlistProducts, setWishlistProducts] = useState<ShopifyProduct[]>([]);
   const [popularProducts, setPopularProducts] = useState<ShopifyProduct[]>([]);
   const [loading, setLoading] = useState(true);
@@ -148,21 +143,26 @@ const WishlistPage = () => {
 
   useEffect(() => {
     let active = true;
+
     setLoading(true);
-    
+
     Promise.all([
-      getShopifyProductsByIds(wishlistIds),
-      getShopifyProducts(12)
+      getWishlistProductsByIds(wishlistIds),
+      getFeaturedProducts(12),
     ])
-      .then(([wishlistData, popularData]) => {
-        if (active) {
-          setWishlistProducts(wishlistData);
-          setPopularProducts(popularData);
-          setLoading(false);
-        }
+      .then(([wishlistData, { products: popularData }]) => {
+        if (!active) return;
+
+        setWishlistProducts(wishlistData);
+        setPopularProducts(popularData);
       })
-      .catch((err) => {
-        console.error("Error fetching wishlist products:", err);
+      .catch(() => {
+        if (!active) return;
+
+        setWishlistProducts([]);
+        setPopularProducts([]);
+      })
+      .finally(() => {
         if (active) {
           setLoading(false);
         }
@@ -175,11 +175,7 @@ const WishlistPage = () => {
 
   // Toggle wishlist membership and persist
   const toggle = (id: string) => {
-    const nextIds = wishlistIds.includes(id)
-      ? wishlistIds.filter((x) => x !== id)
-      : [...wishlistIds, id];
-    writeIds(nextIds);
-    setWishlistIds(nextIds);
+    toggleWishlist(id);
     setWishlistProducts((prev) => prev.filter((p) => p.id !== id));
   };
 
@@ -295,7 +291,7 @@ const WishlistPage = () => {
               >
                 <ProductCard
                   product={p}
-                  wishlisted={wishlistIds.includes(p.id)}
+                  wishlisted={isWishlisted(p.id)}
                   onToggle={toggle}
                 />
               </div>
