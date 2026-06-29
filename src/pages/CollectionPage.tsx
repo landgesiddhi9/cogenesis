@@ -339,8 +339,13 @@ const CollectionPage = ({ collectionHandle }: CollectionPageProps) => {
     color: string[];
     price: [number, number];
     fit: string[];
+    category: string[];
   }) => {
     const shopifyFilters: ShopifyApiProductFilter[] = [];
+
+    uiFilters.category.forEach((cat) => {
+      shopifyFilters.push({ productType: cat });
+    });
 
     uiFilters.size.forEach((size) => {
       shopifyFilters.push({ variantOption: { name: "Size", value: size } });
