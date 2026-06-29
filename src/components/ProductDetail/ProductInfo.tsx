@@ -83,7 +83,7 @@ const ProductInfo = ({
 
       {/* Price - 24px spacing below */}
       <div className="pb-6">
-        <p
+        <div
           className="text-charcoal tracking-normal"
           style={{
             fontFamily: "'Inter', 'Helvetica Neue', sans-serif",
@@ -94,7 +94,7 @@ const ProductInfo = ({
           }}
         >
           <SalePrice price={price} compareAtPrice={getBestCompareAtPrice(product)} />
-        </p>
+        </div>
       </div>
 
       {/* Color Swatches - 40px spacing below */}
