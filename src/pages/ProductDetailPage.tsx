@@ -22,6 +22,7 @@ const ProductDetailPage = ({ productHandle }: ProductDetailPageProps) => {
   const { isWishlisted, toggleWishlist } = useWishlist();
   const { addToCart: addToCartService } = useCart();
   const [addingToCart, setAddingToCart] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -94,6 +95,8 @@ const ProductDetailPage = ({ productHandle }: ProductDetailPageProps) => {
 
     try {
       await addToCartService(variant.id, quantity);
+      setShowSuccess(true);
+      setTimeout(() => setShowSuccess(false), 2000);
     } catch {
       alert("Failed to add to cart. Please try again.");
     } finally {
@@ -150,6 +153,15 @@ const ProductDetailPage = ({ productHandle }: ProductDetailPageProps) => {
               addToCart={handleAddToCart}
               description={productDescription}
             />
+
+            {/* Success notification */}
+            <div
+              className={`font-sans text-[12px] text-[#111] transition-all duration-300 overflow-hidden ${
+                showSuccess ? "max-h-10 mb-4 opacity-100" : "max-h-0 opacity-0"
+              }`}
+            >
+              Added to bag ✓
+            </div>
 
             {/* Accordions in the sticky panel */}
             <div className="mt-16 space-y-0">

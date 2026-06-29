@@ -4,6 +4,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import SearchOverlay from "./SearchOverlay";
 import MegaMenuPanel from "./MegaMenuPanel";
 import { getSession, SESSION_EVENT } from "../utils/auth";
+import { useCart } from "../hooks/useCart";
 
 const Navbar = () => {
   // Images: Monogram.png and Logo.png are in public/images/
@@ -16,6 +17,9 @@ const Navbar = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const activePath = location.pathname;
+
+  // Cart badge
+  const { cart } = useCart();
 
   // Session badge — account icon navigates to /account when logged in
   const [isLoggedIn, setIsLoggedIn] = useState(() => !!getSession());
@@ -216,7 +220,7 @@ const Navbar = () => {
 
               {/* Cart — with live count badge */}
               <button
-                className={iconButtonClass(activePath === "/cart")}
+                className={`${iconButtonClass(activePath === "/cart")} relative`}
                 aria-label="Shopping bag"
                 id="navbar-cart"
                 onClick={() => navigate("/cart")}
@@ -233,6 +237,14 @@ const Navbar = () => {
                   <line x1="3" y1="6" x2="21" y2="6" />
                   <path d="M16 10a4 4 0 01-8 0" />
                 </svg>
+                {cart && cart.totalQuantity > 0 && (
+                  <span
+                    className="absolute -top-1.5 -right-1.5 bg-[#111] text-white text-[9px] font-sans font-semibold w-4 h-4 rounded-full flex items-center justify-center"
+                    style={{ lineHeight: 0 }}
+                  >
+                    {cart.totalQuantity}
+                  </span>
+                )}
               </button>
             </div>
           </div>
