@@ -292,6 +292,19 @@ const CartPage = () => {
                       </span>
                     </div>
 
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (cart.checkoutUrl) {
+                          window.open(cart.checkoutUrl, "_blank");
+                        } else {
+                          alert("Checkout URL is not available. Please try again.");
+                        }
+                      }}
+                      className="w-full h-[52px] bg-[#111] text-white font-sans text-[12px] font-semibold uppercase tracking-[0.2em] hover:bg-[#2a2a2a] transition-colors duration-200 mt-6"
+                    >
+                      Checkout
+                    </button>
                   </div>
                 </div>
               </div>
