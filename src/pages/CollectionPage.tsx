@@ -1,10 +1,29 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useInView } from "../hooks/useInView";
-import { getShopifyCollectionByHandle } from "../lib/shopifyProducts";
+import { useWishlist } from "../hooks/useWishlist";
+import { getCollectionByHandle, getProductsByCollection } from "../services/collection.service";
+import { logProductImageFailure } from "../lib/shopifyImageDiagnostics";
 import SortDropdown from "../components/SortDropdown";
 import FilterPanel from "../components/FilterPanel";
 import type { ShopifyProduct, ShopifyCollection } from "../types";
+import type { ShopifyApiProductFilter, ShopifyProductSortKeys } from "../graphql/queries/getProductsByCollection";
+
+const SORT_CONFIG: Record<string, { sortKey: ShopifyProductSortKeys; reverse: boolean } | null> = {
+  featured: null,
+  newest: { sortKey: "CREATED", reverse: true },
+  "best-selling": { sortKey: "BEST_SELLING", reverse: false },
+  "price-low": { sortKey: "PRICE", reverse: false },
+  "price-high": { sortKey: "PRICE", reverse: true },
+  "a-z": { sortKey: "TITLE", reverse: false },
+  "z-a": { sortKey: "TITLE", reverse: true },
+};
+
+const MATERIAL_TAG_MAP: Record<string, string> = {
+  Linen: "linen",
+  Cotton: "cotton",
+  "Cotton Linen Blend": "linen-blend",
+};
 
 interface CollectionPageProps {
   collectionHandle: string;
@@ -59,17 +78,17 @@ const getModelImageUrl = (tags: string[]) => {
 const CollectionProductCard = ({
   product,
   index,
+  rawProduct,
 }: {
   product: ShopifyProduct;
   index: number;
+  rawProduct: unknown;
 }) => {
   const navigate = useNavigate();
   const { ref, isInView } = useInView({ threshold: 0.1 });
+  const { isWishlisted, toggleWishlist } = useWishlist();
   const [isHovered, setIsHovered] = useState(false);
-  const [isWishlisted, setIsWishlisted] = useState(() => {
-    const wishlist = JSON.parse(sessionStorage.getItem("wishlist") || "[]");
-    return wishlist.includes(product.id);
-  });
+  const wishlisted = isWishlisted(product.id);
   const [selectedColorIndex, setSelectedColorIndex] = useState(0);
 
   const handleProductClick = () => {
@@ -79,15 +98,7 @@ const CollectionProductCard = ({
   const handleWishlistToggle = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    const wishlist = JSON.parse(sessionStorage.getItem("wishlist") || "[]");
-    if (isWishlisted) {
-      const updated = wishlist.filter((id: string) => id !== product.id);
-      sessionStorage.setItem("wishlist", JSON.stringify(updated));
-    } else {
-      wishlist.push(product.id);
-      sessionStorage.setItem("wishlist", JSON.stringify(wishlist));
-    }
-    setIsWishlisted(!isWishlisted);
+    toggleWishlist(product.id);
   };
 
   // Extract fabric from description or tags
@@ -102,7 +113,8 @@ const CollectionProductCard = ({
   const modelImageUrl = getModelImageUrl(product.tags);
 
   // Determine which image to show
-  const displayImage = isHovered ? modelImageUrl : product.featuredImage.url;
+  const imageUrl = product.featuredImage.url || null;
+  const displayImage = isHovered ? modelImageUrl : imageUrl;
 
   return (
     <div
@@ -119,16 +131,26 @@ const CollectionProductCard = ({
         onMouseLeave={() => setIsHovered(false)}
       >
         {/* Base image */}
-        <img
-          src={displayImage}
-          alt={product.featuredImage.altText}
-          style={{
-            transform: isHovered ? "scale(1.03)" : "scale(1)",
-            transition: "transform 300ms ease-in-out",
-          }}
-          className="w-full h-full object-cover object-center"
-          loading="lazy"
-        />
+        {displayImage && (
+          <img
+            src={displayImage}
+            alt={product.featuredImage.altText}
+            style={{
+              transform: isHovered ? "scale(1.03)" : "scale(1)",
+              transition: "transform 300ms ease-in-out",
+            }}
+            className="w-full h-full object-cover object-center"
+            loading="lazy"
+            onError={() => {
+              logProductImageFailure(
+                `collection-card:${product.handle}`,
+                rawProduct,
+                product,
+                displayImage,
+              );
+            }}
+          />
+        )}
 
         {/* Wishlist button */}
         <button
@@ -143,8 +165,8 @@ const CollectionProductCard = ({
             width="22"
             height="22"
             viewBox="0 0 24 24"
-            fill={isWishlisted ? "#431c1c" : "none"}
-            stroke={isWishlisted ? "#431c1c" : "#431c1c"}
+            fill={wishlisted ? "#431c1c" : "none"}
+            stroke={wishlisted ? "#431c1c" : "#431c1c"}
             strokeWidth="1.5"
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -153,6 +175,7 @@ const CollectionProductCard = ({
             <path d="M6 2h12v16l-6-4l-6 4V2z" />
           </svg>
         </button>
+
       </div>
 
       {/* Product info */}
@@ -204,33 +227,99 @@ const CollectionProductCard = ({
 
 const CollectionPage = ({ collectionHandle }: CollectionPageProps) => {
   const [collection, setCollection] = useState<ShopifyCollection | null>(null);
+  const [rawProductsByHandle, setRawProductsByHandle] = useState<
+    Record<string, unknown>
+  >({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState("featured");
+  const [activeFilters, setActiveFilters] = useState<ShopifyApiProductFilter[] | null>(null);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [productsLoading, setProductsLoading] = useState(false);
 
+  const lastFetchRef = useRef(0);
+  const initializedHandle = useRef<string | null>(null);
+
+  // Initial load: collection metadata + products
   useEffect(() => {
     let active = true;
+
     setLoading(true);
     setError(null);
-    getShopifyCollectionByHandle(collectionHandle)
-      .then((data) => {
-        if (active) {
-          setCollection(data);
-          setLoading(false);
+    setCollection(null);
+    setRawProductsByHandle({});
+    setSortBy("featured");
+    setActiveFilters(null);
+
+    getCollectionByHandle(collectionHandle)
+      .then(({ collection: data, raw }) => {
+        if (!active) return;
+
+        if (raw?.products?.edges) {
+          const rawMap: Record<string, unknown> = {};
+          raw.products.edges.forEach(({ node }) => {
+            rawMap[node.handle] = node;
+          });
+          setRawProductsByHandle(rawMap);
         }
+
+        setCollection(data);
       })
       .catch((err) => {
-        console.error("Error fetching collection:", err);
+        if (!active) return;
+        setError(err instanceof Error ? err.message : String(err));
+      })
+      .finally(() => {
         if (active) {
-          setError(err instanceof Error ? err.message : String(err));
           setLoading(false);
         }
       });
+
     return () => {
       active = false;
     };
   }, [collectionHandle]);
+
+  // Re-fetch products when sort or filters change
+  useEffect(() => {
+    if (loading) return;
+
+    if (initializedHandle.current !== collectionHandle) {
+      initializedHandle.current = collectionHandle;
+      return;
+    }
+
+    const sortConfig = SORT_CONFIG[sortBy];
+    const fetchId = ++lastFetchRef.current;
+    setProductsLoading(true);
+
+    getProductsByCollection({
+      handle: collectionHandle,
+      sortKey: sortConfig?.sortKey ?? null,
+      reverse: sortConfig?.reverse ?? null,
+      filters: activeFilters ?? undefined,
+    })
+      .then(({ products, raw }) => {
+        if (fetchId !== lastFetchRef.current) return;
+        const rawMap: Record<string, unknown> = {};
+        raw.forEach((node) => {
+          rawMap[node.handle] = node;
+        });
+        setRawProductsByHandle(rawMap);
+        setCollection((prev) =>
+          prev ? { ...prev, products } : null,
+        );
+      })
+      .catch((err) => {
+        if (fetchId !== lastFetchRef.current) return;
+        setError(err instanceof Error ? err.message : String(err));
+      })
+      .finally(() => {
+        if (fetchId === lastFetchRef.current) {
+          setProductsLoading(false);
+        }
+      });
+  }, [sortBy, activeFilters, collectionHandle, loading]);
 
   // Sort options
   const sortOptions = [
@@ -243,32 +332,30 @@ const CollectionPage = ({ collectionHandle }: CollectionPageProps) => {
     { id: "z-a", label: "Alphabetically Z–A" },
   ];
 
-  // Sort products
-  const sortedProducts = useMemo(() => {
-    if (!collection?.products) return [];
-    const products = [...collection.products];
+  // Convert UI filters to Shopify API filters
+  const handleApplyFilters = (uiFilters: {
+    size: string[];
+    material: string[];
+    color: string[];
+    price: [number, number];
+    fit: string[];
+  }) => {
+    const shopifyFilters: ShopifyApiProductFilter[] = [];
 
-    switch (sortBy) {
-      case "price-low":
-        return products.sort(
-          (a, b) =>
-            parseFloat(a.priceRange.minVariantPrice.amount) -
-            parseFloat(b.priceRange.minVariantPrice.amount),
-        );
-      case "price-high":
-        return products.sort(
-          (a, b) =>
-            parseFloat(b.priceRange.minVariantPrice.amount) -
-            parseFloat(a.priceRange.minVariantPrice.amount),
-        );
-      case "a-z":
-        return products.sort((a, b) => a.title.localeCompare(b.title));
-      case "z-a":
-        return products.sort((a, b) => b.title.localeCompare(a.title));
-      default:
-        return products;
-    }
-  }, [sortBy, collection?.products]);
+    uiFilters.size.forEach((size) => {
+      shopifyFilters.push({ variantOption: { name: "Size", value: size } });
+    });
+
+    uiFilters.material.forEach((mat) => {
+      const tag = MATERIAL_TAG_MAP[mat];
+      if (tag) shopifyFilters.push({ tag });
+    });
+
+    const [priceMin, priceMax] = uiFilters.price;
+    shopifyFilters.push({ price: { min: priceMin, max: priceMax } });
+
+    setActiveFilters(shopifyFilters.length > 0 ? shopifyFilters : null);
+  };
 
   if (loading) {
     return (
@@ -287,8 +374,13 @@ const CollectionPage = ({ collectionHandle }: CollectionPageProps) => {
       <main className="bg-ivory min-h-[100svh]">
         <div className="max-w-7xl mx-auto px-4 md:px-8 py-20">
           <h1 className="text-center text-2xl text-charcoal font-sans">
-            Collection not found
+            {error ? "Error loading collection" : "Collection not found"}
           </h1>
+          {error && (
+            <p className="text-center text-sm text-charcoal/60 mt-2 font-sans">
+              {error}
+            </p>
+          )}
         </div>
       </main>
     );
@@ -323,7 +415,10 @@ const CollectionPage = ({ collectionHandle }: CollectionPageProps) => {
         {/* Filter bar */}
         <div className="border-t border-stone/10 py-4 mb-12 flex items-center justify-between">
           <div className="text-sm text-charcoal/70 tracking-wide font-sans">
-            Products ({sortedProducts.length})
+            Products ({collection.products.length})
+            {productsLoading && (
+              <span className="ml-2 text-warm-brown/60">Loading...</span>
+            )}
           </div>
 
           <div className="flex items-center gap-6 md:gap-8">
@@ -349,11 +444,12 @@ const CollectionPage = ({ collectionHandle }: CollectionPageProps) => {
 
         {/* Product grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
-          {sortedProducts.map((product, index) => (
+          {collection.products.map((product, index) => (
             <CollectionProductCard
               key={product.id}
               product={product}
               index={index}
+              rawProduct={rawProductsByHandle[product.handle] ?? null}
             />
           ))}
         </div>
@@ -363,7 +459,7 @@ const CollectionPage = ({ collectionHandle }: CollectionPageProps) => {
       <FilterPanel
         isOpen={isFilterOpen}
         onClose={() => setIsFilterOpen(false)}
-        onApply={() => { }}
+        onApply={handleApplyFilters}
       />
     </main>
   );

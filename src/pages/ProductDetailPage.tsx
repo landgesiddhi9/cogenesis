@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
-import { getShopifyProductByHandle } from "../lib/shopifyProducts";
+import { useWishlist } from "../hooks/useWishlist";
+import { useCart } from "../hooks/useCart";
+import { getProductByHandle } from "../services/product.service";
 import ImageGallery from "../components/ProductDetail/ImageGallery";
 import ProductInfo from "../components/ProductDetail/ProductInfo";
 import ProductAccordion from "../components/ProductDetail/ProductAccordion";
@@ -17,17 +19,23 @@ const ProductDetailPage = ({ productHandle }: ProductDetailPageProps) => {
   const [selectedColor, setSelectedColor] = useState(0);
   const [selectedSize, setSelectedSize] = useState("");
   const [quantity, setQuantity] = useState(1);
-  const [isWishlisted, setIsWishlisted] = useState(false);
+  const { isWishlisted, toggleWishlist } = useWishlist();
+  const { addToCart: addToCartService } = useCart();
+  const [addingToCart, setAddingToCart] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
 
   useEffect(() => {
     let active = true;
+
     setLoading(true);
-    getShopifyProductByHandle(productHandle)
-      .then((foundProduct) => {
+    setProduct(null);
+
+    getProductByHandle(productHandle)
+      .then(({ product: foundProduct }) => {
         if (!active) return;
+
         if (foundProduct) {
           setProduct(foundProduct);
-          // Track recently viewed
           const recentlyViewedData = sessionStorage.getItem("recentlyViewed");
           const recentlyViewed: ShopifyProduct[] = recentlyViewedData
             ? JSON.parse(recentlyViewedData)
@@ -41,49 +49,31 @@ const ProductDetailPage = ({ productHandle }: ProductDetailPageProps) => {
             );
           }
 
-          // Check if wishlisted
-          const wishlistData = sessionStorage.getItem("wishlist");
-          const wishlisted: string[] = wishlistData
-            ? JSON.parse(wishlistData)
-            : [];
-          setIsWishlisted(wishlisted.includes(foundProduct.id));
         } else {
           setProduct(null);
         }
-        setLoading(false);
       })
-      .catch((err) => {
-        console.error("Error fetching product details:", err);
+      .catch(() => {
+        if (!active) return;
+        setProduct(null);
+      })
+      .finally(() => {
         if (active) {
-          setProduct(null);
           setLoading(false);
         }
       });
+
     return () => {
       active = false;
     };
   }, [productHandle]);
 
-  const toggleWishlist = () => {
+  const handleWishlistToggle = () => {
     if (!product) return;
-
-    const wishlistData = sessionStorage.getItem("wishlist");
-    const wishlisted: string[] = wishlistData
-      ? JSON.parse(wishlistData)
-      : [];
-    const index = wishlisted.indexOf(product.id);
-
-    if (index > -1) {
-      wishlisted.splice(index, 1);
-    } else {
-      wishlisted.push(product.id);
-    }
-
-    sessionStorage.setItem("wishlist", JSON.stringify(wishlisted));
-    setIsWishlisted(!isWishlisted);
+    toggleWishlist(product.id);
   };
 
-  const addToCart = () => {
+  const handleAddToCart = async () => {
     if (!selectedSize) {
       alert("Please select a size");
       return;
@@ -92,7 +82,26 @@ const ProductDetailPage = ({ productHandle }: ProductDetailPageProps) => {
       alert("Product not found");
       return;
     }
-    alert(`Added ${quantity} ${product.title} (${selectedSize}) to cart`);
+
+    const variant = product.variants.find((v) => v.title === selectedSize);
+    if (!variant) {
+      alert("Selected size is not available");
+      return;
+    }
+
+    if (addingToCart) return;
+
+    setAddingToCart(true);
+
+    try {
+      await addToCartService(variant.id, quantity);
+      setShowSuccess(true);
+      setTimeout(() => setShowSuccess(false), 2000);
+    } catch {
+      alert("Failed to add to cart. Please try again.");
+    } finally {
+      setAddingToCart(false);
+    }
   };
 
   if (loading) {
@@ -139,11 +148,20 @@ const ProductDetailPage = ({ productHandle }: ProductDetailPageProps) => {
               setSelectedSize={setSelectedSize}
               quantity={quantity}
               setQuantity={setQuantity}
-              isWishlisted={isWishlisted}
-              toggleWishlist={toggleWishlist}
-              addToCart={addToCart}
+              isWishlisted={isWishlisted(product.id)}
+              toggleWishlist={handleWishlistToggle}
+              addToCart={handleAddToCart}
               description={productDescription}
             />
+
+            {/* Success notification */}
+            <div
+              className={`font-sans text-[12px] text-[#111] transition-all duration-300 overflow-hidden ${
+                showSuccess ? "max-h-10 mb-4 opacity-100" : "max-h-0 opacity-0"
+              }`}
+            >
+              Added to bag ✓
+            </div>
 
             {/* Accordions in the sticky panel */}
             <div className="mt-16 space-y-0">
@@ -178,7 +196,7 @@ const ProductDetailPage = ({ productHandle }: ProductDetailPageProps) => {
 
       {/* Related Products */}
       <div className="max-w-[1600px] mx-auto px-6 md:px-12 lg:px-16 py-16 border-t border-[#e7e1d8]">
-        <RelatedProducts currentProductId={product.id} />
+        <RelatedProducts currentProduct={product} />
       </div>
 
       {/* Recently Viewed */}

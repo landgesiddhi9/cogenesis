@@ -1,17 +1,8 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useWishlist } from "../../hooks/useWishlist";
+import { getProductByHandle } from "../../services/product.service";
 import type { ShopifyProduct } from "../../types";
-
-const WL_KEY = "wishlist";
-const readWL = (): string[] => {
-  try {
-    return JSON.parse(sessionStorage.getItem(WL_KEY) || "[]");
-  } catch {
-    return [];
-  }
-};
-const writeWL = (ids: string[]) =>
-  sessionStorage.setItem(WL_KEY, JSON.stringify(ids));
 
 interface RecentlyViewedProps {
   currentProductId: string;
@@ -20,31 +11,49 @@ interface RecentlyViewedProps {
 const RecentlyViewed = ({ currentProductId }: RecentlyViewedProps) => {
   const navigate = useNavigate();
   const [recentlyViewed, setRecentlyViewed] = useState<ShopifyProduct[]>([]);
-  const [wishlist, setWishlist] = useState<string[]>(() => readWL());
+  const { isWishlisted, toggleWishlist: toggleWishlistItem } = useWishlist();
 
   useEffect(() => {
+    let active = true;
     const stored = JSON.parse(
       sessionStorage.getItem("recentlyViewed") || "[]",
     ) as ShopifyProduct[];
-    // Filter out current product and get last 6 items
-    const filtered = stored
-      .filter((p) => p.id !== currentProductId)
+    const handles = stored
+      .filter((product) => product.id !== currentProductId)
+      .map((product) => product.handle)
+      .filter((handle, index, allHandles) => allHandles.indexOf(handle) === index)
       .slice(0, 6);
-    setRecentlyViewed(filtered);
+
+    Promise.all(handles.map((handle) => getProductByHandle(handle)))
+      .then((results) => {
+        if (!active) return;
+
+        setRecentlyViewed(
+          results
+            .map(({ product }) => product)
+            .filter((product): product is ShopifyProduct => product !== null),
+        );
+      })
+      .catch(() => {
+        if (active) {
+          setRecentlyViewed([]);
+        }
+      });
+
+    return () => {
+      active = false;
+    };
   }, [currentProductId]);
+
 
   const handleProductClick = (product: ShopifyProduct) => {
     navigate(`/products/${product.handle}`);
   };
 
-  const toggleWishlist = (e: React.MouseEvent, id: string) => {
+  const handleWishlistToggle = (e: React.MouseEvent, id: string) => {
     e.preventDefault();
     e.stopPropagation();
-    const next = wishlist.includes(id)
-      ? wishlist.filter((wid) => wid !== id)
-      : [...wishlist, id];
-    writeWL(next);
-    setWishlist(next);
+    toggleWishlistItem(id);
   };
 
   if (recentlyViewed.length === 0) {
@@ -59,7 +68,7 @@ const RecentlyViewed = ({ currentProductId }: RecentlyViewedProps) => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
         {recentlyViewed.map((product) => {
-          const wishlisted = wishlist.includes(product.id);
+          const wishlisted = isWishlisted(product.id);
           return (
             <div
               key={product.id}
@@ -77,7 +86,7 @@ const RecentlyViewed = ({ currentProductId }: RecentlyViewedProps) => {
 
                 <button
                   type="button"
-                  onClick={(e) => toggleWishlist(e, product.id)}
+                  onClick={(e) => handleWishlistToggle(e, product.id)}
                   className={`absolute top-3 right-3 z-20 p-0 bg-transparent border-none cursor-pointer transition-opacity duration-200 ${
                     wishlisted ? "opacity-100" : "opacity-0 group-hover:opacity-100"
                   }`}

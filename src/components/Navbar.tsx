@@ -4,6 +4,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import SearchOverlay from "./SearchOverlay";
 import MegaMenuPanel from "./MegaMenuPanel";
 import { getSession, SESSION_EVENT } from "../utils/auth";
+import { useCart } from "../hooks/useCart";
 
 const Navbar = () => {
   // Images: Monogram.png and Logo.png are in public/images/
@@ -17,6 +18,9 @@ const Navbar = () => {
   const location = useLocation();
   const activePath = location.pathname;
 
+  // Cart badge
+  const { cart } = useCart();
+
   // Session badge — account icon navigates to /account when logged in
   const [isLoggedIn, setIsLoggedIn] = useState(() => !!getSession());
   useEffect(() => {
@@ -25,35 +29,6 @@ const Navbar = () => {
     return () => window.removeEventListener(SESSION_EVENT, sync);
   }, []);
 
-  // Cart badge — reads from localStorage, updates on the cart-updated event
-  const [cartCount, setCartCount] = useState(() => {
-    try {
-      const items = JSON.parse(localStorage.getItem("cogenesis_cart") || "[]");
-      return (items as { quantity: number }[]).reduce(
-        (s, i) => s + i.quantity,
-        0,
-      );
-    } catch {
-      return 0;
-    }
-  });
-
-  useEffect(() => {
-    const update = () => {
-      try {
-        const items = JSON.parse(
-          localStorage.getItem("cogenesis_cart") || "[]",
-        );
-        setCartCount(
-          (items as { quantity: number }[]).reduce((s, i) => s + i.quantity, 0),
-        );
-      } catch {
-        setCartCount(0);
-      }
-    };
-    window.addEventListener("cart-updated", update);
-    return () => window.removeEventListener("cart-updated", update);
-  }, []);
 
   // Helper: icon button class with active state (cherry-pick)
   const iconButtonClass = (isActive: boolean) =>
@@ -262,13 +237,12 @@ const Navbar = () => {
                   <line x1="3" y1="6" x2="21" y2="6" />
                   <path d="M16 10a4 4 0 01-8 0" />
                 </svg>
-                {cartCount > 0 && (
+                {cart && cart.totalQuantity > 0 && (
                   <span
-                    className="absolute -top-1.5 -right-1.5 min-w-[15px] h-[15px] px-0.5
-                               bg-[#111] text-white font-sans text-[9px] font-medium
-                               rounded-full flex items-center justify-center leading-none"
+                    className="absolute -top-1.5 -right-1.5 bg-[#111] text-white text-[9px] font-sans font-semibold w-4 h-4 rounded-full flex items-center justify-center"
+                    style={{ lineHeight: 0 }}
                   >
-                    {cartCount > 9 ? "9+" : cartCount}
+                    {cart.totalQuantity}
                   </span>
                 )}
               </button>

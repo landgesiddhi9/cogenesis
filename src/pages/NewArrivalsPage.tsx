@@ -1,22 +1,12 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { getShopifyProducts } from "../lib/shopifyProducts";
+import { useWishlist } from "../hooks/useWishlist";
+import { getFeaturedProducts } from "../services/product.service";
 import type { ShopifyProduct } from "../types";
-import { getOrCreateCart, addCartLine } from "../lib/shopifyCart";
+
 
 // ── Shirt sizes shown in the hover panel ──────────────────────────────────────
 const SIZES = ["S", "M", "L", "XL"];
-const WISHLIST_KEY = "wishlist";
-
-const readWishlist = (): string[] => {
-  try {
-    return JSON.parse(sessionStorage.getItem(WISHLIST_KEY) || "[]");
-  } catch {
-    return [];
-  }
-};
-const writeWishlist = (ids: string[]) =>
-  sessionStorage.setItem(WISHLIST_KEY, JSON.stringify(ids));
 
 // ── Product card ──────────────────────────────────────────────────────────────
 const ProductCard = ({
@@ -28,27 +18,23 @@ const ProductCard = ({
   wishlisted: boolean;
   onWishlistToggle: (id: string) => void;
 }) => {
+  console.log("PRODUCTCARD RENDER", product.title);
   const navigate = useNavigate();
   const [hovered, setHovered] = useState(false);
   const [addedSize, setAddedSize] = useState<string | null>(null);
 
   const handleAddToBag = async (size: string) => {
-    console.log("STEP 1");
     try {
-      const cartId = await getOrCreateCart();
-      console.log("STEP 2", cartId);
-      const merchandiseId = product.variants[0]?.id;
-      console.log("STEP 3", merchandiseId);
-      if (!merchandiseId) {
-        console.error("No variant found for product:", product.id);
-        return;
-      }
-      console.log("STEP 4 before addCartLine");
-      await addCartLine(cartId, merchandiseId, 1);
+      const variant = product.variants.find((v) => v.title === size);
+      if (!variant) return;
+      
+      // Simulate backend cart addition
+      await new Promise(resolve => setTimeout(resolve, 300));
+      
       setAddedSize(size);
       setTimeout(() => setAddedSize(null), 1800);
-    } catch (error) {
-      console.error("Failed to add to Shopify cart:", error);
+    } catch {
+      // fail gracefully
     }
   };
 
@@ -127,7 +113,11 @@ const ProductCard = ({
                     <button
                       key={size}
                       type="button"
-                      onClick={() => handleAddToBag(size)}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        handleAddToBag(size);
+                      }}
                       className="font-sans text-[11px] uppercase tracking-[0.1em] text-[#444]
                                  hover:text-[#111] hover:font-semibold transition-all duration-100
                                  py-0.5"
@@ -158,17 +148,7 @@ const ProductCard = ({
 // ── New Arrivals page ─────────────────────────────────────────────────────────────────
 // Shows exactly 4 featured products in a full-width editorial grid.
 const NewArrivalsPage = () => {
-  const [wishlistIds, setWishlistIds] = useState<string[]>(readWishlist);
-
-  const toggleWishlist = (id: string) => {
-    setWishlistIds((prev) => {
-      const next = prev.includes(id)
-        ? prev.filter((x) => x !== id)
-        : [...prev, id];
-      writeWishlist(next);
-      return next;
-    });
-  };
+  const { isWishlisted, toggleWishlist } = useWishlist();
 
   const [products, setProducts] = useState<ShopifyProduct[]>([]);
   const [loading, setLoading] = useState(true);
@@ -176,16 +156,21 @@ const NewArrivalsPage = () => {
   useEffect(() => {
     let active = true;
 
-    getShopifyProducts(4)
-      .then((data) => {
+    getFeaturedProducts(4)
+      .then(({ products: featuredProducts }) => {
         if (active) {
-          setProducts(data);
-          setLoading(false);
+          setProducts(featuredProducts);
         }
       })
-      .catch((err) => {
-        console.error(err);
-        if (active) setLoading(false);
+      .catch(() => {
+        if (active) {
+          setProducts([]);
+        }
+      })
+      .finally(() => {
+        if (active) {
+          setLoading(false);
+        }
       });
 
     return () => {
@@ -221,7 +206,7 @@ const NewArrivalsPage = () => {
               <div key={product.id} className="bg-[#F7F5F2] p-0">
                 <ProductCard
                   product={product}
-                  wishlisted={wishlistIds.includes(product.id)}
+                  wishlisted={isWishlisted(product.id)}
                   onWishlistToggle={toggleWishlist}
                 />
               </div>

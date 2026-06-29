@@ -1,64 +1,36 @@
-export type ShopifyFetchVariables = Record<string, unknown> | undefined;
-
-export interface ShopifyGraphQLError {
-  message: string;
-  extensions?: Record<string, unknown>;
+export interface ShopifyConfig {
+  storeDomain: string;
+  storefrontAccessToken: string;
+  apiVersion: string;
 }
 
-export interface ShopifyGraphQLResponse<TData> {
-  data?: TData;
-  errors?: ShopifyGraphQLError[];
+export class ShopifyConfigError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "ShopifyConfigError";
+  }
 }
 
-const SHOPIFY_STORE_DOMAIN = import.meta.env.VITE_SHOPIFY_STORE_DOMAIN;
-const SHOPIFY_STOREFRONT_TOKEN = import.meta.env.VITE_SHOPIFY_STOREFRONT_TOKEN;
-const SHOPIFY_API_VERSION = import.meta.env.VITE_SHOPIFY_API_VERSION;
+function requireEnv(name: keyof ImportMetaEnv): string {
+  const value = import.meta.env[name];
 
-if (!SHOPIFY_STORE_DOMAIN || !SHOPIFY_STOREFRONT_TOKEN || !SHOPIFY_API_VERSION) {
-  throw new Error(
-    "Missing Shopify environment variables. Please define VITE_SHOPIFY_STORE_DOMAIN, VITE_SHOPIFY_STOREFRONT_TOKEN, and VITE_SHOPIFY_API_VERSION.",
-  );
+  if (!value?.trim()) {
+    throw new ShopifyConfigError(
+      `Missing required environment variable: ${name}. Copy .env.example to .env and set your Shopify credentials.`,
+    );
+  }
+
+  return value.trim();
 }
 
-const SHOPIFY_GRAPHQL_ENDPOINT = `https://${SHOPIFY_STORE_DOMAIN}/api/${SHOPIFY_API_VERSION}/graphql.json`;
+export function getShopifyConfig(): ShopifyConfig {
+  return {
+    storeDomain: requireEnv("VITE_SHOPIFY_STORE_DOMAIN"),
+    storefrontAccessToken: requireEnv("VITE_SHOPIFY_STOREFRONT_TOKEN"),
+    apiVersion: requireEnv("VITE_SHOPIFY_API_VERSION"),
+  };
+}
 
-export async function shopifyFetch<TData = unknown>(
-  query: string,
-  variables?: ShopifyFetchVariables,
-): Promise<TData> {
-  const response = await fetch(SHOPIFY_GRAPHQL_ENDPOINT, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Accept: "application/json",
-      "X-Shopify-Storefront-Access-Token": SHOPIFY_STOREFRONT_TOKEN,
-    },
-    body: JSON.stringify({ query, variables }),
-  });
-
-  const json = (await response.json()) as ShopifyGraphQLResponse<TData>;
-
-  console.log("========================================");
-  console.log("SHOPIFY GRAPHQL QUERY");
-  console.log(query);
-  console.log("SHOPIFY GRAPHQL VARIABLES");
-  console.log(JSON.stringify(variables, null, 2));
-  console.log("SHOPIFY GRAPHQL RAW RESPONSE");
-  console.log(JSON.stringify(json, null, 2));
-  console.log("========================================");
-
-  if (!response.ok) {
-    const message = json.errors?.map((error) => error.message).join(", ") || response.statusText;
-    throw new Error(`Shopify request failed: ${message}`);
-  }
-
-  if (json.errors && json.errors.length > 0) {
-    throw new Error(`Shopify GraphQL errors: ${json.errors.map((error) => error.message).join("; ")}`);
-  }
-
-  if (json.data === undefined) {
-    throw new Error("Shopify returned no data.");
-  }
-
-  return json.data;
+export function getStorefrontApiUrl(config: ShopifyConfig = getShopifyConfig()): string {
+  return `https://${config.storeDomain}/api/${config.apiVersion}/graphql.json`;
 }

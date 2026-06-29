@@ -1,21 +1,9 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useInView } from "../hooks/useInView";
-import { getShopifyProducts } from "../lib/shopifyProducts";
+import { useWishlist } from "../hooks/useWishlist";
+import { getFeaturedProducts } from "../services/product.service";
 import type { ShopifyProduct } from "../types";
-
-const WL_KEY = "wishlist";
-
-const readWL = (): string[] => {
-  try {
-    return JSON.parse(sessionStorage.getItem(WL_KEY) || "[]");
-  } catch {
-    return [];
-  }
-};
-
-const writeWL = (ids: string[]) =>
-  sessionStorage.setItem(WL_KEY, JSON.stringify(ids));
 
 const ProductCard = ({
   product,
@@ -26,27 +14,13 @@ const ProductCard = ({
 }) => {
   const navigate = useNavigate();
   const { ref, isInView } = useInView({ threshold: 0.1 });
+  const { isWishlisted, toggleWishlist: toggleWishlistItem } = useWishlist();
+  const wishlisted = isWishlisted(product.id);
 
-  const [wishlisted, setWishlisted] = useState(() =>
-    readWL().includes(product.id)
-  );
-
-  useEffect(() => {
-    setWishlisted(readWL().includes(product.id));
-  }, [product.id]);
-
-  const toggleWishlist = (e: React.MouseEvent) => {
+  const handleWishlistToggle = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-
-    const ids = readWL();
-
-    const next = ids.includes(product.id)
-      ? ids.filter((id) => id !== product.id)
-      : [...ids, product.id];
-
-    writeWL(next);
-    setWishlisted(next.includes(product.id));
+    toggleWishlistItem(product.id);
   };
 
   const handleProductClick = () => {
@@ -74,7 +48,7 @@ const ProductCard = ({
 
         <button
           type="button"
-          onClick={toggleWishlist}
+          onClick={handleWishlistToggle}
           className={`absolute top-3 right-3 z-20 p-0 bg-transparent border-none cursor-pointer transition-opacity duration-200 ${
             wishlisted
               ? "opacity-100"
@@ -132,16 +106,18 @@ const ProductStrip = () => {
   useEffect(() => {
     let active = true;
 
-    getShopifyProducts(12)
-      .then((data) => {
+    getFeaturedProducts(12)
+      .then(({ products: featuredProducts }) => {
         if (active) {
-          setProducts(data);
-          setLoading(false);
+          setProducts(featuredProducts);
         }
       })
-      .catch((err) => {
-        console.error("Error fetching products for ProductStrip:", err);
-
+      .catch(() => {
+        if (active) {
+          setProducts([]);
+        }
+      })
+      .finally(() => {
         if (active) {
           setLoading(false);
         }
