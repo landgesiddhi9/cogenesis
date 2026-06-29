@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useCart } from "../hooks/useCart";
 import { getFeaturedProducts } from "../services/product.service";
 import type { ShopifyProduct } from "../types";
+import ProductCard from "../components/ProductCard";
 
 // ── Shared constants for the product strip ─────────────────────────────────────────
 const SIZES = ["S", "M", "L", "XL"];
@@ -17,106 +18,38 @@ const readWL = (): string[] => {
 const writeWL = (ids: string[]) =>
   sessionStorage.setItem(WL_KEY, JSON.stringify(ids));
 
-// ── Mini product card for "May Interest You" strip ─────────────────────────────
-const StripCard = ({
-  product,
-  wishlisted,
-  onToggle,
-}: {
-  product: ShopifyProduct;
-  wishlisted: boolean;
-  onToggle: (id: string) => void;
-}) => {
-  const navigate = useNavigate();
-  const [hovered, setHovered] = useState(false);
+// ── Size selector panel for "May Interest You" strip ───────────────────────────
+const SizeSelector = () => {
   const [addedSize, setAddedSize] = useState<string | null>(null);
 
-  const handleAdd = async (size: string) => {
+  const handleAdd = (size: string) => {
     setAddedSize(size);
     setTimeout(() => setAddedSize(null), 1800);
   };
 
   return (
-    <article
-      className="group relative flex flex-col cursor-pointer"
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => {
-        setHovered(false);
-        setAddedSize(null);
-      }}
-      onClick={() => navigate(`/products/${product.handle}`)}
-    >
-      <div className="relative overflow-hidden aspect-[3/4] bg-[#f0ede8]">
-        <img
-          src={product.featuredImage.url}
-          alt={product.featuredImage.altText}
-          className="w-full h-full object-cover object-top transition-transform duration-700 ease-out group-hover:scale-[1.04]"
-          loading="lazy"
-        />
-
-        {/* Bookmark */}
-        <button
-          type="button"
-          onClick={(e) => {
-            e.stopPropagation();
-            onToggle(product.id);
-          }}
-          className={`absolute top-3 right-3 p-0 bg-transparent border-none cursor-pointer transition-opacity duration-200
-            ${wishlisted ? "opacity-100" : "opacity-0 group-hover:opacity-100"}`}
-          aria-label={wishlisted ? "Remove from wishlist" : "Add to wishlist"}
-        >
-          <svg
-            width="22"
-            height="22"
-            viewBox="0 0 24 24"
-            fill={wishlisted ? "#431c1c" : "none"}
-            stroke={wishlisted ? "#431c1c" : "white"}
-            strokeWidth="1.8"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <path d="M6 2h12v16l-6-4l-6 4V2z" />
-          </svg>
-        </button>
-
-        {/* Size panel */}
-        <div
-          className={`absolute bottom-0 left-0 right-0 transition-transform duration-300 ease-out
-          ${hovered ? "translate-y-0" : "translate-y-full"}`}
-        >
-          <div className="bg-[#f5f2ed]/96 backdrop-blur-sm px-4 pt-3 pb-3">
-            {addedSize ? (
-              <p className="text-center font-sans text-[10px] uppercase tracking-[0.18em] text-[#555] py-1">
-                Added — {addedSize} ✓
-              </p>
-            ) : (
-              <div className="flex flex-wrap justify-center gap-x-3 gap-y-1.5">
-                {SIZES.map((s) => (
-                  <button
-                    key={s}
-                    type="button"
-                    onClick={() => handleAdd(s)}
-                    className="font-sans text-[10px] uppercase tracking-[0.1em] text-[#444]
-                               hover:text-[#111] hover:font-semibold transition-all duration-100 py-0.5"
-                  >
-                    {s}
-                  </button>
-                ))}
-              </div>
-            )}
+    <div className="absolute bottom-0 left-0 right-0 transition-transform duration-300 ease-out translate-y-full group-hover:translate-y-0">
+      <div className="bg-[#f5f2ed]/96 backdrop-blur-sm px-4 pt-3 pb-3">
+        {addedSize ? (
+          <p className="text-center font-sans text-[10px] uppercase tracking-[0.18em] text-[#555] py-1">
+            Added — {addedSize} ✓
+          </p>
+        ) : (
+          <div className="flex flex-wrap justify-center gap-x-3 gap-y-1.5">
+            {SIZES.map((s) => (
+              <button
+                key={s}
+                type="button"
+                onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleAdd(s); }}
+                className="font-sans text-[10px] uppercase tracking-[0.1em] text-[#444] hover:text-[#111] hover:font-semibold transition-all duration-100 py-0.5"
+              >
+                {s}
+              </button>
+            ))}
           </div>
-        </div>
+        )}
       </div>
-
-      <div className="pt-3 pb-2">
-        <p className="font-sans text-[12px] tracking-[0.03em] text-[#111] leading-snug truncate">
-          {product.title}
-        </p>
-        <p className="font-sans text-[12px] text-[#888] mt-1 tracking-[0.02em] tabular-nums">
-          ₹{Number(product.priceRange.minVariantPrice.amount).toLocaleString("en-IN")}
-        </p>
-      </div>
-    </article>
+    </div>
   );
 };
 
@@ -462,10 +395,11 @@ const CartPage = () => {
                            sm:w-[calc(33.333vw-2.2rem)]
                            lg:w-[calc(20vw-1.7rem)]"
               >
-                <StripCard
+                <ProductCard
                   product={p}
                   wishlisted={wlIds.includes(p.id)}
-                  onToggle={toggleWl}
+                  onWishlistToggle={toggleWl}
+                  imageChildren={<SizeSelector />}
                 />
               </div>
             ))}

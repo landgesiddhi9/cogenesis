@@ -51,7 +51,6 @@ const FilterPanel = ({ isOpen, onClose, onApply }: FilterPanelProps) => {
     color: [] as string[],
     price: [1500, 5000] as [number, number],
     fit: [] as string[],
-    category: [] as string[],
   });
 
   const colors = [
@@ -82,7 +81,6 @@ const FilterPanel = ({ isOpen, onClose, onApply }: FilterPanelProps) => {
   };
 
   const hasActiveFilters =
-    filters.category.length > 0 ||
     filters.size.length > 0 ||
     filters.material.length > 0 ||
     filters.color.length > 0 ||
@@ -97,7 +95,6 @@ const FilterPanel = ({ isOpen, onClose, onApply }: FilterPanelProps) => {
       color: [],
       price: [1500, 5000],
       fit: [],
-      category: [],
     });
   };
 
@@ -154,33 +151,6 @@ const FilterPanel = ({ isOpen, onClose, onApply }: FilterPanelProps) => {
                     className="w-4 h-4 rounded border-stone/20 accent-warm-brown"
                   />
                   <span className="text-sm text-charcoal">{size}</span>
-                </label>
-              ))}
-            </div>
-          </FilterAccordion>
-
-          {/* Category */}
-          <FilterAccordion title="Category">
-            <div className="space-y-3">
-              {["Shirts", "Trousers"].map((cat) => (
-                <label
-                  key={cat}
-                  className="flex items-center gap-3 cursor-pointer"
-                >
-                  <input
-                    type="checkbox"
-                    checked={filters.category.includes(cat)}
-                    onChange={() =>
-                      setFilters((prev) => ({
-                        ...prev,
-                        category: prev.category.includes(cat)
-                          ? prev.category.filter((c) => c !== cat)
-                          : [...prev.category, cat],
-                      }))
-                    }
-                    className="w-4 h-4 rounded border-stone/20 accent-warm-brown"
-                  />
-                  <span className="text-sm text-charcoal">{cat}</span>
                 </label>
               ))}
             </div>

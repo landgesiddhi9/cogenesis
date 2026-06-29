@@ -1,80 +1,9 @@
 import { useState, useRef, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import { useWishlist } from "../hooks/useWishlist";
 import { getFeaturedProducts } from "../services/product.service";
 import { getWishlistProductsByIds } from "../services/wishlist.service";
 import type { ShopifyProduct } from "../types";
-
-// ── Bookmark icon ─────────────────────────────────────────────────────────────
-const BookmarkIcon = ({ filled }: { filled: boolean }) => (
-  <svg
-    width="22"
-    height="22"
-    viewBox="0 0 24 24"
-    fill={filled ? "#431c1c" : "none"}
-    stroke={filled ? "#431c1c" : "white"}
-    strokeWidth="1.8"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <path d="M6 2h12v16l-6-4l-6 4V2z" />
-  </svg>
-);
-
-// ── Product card ──────────────────────────────────────────────────────────────
-const ProductCard = ({
-  product,
-  wishlisted,
-  onToggle,
-}: {
-  product: ShopifyProduct;
-  wishlisted: boolean;
-  onToggle: (id: string) => void;
-}) => {
-  const navigate = useNavigate();
-
-  return (
-  <article
-    className="group relative flex flex-col cursor-pointer"
-    onClick={() => navigate(`/products/${product.handle}`)}
-  >
-    {/* Image container — editorial portrait ratio, zero borders */}
-    <div className="relative overflow-hidden aspect-[3/4] bg-[#eeece8]">
-      <img
-        src={product.featuredImage.url}
-        alt={product.featuredImage.altText}
-        className="w-full h-full object-cover object-top transition-transform duration-700 ease-out group-hover:scale-[1.04]"
-        loading="lazy"
-      />
-
-      {/* Bookmark — always visible when wishlisted, shown on hover otherwise */}
-      <button
-        type="button"
-        onClick={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          onToggle(product.id);
-        }}
-        className={`absolute top-3 right-3 z-20 p-0 bg-transparent border-none cursor-pointer transition-opacity duration-200
-          ${wishlisted ? "opacity-100" : "opacity-0 group-hover:opacity-100"}`}
-        aria-label={wishlisted ? "Remove from wishlist" : "Add to wishlist"}
-      >
-        <BookmarkIcon filled={wishlisted} />
-      </button>
-    </div>
-
-    {/* Product info */}
-    <div className="pt-3 pb-3">
-      <p className="font-sans text-[12px] tracking-[0.03em] text-[#111] leading-snug truncate">
-        {product.title}
-      </p>
-      <p className="font-sans text-[12px] text-[#888] mt-1 tracking-[0.02em] tabular-nums">
-        ₹{Number(product.priceRange.minVariantPrice.amount).toLocaleString("en-IN")}
-      </p>
-    </div>
-  </article>
-  );
-};
+import ProductCard from "../components/ProductCard";
 
 // ── Checkmark row ─────────────────────────────────────────────────────────────
 const CheckRow = ({ text }: { text: string }) => (
@@ -242,7 +171,7 @@ const WishlistPage = () => {
         >
           <div className="grid gap-6" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))" }}>
             {wishlistProducts.map((p) => (
-              <ProductCard key={p.id} product={p} wishlisted onToggle={toggle} />
+              <ProductCard key={p.id} product={p} wishlisted={true} onWishlistToggle={toggle} />
             ))}
           </div>
         </section>
@@ -292,7 +221,7 @@ const WishlistPage = () => {
                 <ProductCard
                   product={p}
                   wishlisted={isWishlisted(p.id)}
-                  onToggle={toggle}
+                  onWishlistToggle={toggle}
                 />
               </div>
             ))}

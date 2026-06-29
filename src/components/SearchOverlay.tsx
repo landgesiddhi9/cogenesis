@@ -4,6 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import { searchProducts } from '../services/search.service';
 import { getFeaturedProducts } from '../services/product.service';
 import type { ShopifyProduct } from '../types';
+import SalePrice from './SalePrice';
+import { getBestCompareAtPrice } from '../utils/price';
 
 const WL_KEY = "wishlist";
 const readWL = (): string[] => {
@@ -283,11 +285,11 @@ const SearchOverlay: React.FC<Props> = ({ isOpen, onClose }) => {
                         <span className="mx-1">XL</span>
                       </div>
                     </div>
-                    <div className="mt-3">
+                    <div className="mt-3 text-center">
                       <h3 className="text-[15px] font-normal tracking-[0.02em] leading-[1.2] text-charcoal">
                         {p.title}
                       </h3>
-                      <p className="font-sans text-[12px] text-[#888] tracking-[0.02em] tabular-nums">₹{Number(p.priceRange.minVariantPrice.amount).toLocaleString("en-IN")}</p>
+                      <SalePrice price={p.priceRange.minVariantPrice.amount} compareAtPrice={getBestCompareAtPrice(p)} className="text-center" />
                     </div>
                   </article>
                 ))}
