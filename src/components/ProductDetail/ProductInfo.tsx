@@ -67,7 +67,7 @@ const ProductInfo = ({
       </h1>
 
       {/* Category/Fabric - 20px spacing below */}
-      <div className="mt-5 mb-6">
+      <div className="mt-4 mb-4">
         <p
           className="text-lg text-charcoal/70 tracking-wide"
           style={{
@@ -82,7 +82,7 @@ const ProductInfo = ({
       </div>
 
       {/* Price - 24px spacing below */}
-      <div className="pb-10">
+      <div className="pb-6">
         <p
           className="text-charcoal tracking-normal"
           style={{
@@ -98,9 +98,9 @@ const ProductInfo = ({
       </div>
 
       {/* Color Swatches - 40px spacing below */}
-      <div className="pb-16">
+      <div className="pb-8">
         <h3
-          className="text-sm text-charcoal/60 tracking-widest mb-6 uppercase"
+          className="text-sm text-charcoal/60 tracking-widest mb-5 uppercase"
           style={{
             fontFamily: "'Cormorant Garamond', 'Canela', serif",
             fontSize: "16px",
@@ -129,9 +129,9 @@ const ProductInfo = ({
       </div>
 
       {/* Size Selection - 40px spacing below */}
-      <div className="pb-16">
+      <div className="pb-8">
         <h3
-          className="text-sm text-charcoal/60 tracking-widest mb-6 uppercase"
+          className="text-sm text-charcoal/60 tracking-widest mb-5 uppercase"
           style={{
             fontFamily: "'Cormorant Garamond', 'Canela', serif",
             fontSize: "16px",
@@ -163,7 +163,7 @@ const ProductInfo = ({
       </div>
 
       {/* Size Guide & Size Recommender - Compact section */}
-      <div className="grid grid-cols-2 gap-px border-t border-b border-stone/15 py-6">
+      <div className="grid grid-cols-2 gap-px border-t border-b border-stone/15 py-4">
         {/* Size Guide Column */}
         <div className="border-r border-stone/15 px-4 text-center">
           <button
@@ -199,25 +199,9 @@ const ProductInfo = ({
         </div>
       </div>
 
-      {/* Product Description - 48px spacing after size guide section */}
-      <div className="pt-12 pb-16">
-        <p
-          className="text-charcoal/80 leading-relaxed max-w-lg"
-          style={{
-            fontFamily: "'Cormorant Garamond', 'Canela', serif",
-            fontSize: "18px",
-            fontWeight: 400,
-            lineHeight: 1.8,
-            letterSpacing: "0.01em",
-          }}
-        >
-          {description}
-        </p>
-      </div>
-
-      {/* Quantity Selector - 56px spacing before */}
-      <div className="pt-8" />
-      <div className="pb-8 flex items-center gap-4 w-fit">
+      {/* Quantity Selector */}
+      <div className="pt-3" />
+      <div className="pb-4 flex items-center gap-4 w-fit">
         <button
           onClick={() => setQuantity(Math.max(1, quantity - 1))}
           className="w-11 h-11 flex items-center justify-center border border-stone/20 hover:border-charcoal/40 transition-colors rounded-sm text-lg"
@@ -251,7 +235,7 @@ const ProductInfo = ({
       </div>
 
       {/* CTA Buttons */}
-      <div className="space-y-3 pb-8">
+      <div className="space-y-2 pb-8">
         <button
           onClick={addToCart}
           className="w-full bg-charcoal text-white py-4 font-light transition-colors duration-300 hover:bg-charcoal/90 tracking-wide border border-charcoal"
@@ -275,6 +259,22 @@ const ProductInfo = ({
         >
           Buy Now
         </button>
+      </div>
+
+      {/* Product Description */}
+      <div className="pb-12">
+        <p
+          className="text-charcoal/80 leading-relaxed max-w-lg"
+          style={{
+            fontFamily: "'Cormorant Garamond', 'Canela', serif",
+            fontSize: "18px",
+            fontWeight: 400,
+            lineHeight: 1.8,
+            letterSpacing: "0.01em",
+          }}
+        >
+          {description}
+        </p>
       </div>
 
       {/* Wishlist Button */}
