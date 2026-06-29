@@ -28,6 +28,7 @@ import ReturnsPage from "./pages/ReturnsPage";
 import TestCartPage from "./pages/TestCartPage";
 
 import AIAssistant from "./components/AIAssistant";
+import { CartToast } from "./components/CartToast";
 
 const CollectionRouteWrapper = () => {
   const { handle } = useParams<{ handle: string }>();
@@ -163,6 +164,7 @@ function App() {
       {!isLoginPage && <Footer />}
 
       <AIAssistant />
+      <CartToast />
     </div>
   );
 }
