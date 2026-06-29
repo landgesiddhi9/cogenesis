@@ -5,6 +5,7 @@ type ActiveColumn = "men" | "women" | "fabric" | null;
 
 interface MegaMenuPanelProps {
   onNavigate?: () => void;
+  isOpen?: boolean;
 }
 
 const submenus = {
@@ -63,7 +64,30 @@ function useImageCrossfade(defaultSrc: string) {
   return { displayedImage, prevImage, fading, switchImage };
 }
 
-const MegaMenuPanel = (_props: MegaMenuPanelProps) => {
+const headingAnimationStyle = (isOpen: boolean) => ({
+    opacity: isOpen ? 1 : 0,
+    transform: isOpen ? 'translateY(0)' : 'translateY(15px)',
+    transition: 'opacity 500ms cubic-bezier(0.22, 1, 0.36, 1), transform 500ms cubic-bezier(0.22, 1, 0.36, 1)',
+    transitionDelay: isOpen ? '80ms' : '0ms',
+    willChange: 'transform, opacity',
+  });
+
+  const imageAnimationStyle = (isOpen: boolean) => ({
+    opacity: isOpen ? 1 : 0,
+    transform: isOpen ? 'translateY(0)' : 'translateY(15px)',
+    transition: 'opacity 500ms cubic-bezier(0.22, 1, 0.36, 1), transform 500ms cubic-bezier(0.22, 1, 0.36, 1)',
+    transitionDelay: isOpen ? '200ms' : '0ms',
+    willChange: 'transform, opacity',
+  });
+
+  const submenuAnimationStyle = (isOpen: boolean) => ({
+    opacity: isOpen ? 1 : 0,
+    transition: 'opacity 400ms cubic-bezier(0.22, 1, 0.36, 1)',
+    transitionDelay: isOpen ? '280ms' : '0ms',
+    willChange: 'opacity',
+  });
+
+  const MegaMenuPanel = ({ onNavigate, isOpen = false }: MegaMenuPanelProps) => {
   const navigate = useNavigate();
   const [activeColumn, setActiveColumn] = useState<ActiveColumn>(null);
 
@@ -103,7 +127,7 @@ const MegaMenuPanel = (_props: MegaMenuPanelProps) => {
             className="absolute inset-0 w-full h-full object-cover object-center pointer-events-none"
             style={{
               opacity: img.fading ? 0 : 1,
-              transform: img.fading ? "scale(1)" : "scale(1.02)",
+              transform: img.fading ? "scale(1) translateY(-20px)" : "scale(1.02) translateY(-20px)",
               transition: "opacity 300ms ease-in-out, transform 300ms ease-in-out",
               willChange: "opacity, transform",
             }}
@@ -117,7 +141,7 @@ const MegaMenuPanel = (_props: MegaMenuPanelProps) => {
             opacity: img.prevImage ? (img.fading ? 1 : 0) : 1,
             transform: isActive
               ? "scale(0.72) translateY(-12px)"
-              : "scale(1) translateY(0)",
+              : "scale(1) translateY(-20px)",
             transformOrigin: "top center",
             willChange: "transform, opacity",
             transition: "opacity 300ms ease-in-out, transform 400ms cubic-bezier(0.22, 1, 0.36, 1)",
@@ -137,22 +161,23 @@ const MegaMenuPanel = (_props: MegaMenuPanelProps) => {
         isActive ? "pointer-events-auto" : "pointer-events-none"
       }`}
       style={{
-        top: "calc(72% + 3px)",
+        top: "calc(72% - 17px)",
         opacity: isActive ? 1 : 0,
         transition: "opacity 250ms cubic-bezier(0.22, 1, 0.36, 1)",
+        ...submenuAnimationStyle(isOpen),
       }}
     >
       <div className="relative">
         <div className="absolute inset-0 bg-gradient-to-t from-[#FFF6ED] via-[#FFF6ED]/60 to-transparent pointer-events-none" />
-        <div className="relative z-10 flex flex-col items-center py-4">
+        <div className="relative z-10 flex flex-col items-center py-4 gap-[5px]">
           {items.map((item) => (
             <button
               key={item.label}
-              className="font-sans text-[17px] font-normal leading-[2.2] text-[#4A2E2A] hover:underline transition-all duration-200"
+              className="font-display text-[18.5px] font-normal leading-[1.7] text-[#4A2E2A] hover:underline transition-all duration-200"
               onMouseEnter={() => handleSubcategoryHover(column, item.image)}
               onClick={() => {
                 navigate(item.to);
-                _props.onNavigate?.();
+                onNavigate?.();
               }}
             >
               {item.label}
@@ -164,8 +189,8 @@ const MegaMenuPanel = (_props: MegaMenuPanelProps) => {
   );
 
   return (
-    <div className="w-full bg-[#FFF6ED] h-[680px] overflow-hidden">
-      <div className="max-w-[1400px] mx-auto pt-[40px] px-[64px] pb-[36px]">
+    <div className="w-full bg-[#FFF6ED] h-[605px] overflow-hidden">
+      <div className="max-w-[1400px] mx-auto pt-[40px] px-[64px] pb-[24px]">
         <div className="grid grid-cols-3 gap-16 items-start">
           {/* MEN */}
           <div
@@ -173,14 +198,14 @@ const MegaMenuPanel = (_props: MegaMenuPanelProps) => {
             onMouseEnter={() => setActiveColumn("men")}
             onMouseLeave={() => setActiveColumn(null)}
           >
-            <h2 className="mb-6">
-              <span className="inline-block border-b border-[#4A2E2A] pb-[1px] font-display text-[30px] font-normal tracking-[0.18em] text-[#4A2E2A] uppercase leading-none ">
+            <h2 className="mb-[44px]" style={headingAnimationStyle(isOpen)}>
+              <span className="inline-block border-b border-[#4A2E2A] pb-[1px] font-display text-[24px] font-normal tracking-[0.18em] text-[#4A2E2A] uppercase leading-none ">
                 MEN
               </span>
             </h2>
-            <div className="w-full aspect-[4/5] relative">
+            <div className="w-full aspect-[4/5] relative" style={imageAnimationStyle(isOpen)}>
               {renderImage(men, activeColumn === "men")}
-              {renderSubmenu("men", submenus.men, activeColumn === "men")}
+              {activeColumn === "men" && renderSubmenu("men", submenus.men, true)}
             </div>
           </div>
 
@@ -190,14 +215,14 @@ const MegaMenuPanel = (_props: MegaMenuPanelProps) => {
             onMouseEnter={() => setActiveColumn("women")}
             onMouseLeave={() => setActiveColumn(null)}
           >
-            <h2 className="mb-6">
-              <span className="inline-block border-b border-[#4A2E2A] pb-[1px] font-display text-[30px] font-normal tracking-[0.18em] text-[#4A2E2A] uppercase leading-none ">
+            <h2 className="mb-[44px]" style={headingAnimationStyle(isOpen)}>
+              <span className="inline-block border-b border-[#4A2E2A] pb-[1px] font-display text-[24px] font-normal tracking-[0.18em] text-[#4A2E2A] uppercase leading-none ">
                 WOMEN
               </span>
             </h2>
-            <div className="w-full aspect-[4/5] relative">
+            <div className="w-full aspect-[4/5] relative" style={imageAnimationStyle(isOpen)}>
               {renderImage(women, activeColumn === "women")}
-              {renderSubmenu("women", submenus.women, activeColumn === "women")}
+              {activeColumn === "women" && renderSubmenu("women", submenus.women, true)}
             </div>
           </div>
 
@@ -207,14 +232,14 @@ const MegaMenuPanel = (_props: MegaMenuPanelProps) => {
             onMouseEnter={() => setActiveColumn("fabric")}
             onMouseLeave={() => setActiveColumn(null)}
           >
-            <h2 className="mb-6">
-              <span className="inline-block border-b border-[#4A2E2A] pb-[1px] font-display text-[30px] font-normal tracking-[0.18em] text-[#4A2E2A] uppercase leading-none ">
+            <h2 className="mb-[44px]" style={headingAnimationStyle(isOpen)}>
+              <span className="inline-block border-b border-[#4A2E2A] pb-[1px] font-display text-[24px] font-normal tracking-[0.18em] text-[#4A2E2A] uppercase leading-none ">
                 FABRIC
               </span>
             </h2>
-            <div className="w-full aspect-[4/5] relative">
+            <div className="w-full aspect-[4/5] relative" style={imageAnimationStyle(isOpen)}>
               {renderImage(fabric, activeColumn === "fabric")}
-              {renderSubmenu("fabric", submenus.fabric, activeColumn === "fabric")}
+              {activeColumn === "fabric" && renderSubmenu("fabric", submenus.fabric, true)}
             </div>
           </div>
         </div>
