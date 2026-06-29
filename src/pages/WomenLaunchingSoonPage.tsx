@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-
-const PLACEHOLDER_PATH = "/images/womens-launching-soon.jpg";
+import womensImage from "../assets/womens-launching-soon.jpg";
 
 const WomenLaunchingSoonPage = () => {
   const navigate = useNavigate();
@@ -70,7 +69,7 @@ const WomenLaunchingSoonPage = () => {
             <div className="relative w-full overflow-hidden rounded-[10px] bg-[#f0ece4] min-h-[50vh] md:min-h-0">
               {!imgError ? (
                 <img
-                  src={PLACEHOLDER_PATH}
+                  src={womensImage}
                   alt="Women's collection preview"
                   className="w-full h-full object-cover absolute inset-0"
                   style={{ objectPosition: "center" }}
