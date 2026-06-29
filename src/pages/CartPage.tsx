@@ -166,7 +166,8 @@ const formatPrice = (amount: string, currency: string) => {
 // ── Cart page ─────────────────────────────────────────────────────────────────
 const CartPage = () => {
   const navigate = useNavigate();
-  const { cart } = useCart();
+  const { cart, updateCartLine, removeCartLine } = useCart();
+  const [processingLines, setProcessingLines] = useState<Set<string>>(new Set());
 
   // "May Interest You" strip state
   const stripRef = useRef<HTMLDivElement>(null);
@@ -212,6 +213,74 @@ const CartPage = () => {
     };
   }, []);
 
+  const isProcessing = (lineId: string) => processingLines.has(lineId);
+
+  const handleIncrement = async (lineId: string, currentQty: number) => {
+    setProcessingLines((prev) => new Set(prev).add(lineId));
+    try {
+      await updateCartLine(lineId, currentQty + 1);
+    } catch {
+      window.dispatchEvent(
+        new CustomEvent("cart-toast", {
+          detail: { message: "Couldn't update cart", type: "error" },
+        }),
+      );
+    } finally {
+      setProcessingLines((prev) => {
+        const next = new Set(prev);
+        next.delete(lineId);
+        return next;
+      });
+    }
+  };
+
+  const handleRemove = async (lineId: string) => {
+    setProcessingLines((prev) => new Set(prev).add(lineId));
+    try {
+      await removeCartLine(lineId);
+      window.dispatchEvent(
+        new CustomEvent("cart-toast", {
+          detail: { message: "Product removed from cart", type: "success" },
+        }),
+      );
+    } catch {
+      window.dispatchEvent(
+        new CustomEvent("cart-toast", {
+          detail: { message: "Couldn't remove product", type: "error" },
+        }),
+      );
+    } finally {
+      setProcessingLines((prev) => {
+        const next = new Set(prev);
+        next.delete(lineId);
+        return next;
+      });
+    }
+  };
+
+  const handleDecrement = async (lineId: string, currentQty: number) => {
+    setProcessingLines((prev) => new Set(prev).add(lineId));
+    try {
+      if (currentQty <= 1) {
+        await removeCartLine(lineId);
+      } else {
+        await updateCartLine(lineId, currentQty - 1);
+      }
+    } catch {
+      window.dispatchEvent(
+        new CustomEvent("cart-toast", {
+          detail: { message: "Couldn't update cart", type: "error" },
+        }),
+      );
+    } finally {
+      setProcessingLines((prev) => {
+        const next = new Set(prev);
+        next.delete(lineId);
+        return next;
+      });
+    }
+  };
+
   const hasItems = cart && cart.lines.length > 0;
 
   return (
@@ -241,23 +310,54 @@ const CartPage = () => {
                         className="w-full h-full object-cover object-top"
                       />
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="font-sans text-[12px] tracking-[0.03em] text-[#111] truncate">
+                    <div className="flex-1 min-w-0 relative">
+                      <button
+                        type="button"
+                        disabled={isProcessing(line.id)}
+                        onClick={() => handleRemove(line.id)}
+                        className="absolute top-0 right-0 leading-none text-[#888] text-[28px] font-semibold hover:opacity-70 transition-opacity duration-150 disabled:opacity-40 disabled:cursor-not-allowed z-10"
+                        aria-label="Remove item"
+                      >
+                        ×
+                      </button>
+                      <p className="font-sans text-[12px] tracking-[0.03em] text-[#111] truncate pr-6">
                         {line.merchandise.product.title}
                       </p>
                       <p className="font-sans text-[11px] text-[#888] mt-1">
                         {line.merchandise.title}
                       </p>
-                      <p className="font-sans text-[11px] text-[#888] mt-1">
-                        Qty: {line.quantity}
-                      </p>
+                      <div className="flex items-center justify-between mt-2">
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            disabled={isProcessing(line.id)}
+                            onClick={() => handleDecrement(line.id, line.quantity)}
+                            className="w-7 h-7 flex items-center justify-center border border-[#d0ccc6] rounded text-[#111] font-sans text-[13px] disabled:opacity-40 transition-opacity duration-150 hover:border-[#111]"
+                            aria-label="Decrease quantity"
+                          >
+                            –
+                          </button>
+                          <span className="font-sans text-[12px] text-[#111] w-5 text-center tabular-nums">
+                            {line.quantity}
+                          </span>
+                          <button
+                            type="button"
+                            disabled={isProcessing(line.id)}
+                            onClick={() => handleIncrement(line.id, line.quantity)}
+                            className="w-7 h-7 flex items-center justify-center border border-[#d0ccc6] rounded text-[#111] font-sans text-[13px] disabled:opacity-40 transition-opacity duration-150 hover:border-[#111]"
+                            aria-label="Increase quantity"
+                          >
+                            +
+                          </button>
+                        </div>
+                        <p className="font-sans text-[12px] text-[#111] tabular-nums whitespace-nowrap">
+                          {formatPrice(
+                            (Number(line.merchandise.price.amount) * line.quantity).toString(),
+                            line.merchandise.price.currencyCode,
+                          )}
+                        </p>
+                      </div>
                     </div>
-                    <p className="font-sans text-[12px] text-[#111] tabular-nums whitespace-nowrap">
-                      {formatPrice(
-                        (Number(line.merchandise.price.amount) * line.quantity).toString(),
-                        line.merchandise.price.currencyCode,
-                      )}
-                    </p>
                   </div>
                 ))}
               </div>
