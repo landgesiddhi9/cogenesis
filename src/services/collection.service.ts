@@ -16,6 +16,11 @@ import {
   type ShopifyApiProductFilter,
   type ShopifyProductSortKeys,
 } from "../graphql/queries/getProductsByCollection";
+import {
+  GET_ALL_COLLECTIONS_QUERY,
+  type GetAllCollectionsResponse,
+  type GetAllCollectionsVariables,
+} from "../graphql/queries/getAllCollections";
 import type { ShopifyApiCollection, ShopifyApiProduct } from "../types/shopify-api";
 import type { ShopifyCollection, ShopifyProduct } from "../types";
 
@@ -113,4 +118,40 @@ export async function getProductsByCollection(
     .filter((product): product is ShopifyProduct => product !== null);
 
   return { products, raw };
+}
+
+export async function getAllCollections(
+  first: number = 50,
+  options: ShopifyRequestOptions = {},
+): Promise<ShopifyCollection[]> {
+  const data = await shopifyRequest<
+    GetAllCollectionsResponse,
+    GetAllCollectionsVariables
+  >(GET_ALL_COLLECTIONS_QUERY, { first }, options);
+
+  return data.collections.edges
+    .map(({ node }) => mapShopifyCollection(node))
+    .filter((c): c is ShopifyCollection => c !== null);
+}
+
+export async function getAllProducts(
+  options: ShopifyRequestOptions = {},
+): Promise<CollectionProductsResult> {
+  const collections = await getAllCollections(50, options);
+  const handles = collections.map((c) => c.handle);
+
+  const results = await Promise.all(
+    handles.map((handle) => getProductsByCollection({ handle, options })),
+  );
+
+  const seen = new Set<string>();
+  const products = results.flatMap(({ products }) =>
+    products.filter((p) => {
+      if (seen.has(p.id)) return false;
+      seen.add(p.id);
+      return true;
+    }),
+  );
+
+  return { products, raw: [] };
 }

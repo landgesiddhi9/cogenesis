@@ -1,11 +1,9 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { useInView } from "../hooks/useInView";
-import { useWishlist } from "../hooks/useWishlist";
 import { getBestSellerProducts } from "../services/men.service";
 import SortDropdown from "../components/SortDropdown";
 import FilterPanel from "../components/FilterPanel";
 import LayoutSwitcher from "../components/LayoutSwitcher";
+import ProductCard from "../components/ProductCard";
 import type { ShopifyProduct } from "../types";
 import type { ShopifyApiProductFilter, ShopifyProductSortKeys } from "../graphql/queries/getProductsByCollection";
 
@@ -28,80 +26,6 @@ const sortOptions = [
   { id: "a-z", label: "Alphabetically A–Z" },
   { id: "z-a", label: "Alphabetically Z–A" },
 ];
-
-interface ProductCardProps {
-  product: ShopifyProduct;
-  index: number;
-}
-
-const ProductCard = ({ product, index }: ProductCardProps) => {
-  const navigate = useNavigate();
-  const { ref, isInView } = useInView({ threshold: 0.1 });
-  const { isWishlisted, toggleWishlist } = useWishlist();
-  const wishlisted = isWishlisted(product.id);
-
-  const handleProductClick = () => {
-    navigate(`/products/${product.handle}`);
-  };
-
-  const handleWishlistToggle = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    toggleWishlist(product.id);
-  };
-
-  return (
-    <div
-      ref={ref}
-      className={`group relative overflow-hidden transition-all duration-700 cursor-pointer ${
-        isInView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
-      }`}
-      style={{ transitionDelay: `${index * 50}ms` }}
-      onClick={handleProductClick}
-    >
-      <div className="aspect-[3/4] overflow-hidden bg-[#f0ede8] relative">
-        <img
-          src={product.featuredImage.url}
-          alt={product.featuredImage.altText}
-          className="w-full h-full object-cover object-top transition-transform duration-700 ease-out group-hover:scale-[1.04]"
-          loading="lazy"
-        />
-
-        <button
-          onClick={handleWishlistToggle}
-          className={`absolute top-4 right-4 z-20 p-0 bg-transparent border-none cursor-pointer transition-opacity duration-300 ${
-            wishlisted
-              ? "opacity-100"
-              : "opacity-0 group-hover:opacity-100"
-          }`}
-          aria-label={wishlisted ? "Remove from wishlist" : "Add to wishlist"}
-        >
-          <svg
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill={wishlisted ? "#431c1c" : "none"}
-            stroke={wishlisted ? "#431c1c" : "white"}
-            strokeWidth="1.8"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <path d="M6 2h12v16l-6-4l-6 4V2z" />
-          </svg>
-        </button>
-      </div>
-
-      <div className="pt-4 pb-3 px-0">
-        <h3 className="font-sans text-[13px] md:text-[14px] tracking-[0.03em] text-[#111] leading-snug truncate">
-          {product.title}
-        </h3>
-        <p className="font-sans text-[12px] text-[#888] mt-1 tracking-[0.02em] tabular-nums">
-          ₹{Number(product.priceRange.minVariantPrice.amount).toLocaleString("en-IN")}
-        </p>
-      </div>
-    </div>
-  );
-};
 
 const BestSellersPage = () => {
   const [products, setProducts] = useState<ShopifyProduct[]>([]);
@@ -239,7 +163,7 @@ const BestSellersPage = () => {
               fontWeight: 400,
             }}
           >
-            BEST SELLERS
+            Best Sellers
           </h1>
           <div className="flex items-center justify-center gap-4">
             <div className="shrink-0 w-8 h-px bg-stone/20"></div>
@@ -282,7 +206,7 @@ const BestSellersPage = () => {
         ) : (
           <div className={`grid ${gridCols} gap-6 md:gap-8`}>
             {products.map((product, index) => (
-              <ProductCard
+              <ProductCard animate
                 key={product.id}
                 product={product}
                 index={index}

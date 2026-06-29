@@ -39,7 +39,7 @@ const Hero: React.FC<HeroProps> = ({ overlay }) => {
       <div className="absolute bottom-20 md:bottom-24 left-[calc(10%-1cm)] z-30">
         <button
           type="button"
-          onClick={() => navigate('/collections/shirts')}
+          onClick={() => navigate('/men/view-all')}
           className={`
             text-white/90 text-[13px] md:text-[14px] font-medium tracking-[0.28em] uppercase
             transition-all duration-500 ease-out

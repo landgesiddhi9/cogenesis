@@ -162,9 +162,9 @@ const headingAnimationStyle = (isOpen: boolean) => ({
       }`}
       style={{
         top: "calc(72% - 17px)",
+        ...submenuAnimationStyle(isOpen),
         opacity: isActive ? 1 : 0,
         transition: "opacity 250ms cubic-bezier(0.22, 1, 0.36, 1)",
-        ...submenuAnimationStyle(isOpen),
       }}
     >
       <div className="relative">
