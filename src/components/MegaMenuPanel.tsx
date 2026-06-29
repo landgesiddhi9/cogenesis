@@ -12,7 +12,7 @@ const submenus = {
     { label: "Shirts", image: "/images/shirts dropdown.jpg", to: "/collections/shirts" },
     { label: "Trousers", image: "/images/trouser dropdown.jpg", to: "/collections/trousers" },
     { label: "Best Sellers", image: "/images/male model 2 .jpg", to: "/men/best-sellers" },
-    { label: "View All", image: "/images/male model 2 .jpg", to: "/men" },
+    { label: "View All", image: "/images/male model 2 .jpg", to: "/men/view-all" },
   ],
   women: [
     { label: "Launching Soon", image: "/images/female model.jpg", to: "/women" },

@@ -16,6 +16,9 @@ import CollectionPage from "./pages/CollectionPage";
 import LaunchingSoonPage from "./pages/LaunchingSoonPage";
 import FAQPage from "./pages/FAQPage";
 import ProductDetailPage from "./pages/ProductDetailPage";
+import BestSellersPage from "./pages/BestSellersPage";
+import ViewAllPage from "./pages/ViewAllPage";
+import WomenLaunchingSoonPage from "./pages/WomenLaunchingSoonPage";
 
 import LoginPage from "./components/LoginPage";
 import WishlistPage from "./pages/WishlistPage";
@@ -129,21 +132,20 @@ function App() {
           {/* Men */}
           <Route
             path="/men"
-            element={<Navigate to="/launching-soon" replace />}
+            element={<Navigate to="/men/view-all" replace />}
           />
+          <Route path="/men/best-sellers" element={<BestSellersPage />} />
+          <Route path="/men/view-all" element={<ViewAllPage />} />
           <Route
             path="/men/:subcategory"
             element={<Navigate to="/launching-soon" replace />}
           />
 
           {/* Women */}
-          <Route
-            path="/women"
-            element={<Navigate to="/launching-soon" replace />}
-          />
+          <Route path="/women" element={<WomenLaunchingSoonPage />} />
           <Route
             path="/women/:subcategory"
-            element={<Navigate to="/launching-soon" replace />}
+            element={<WomenLaunchingSoonPage />}
           />
 
           {/* Fabric */}

@@ -78,7 +78,7 @@ const Footer = () => {
             <ul className="space-y-3 mt-4">
               <li>
                 <a
-                  href="/men"
+                  href="/men/view-all"
                   className="font-sans text-[13px] text-[#7a7260] hover:text-[#3d3929] transition-colors duration-300"
                 >
                   Men
