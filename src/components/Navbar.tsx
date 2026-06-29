@@ -266,8 +266,8 @@ const Navbar = () => {
             style={{
               opacity: menuOpen ? 1 : 0,
               transition: menuOpen
-                ? 'opacity 400ms cubic-bezier(0.22, 1, 0.36, 1) 150ms'
-                : 'opacity 200ms cubic-bezier(0.22, 1, 0.36, 1)',
+                ? 'opacity 650ms cubic-bezier(0.22, 1, 0.36, 1) 80ms'
+                : 'opacity 650ms cubic-bezier(0.22, 1, 0.36, 1)',
               willChange: 'opacity',
               pointerEvents: menuOpen ? 'auto' : 'none',
             }}
@@ -278,15 +278,15 @@ const Navbar = () => {
             className="flex justify-center"
             style={{
               opacity: menuOpen ? 1 : 0,
-              transform: `translateY(${menuOpen ? '0px' : '-24px'})`,
+              transform: `translateY(${menuOpen ? '0px' : '-28px'})`,
               transition: menuOpen
-                ? 'opacity 400ms cubic-bezier(0.22, 1, 0.36, 1) 150ms, transform 400ms cubic-bezier(0.22, 1, 0.36, 1) 150ms'
-                : 'opacity 300ms cubic-bezier(0.22, 1, 0.36, 1), transform 300ms cubic-bezier(0.22, 1, 0.36, 1)',
+                ? 'opacity 650ms cubic-bezier(0.22, 1, 0.36, 1) 80ms, transform 650ms cubic-bezier(0.22, 1, 0.36, 1) 80ms'
+                : 'opacity 650ms cubic-bezier(0.22, 1, 0.36, 1), transform 650ms cubic-bezier(0.22, 1, 0.36, 1)',
               willChange: 'transform, opacity',
               pointerEvents: menuOpen ? 'auto' : 'none',
             }}
           >
-            <MegaMenuPanel onNavigate={() => setMenuOpen(false)} />
+            <MegaMenuPanel onNavigate={() => setMenuOpen(false)} isOpen={menuOpen} />
           </div>
         </div>,
         document.body,

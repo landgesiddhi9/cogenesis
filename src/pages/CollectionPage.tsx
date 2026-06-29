@@ -49,181 +49,227 @@ const getColorSwatches = (tags: string[]) => {
     .slice(0, 3); // Show max 3 swatches
 };
 
-// Get model image URL based on product type and color
-const getModelImageUrl = (tags: string[]) => {
-  // Return model wearing shirt Unsplash images based on product colors
-  const isWhite = tags.includes("white");
-  const isBlue = tags.includes("blue") || tags.includes("navy");
-  const isGreen = tags.includes("green") || tags.includes("olive");
-  const isBlack = tags.includes("black");
-  const isBeige = tags.includes("beige") || tags.includes("cream");
 
-  if (isWhite) {
-    return "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&h=750&fit=crop&crop=top";
-  } else if (isBlue) {
-    return "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=600&h=750&fit=crop&crop=top";
-  } else if (isGreen) {
-    return "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=600&h=750&fit=crop&crop=top";
-  } else if (isBlack) {
-    return "https://images.unsplash.com/photo-1617137968427-85924c800a22?w=600&h=750&fit=crop&crop=top";
-  } else if (isBeige) {
-    return "https://images.unsplash.com/photo-1532073150508-0c1df022e452?w=600&h=750&fit=crop&crop=top";
-  }
-
-  // Default fallback
-  return "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&h=750&fit=crop&crop=top";
-};
 
 // Product card for collection grid
-const CollectionProductCard = ({
-  product,
-  index,
-  rawProduct,
-}: {
-  product: ShopifyProduct;
-  index: number;
-  rawProduct: unknown;
-}) => {
-  const navigate = useNavigate();
-  const { ref, isInView } = useInView({ threshold: 0.1 });
-  const { isWishlisted, toggleWishlist } = useWishlist();
-  const [isHovered, setIsHovered] = useState(false);
-  const wishlisted = isWishlisted(product.id);
-  const [selectedColorIndex, setSelectedColorIndex] = useState(0);
+  const CollectionProductCard = ({
+    product,
+    index,
+    rawProduct,
+  }: {
+    product: ShopifyProduct;
+    index: number;
+    rawProduct: unknown;
+  }) => {
+    const navigate = useNavigate();
+    const { ref, isInView } = useInView({ threshold: 0.1 });
+    const { isWishlisted, toggleWishlist } = useWishlist();
+    const wishlisted = isWishlisted(product.id);
+    const [selectedColorIndex, setSelectedColorIndex] = useState(0);
+    const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
-  const handleProductClick = () => {
-    navigate(`/products/${product.handle}`);
-  };
+    const handleProductClick = () => {
+      navigate(`/products/${product.handle}`);
+    };
 
-  const handleWishlistToggle = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    toggleWishlist(product.id);
-  };
+    const handleWishlistToggle = (e: React.MouseEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      toggleWishlist(product.id);
+    };
 
-  // Extract fabric from description or tags
-  const fabric = product.tags
-    .find((tag) => ["cotton", "linen", "linen-blend"].includes(tag))
-    ?.toUpperCase();
+    const handlePrevImage = (e: React.MouseEvent<HTMLButtonElement> | React.KeyboardEvent<HTMLDivElement>) => {
+      e.preventDefault();
+      e.stopPropagation();
+      setCurrentImageIndex((prev) =>
+        prev === 0 ? allImages.length - 1 : prev - 1
+      );
+    };
 
-  // Get color swatches
-  const colors = getColorSwatches(product.tags);
+    const handleNextImage = (e: React.MouseEvent<HTMLButtonElement> | React.KeyboardEvent<HTMLDivElement>) => {
+      e.preventDefault();
+      e.stopPropagation();
+      setCurrentImageIndex((prev) =>
+        prev === allImages.length - 1 ? 0 : prev + 1
+      );
+    };
 
-  // Get model image
-  const modelImageUrl = getModelImageUrl(product.tags);
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+      if (e.key === "ArrowLeft") {
+        handlePrevImage(e);
+      } else if (e.key === "ArrowRight") {
+        handleNextImage(e);
+      }
+    };
 
-  // Determine which image to show
-  const imageUrl = product.featuredImage.url || null;
-  const displayImage = isHovered ? modelImageUrl : imageUrl;
+    // Extract fabric from description or tags
+    const fabric = product.tags
+      .find((tag) => ["cotton", "linen", "linen-blend"].includes(tag))
+      ?.toUpperCase();
 
-  return (
-    <div
-      ref={ref}
-      className={`group relative overflow-hidden transition-all duration-700 cursor-pointer ${isInView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
-        }`}
-      style={{ transitionDelay: `${index * 50}ms` }}
-      onClick={handleProductClick}
-    >
-      {/* Image container with hover effect */}
+    // Get color swatches
+    const colors = getColorSwatches(product.tags);
+
+    // Get all product images (fallback to featuredImage if images array is empty)
+    const allImages =
+      product.images.length > 0 ? product.images : [product.featuredImage];
+    const currentImage = allImages[currentImageIndex];
+    const showNavigation = allImages.length > 1;
+
+    return (
       <div
-        className="aspect-3/4 overflow-hidden bg-stone/5 relative group/image"
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
+        ref={ref}
+        className={`group relative overflow-hidden transition-all duration-700 cursor-pointer ${isInView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
+        }`}
+        style={{ transitionDelay: `${index * 50}ms` }}
+        onClick={handleProductClick}
+        onKeyDown={handleKeyDown}
+        tabIndex={0}
+        role="button"
+        aria-label={`View ${product.title}`}
       >
-        {/* Base image */}
-        {displayImage && (
-          <img
-            src={displayImage}
-            alt={product.featuredImage.altText}
-            style={{
-              transform: isHovered ? "scale(1.03)" : "scale(1)",
-              transition: "transform 300ms ease-in-out",
-            }}
-            className="w-full h-full object-cover object-center"
-            loading="lazy"
-            onError={() => {
-              logProductImageFailure(
-                `collection-card:${product.handle}`,
-                rawProduct,
-                product,
-                displayImage,
-              );
-            }}
-          />
-        )}
+        {/* Image container with navigation */}
+        <div className="aspect-3/4 overflow-hidden bg-stone/5 relative group/image">
+          {/* Product images carousel */}
+          {currentImage && (
+            <img
+              src={currentImage.url}
+              alt={currentImage.altText || product.title}
+              className="w-full h-full object-cover object-center transition-opacity duration-200"
+              loading="lazy"
+              onError={() => {
+                logProductImageFailure(
+                  `collection-card:${product.handle}`,
+                  rawProduct,
+                  product,
+                  currentImage.url,
+                );
+              }}
+            />
+          )}
 
-        {/* Wishlist button */}
-        <button
-          onClick={handleWishlistToggle}
-          className={`absolute top-5 right-5 z-20 p-0 bg-transparent border-none cursor-pointer transition-opacity duration-300 ${isHovered
-            ? "opacity-100"
-            : "opacity-0 group-hover/image:opacity-100"
-            }`}
-          aria-label="Add to wishlist"
-        >
-          <svg
-            width="22"
-            height="22"
-            viewBox="0 0 24 24"
-            fill={wishlisted ? "#431c1c" : "none"}
-            stroke={wishlisted ? "#431c1c" : "#431c1c"}
-            strokeWidth="1.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="transition-all duration-300"
-          >
-            <path d="M6 2h12v16l-6-4l-6 4V2z" />
-          </svg>
-        </button>
-
-      </div>
-
-      {/* Product info */}
-      <div className="pt-5 pb-4 px-0">
-        {/* Product name */}
-        <h3 className="text-center font-medium text-[14px] md:text-[15px] tracking-wide text-charcoal mb-2 font-sans">
-          {product.title}
-        </h3>
-
-        {/* Fabric */}
-        {fabric && (
-          <p className="text-center text-[12px] md:text-[13px] tracking-wide text-warm-brown/70 mb-3 font-sans">
-            {fabric}
-          </p>
-        )}
-
-        {/* Price */}
-        <p className="font-sans text-[12px] text-[#888] mt-1 tracking-[0.02em] tabular-nums">
-          ₹{Number(product.priceRange.minVariantPrice.amount).toLocaleString("en-IN")}
-        </p>
-
-        {/* Color swatches */}
-        {colors.length > 0 && (
-          <div className="flex items-center justify-center gap-2 flex-wrap">
-            {colors.slice(0, 5).map((color, idx) => (
+          {/* Navigation arrows */}
+          {showNavigation && (
+            <>
               <button
-                key={color.name}
-                className={`w-4 h-4 rounded-full border transition-all duration-200 hover:scale-110 ${selectedColorIndex === idx
-                  ? "border-charcoal/60 ring-1 ring-charcoal/30"
-                  : "border-stone/30 hover:border-charcoal/40"
+                type="button"
+                onClick={handlePrevImage}
+                className="absolute left-3 top-1/2 -translate-y-1/2 z-20 w-8 h-8 rounded-full bg-white/90 backdrop-blur-sm border border-stone/20 text-charcoal flex items-center justify-center text-xl font-light transition-all duration-200 hover:bg-white hover:border-charcoal/30 focus:outline-none focus:ring-2 focus:ring-charcoal/30 opacity-0 group-hover/image:opacity-100 focus:opacity-100"
+                aria-label="Previous image"
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M15 18l-6-6 6-6" />
+                </svg>
+              </button>
+              <button
+                type="button"
+                onClick={handleNextImage}
+                className="absolute right-3 top-1/2 -translate-y-1/2 z-20 w-8 h-8 rounded-full bg-white/90 backdrop-blur-sm border border-stone/20 text-charcoal flex items-center justify-center text-xl font-light transition-all duration-200 hover:bg-white hover:border-charcoal/30 focus:outline-none focus:ring-2 focus:ring-charcoal/30 opacity-0 group-hover/image:opacity-100 focus:opacity-100"
+                aria-label="Next image"
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M9 18l6-6-6-6" />
+                </svg>
+              </button>
+            </>
+          )}
+
+          {/* Image counter indicator */}
+          {showNavigation && (
+            <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-20 flex items-center gap-1.5 opacity-0 group-hover/image:opacity-100 transition-opacity duration-200">
+              {allImages.map((_, idx) => (
+                <button
+                  key={idx}
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setCurrentImageIndex(idx);
+                  }}
+                  className={`w-1.5 h-1.5 rounded-full transition-all duration-200 ${
+                    idx === currentImageIndex
+                      ? "bg-charcoal w-5"
+                      : "bg-white/60 hover:bg-white"
                   }`}
-                style={{ backgroundColor: color.hex }}
-                onClick={() => setSelectedColorIndex(idx)}
-                title={color.name}
-                aria-label={`${color.name} option`}
-              />
-            ))}
-            {colors.length > 5 && (
-              <span className="text-[11px] text-charcoal/50 font-light tracking-wide ml-1">
-                +{colors.length - 5}
-              </span>
-            )}
-          </div>
-        )}
+                  aria-label={`View image ${idx + 1}`}
+                  aria-current={idx === currentImageIndex ? "true" : "false"}
+                />
+              ))}
+            </div>
+          )}
+
+          {/* Wishlist button */}
+          <button
+            onClick={handleWishlistToggle}
+            className={`absolute top-5 right-5 z-20 p-0 bg-transparent border-none cursor-pointer transition-opacity duration-300 ${wishlisted
+              ? "opacity-100"
+              : "opacity-0 group-hover/image:opacity-100"
+              }`}
+            aria-label={wishlisted ? "Remove from wishlist" : "Add to wishlist"}
+          >
+            <svg
+              width="22"
+              height="22"
+              viewBox="0 0 24 24"
+              fill={wishlisted ? "#431c1c" : "none"}
+              stroke={wishlisted ? "#431c1c" : "#431c1c"}
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="transition-all duration-300"
+            >
+              <path d="M6 2h12v16l-6-4l-6 4V2z" />
+            </svg>
+          </button>
+
+        </div>
+
+        {/* Product info */}
+        <div className="pt-5 pb-4 px-0">
+          {/* Product name */}
+          <h3 className="text-center font-medium text-[14px] md:text-[15px] tracking-wide text-charcoal mb-2 font-sans">
+            {product.title}
+          </h3>
+
+          {/* Fabric */}
+          {fabric && (
+            <p className="text-center text-[12px] md:text-[13px] tracking-wide text-warm-brown/70 mb-3 font-sans">
+              {fabric}
+            </p>
+          )}
+
+          {/* Price */}
+          <p className="font-sans text-[12px] text-[#888] mt-1 tracking-[0.02em] tabular-nums">
+            ₹{Number(product.priceRange.minVariantPrice.amount).toLocaleString("en-IN")}
+          </p>
+
+          {/* Color swatches */}
+          {colors.length > 0 && (
+            <div className="flex items-center justify-center gap-2 flex-wrap">
+              {colors.slice(0, 5).map((color, idx) => (
+                <button
+                  key={color.name}
+                  className={`w-4 h-4 rounded-full border transition-all duration-200 hover:scale-110 ${selectedColorIndex === idx
+                    ? "border-charcoal/60 ring-1 ring-charcoal/30"
+                    : "border-stone/30 hover:border-charcoal/40"
+                    }`}
+                  style={{ backgroundColor: color.hex }}
+                  onClick={() => setSelectedColorIndex(idx)}
+                  title={color.name}
+                  aria-label={`${color.name} option`}
+                />
+              ))}
+              {colors.length > 5 && (
+                <span className="text-[11px] text-charcoal/50 font-light tracking-wide ml-1">
+                  +{colors.length - 5}
+                </span>
+              )}
+            </div>
+          )}
+        </div>
       </div>
-    </div>
-  );
-};
+    );
+  };
 
 const CollectionPage = ({ collectionHandle }: CollectionPageProps) => {
   const [collection, setCollection] = useState<ShopifyCollection | null>(null);
