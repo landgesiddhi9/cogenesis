@@ -32,6 +32,11 @@ export const WishlistProvider = ({ children }: WishlistProviderProps) => {
   const addToWishlist = useCallback(
     (productId: string) => {
       updateWishlist((ids) => (ids.includes(productId) ? ids : [...ids, productId]));
+      window.dispatchEvent(
+        new CustomEvent("wishlist-toast", {
+          detail: { message: "Product added to wishlist", type: "success" },
+        }),
+      );
     },
     [updateWishlist],
   );
@@ -39,19 +44,33 @@ export const WishlistProvider = ({ children }: WishlistProviderProps) => {
   const removeFromWishlist = useCallback(
     (productId: string) => {
       updateWishlist((ids) => ids.filter((id) => id !== productId));
+      window.dispatchEvent(
+        new CustomEvent("wishlist-toast", {
+          detail: { message: "Product removed from wishlist", type: "success" },
+        }),
+      );
     },
     [updateWishlist],
   );
 
   const toggleWishlist = useCallback(
     (productId: string) => {
+      const wasWishlisted = wishlistIds.includes(productId);
       updateWishlist((ids) =>
-        ids.includes(productId)
+        wasWishlisted
           ? ids.filter((id) => id !== productId)
           : [...ids, productId],
       );
+      window.dispatchEvent(
+        new CustomEvent("wishlist-toast", {
+          detail: {
+            message: wasWishlisted ? "Product removed from wishlist" : "Product added to wishlist",
+            type: "success",
+          },
+        }),
+      );
     },
-    [updateWishlist],
+    [updateWishlist, wishlistIds],
   );
 
   const isWishlisted = useCallback(

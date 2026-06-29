@@ -48,7 +48,11 @@ export function CartToast() {
       }
     };
     window.addEventListener("cart-toast", handler);
-    return () => window.removeEventListener("cart-toast", handler);
+    window.addEventListener("wishlist-toast", handler);
+    return () => {
+      window.removeEventListener("cart-toast", handler);
+      window.removeEventListener("wishlist-toast", handler);
+    };
   }, [addToast]);
 
   if (toasts.length === 0) return null;
