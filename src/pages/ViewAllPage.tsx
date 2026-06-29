@@ -1,19 +1,22 @@
 import { useState, useEffect, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
-import { useInView } from "../hooks/useInView";
-import { useWishlist } from "../hooks/useWishlist";
-import { getProductsFromMenCollections } from "../services/men.service";
-import { getProductsByCollection } from "../services/collection.service";
+import { getBestSellerProducts } from "../services/men.service";
+import { getProductsByCollection, getAllCollections, getAllProducts } from "../services/collection.service";
+import CollectionNav, { type CollectionTab } from "../components/CollectionNav";
 import SortDropdown from "../components/SortDropdown";
 import FilterPanel from "../components/FilterPanel";
 import LayoutSwitcher from "../components/LayoutSwitcher";
-import type { ShopifyProduct } from "../types";
+import ProductCard from "../components/ProductCard";
+import type { ShopifyProduct, ShopifyCollection } from "../types";
 import type { ShopifyApiProductFilter, ShopifyProductSortKeys } from "../graphql/queries/getProductsByCollection";
 
-const CATEGORY_COLLECTION_MAP: Record<string, string> = {
-  Shirts: "shirts",
-  Trousers: "trousers",
-};
+const SPECIAL_TABS: Omit<CollectionTab, "key">[] = [
+  { label: "ALL" },
+];
+
+const SUFFIX_TABS: Omit<CollectionTab, "key">[] = [
+  { label: "NEW ARRIVALS" },
+  { label: "BEST SELLERS" },
+];
 
 const SORT_CONFIG: Record<string, { sortKey: ShopifyProductSortKeys; reverse: boolean } | null> = {
   featured: null,
@@ -35,118 +38,63 @@ const sortOptions = [
   { id: "z-a", label: "Alphabetically Z–A" },
 ];
 
-interface ProductCardProps {
-  product: ShopifyProduct;
-  index: number;
+function buildCollectionTabs(collections: ShopifyCollection[]): CollectionTab[] {
+  const specials: CollectionTab[] = SPECIAL_TABS.map((t) => ({
+    ...t,
+    key: t.label.toLowerCase().replace(/\s+/g, "-"),
+  }));
+
+  const collectionTabs: CollectionTab[] = collections.map((c) => ({
+    key: c.handle,
+    label: c.title.toUpperCase(),
+  }));
+
+  const suffixes: CollectionTab[] = SUFFIX_TABS.map((t) => ({
+    ...t,
+    key: t.label.toLowerCase().replace(/\s+/g, "-"),
+  }));
+
+  return [...specials, ...collectionTabs, ...suffixes];
 }
 
-const ProductCard = ({ product, index }: ProductCardProps) => {
-  const navigate = useNavigate();
-  const { ref, isInView } = useInView({ threshold: 0.1 });
-  const { isWishlisted, toggleWishlist } = useWishlist();
-  const wishlisted = isWishlisted(product.id);
-
-  const handleProductClick = () => {
-    navigate(`/products/${product.handle}`);
-  };
-
-  const handleWishlistToggle = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    toggleWishlist(product.id);
-  };
-
-  return (
-    <div
-      ref={ref}
-      className={`group relative overflow-hidden transition-all duration-700 cursor-pointer ${
-        isInView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
-      }`}
-      style={{ transitionDelay: `${index * 50}ms` }}
-      onClick={handleProductClick}
-    >
-      <div className="aspect-[3/4] overflow-hidden bg-[#f0ede8] relative">
-        <img
-          src={product.featuredImage.url}
-          alt={product.featuredImage.altText}
-          className="w-full h-full object-cover object-top transition-transform duration-700 ease-out group-hover:scale-[1.04]"
-          loading="lazy"
-        />
-
-        <button
-          onClick={handleWishlistToggle}
-          className={`absolute top-4 right-4 z-20 p-0 bg-transparent border-none cursor-pointer transition-opacity duration-300 ${
-            wishlisted
-              ? "opacity-100"
-              : "opacity-0 group-hover:opacity-100"
-          }`}
-          aria-label={wishlisted ? "Remove from wishlist" : "Add to wishlist"}
-        >
-          <svg
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill={wishlisted ? "#431c1c" : "none"}
-            stroke={wishlisted ? "#431c1c" : "white"}
-            strokeWidth="1.8"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <path d="M6 2h12v16l-6-4l-6 4V2z" />
-          </svg>
-        </button>
-      </div>
-
-      <div className="pt-4 pb-3 px-0">
-        <h3 className="font-sans text-[13px] md:text-[14px] tracking-[0.03em] text-[#111] leading-snug truncate">
-          {product.title}
-        </h3>
-        <p className="font-sans text-[12px] text-[#888] mt-1 tracking-[0.02em] tabular-nums">
-          ₹{Number(product.priceRange.minVariantPrice.amount).toLocaleString("en-IN")}
-        </p>
-      </div>
-    </div>
-  );
-};
-
-const ViewAllPage = () => {
+const CollectionsPage = () => {
   const [products, setProducts] = useState<ShopifyProduct[]>([]);
   const [loading, setLoading] = useState(true);
   const [columns, setColumns] = useState(4);
   const [sortBy, setSortBy] = useState("featured");
   const [isFilterOpen, setIsFilterOpen] = useState(false);
-  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [otherFilters, setOtherFilters] = useState<ShopifyApiProductFilter[] | null>(null);
   const [baseProducts, setBaseProducts] = useState<ShopifyProduct[]>([]);
 
-  const fetchCategoryProducts = useCallback(async (categories: string[]) => {
-    if (categories.length === 0) {
-      const result = await getProductsFromMenCollections();
-      return result;
+  const [collections, setCollections] = useState<ShopifyCollection[]>([]);
+  const [activeTab, setActiveTab] = useState("all");
+
+  const tabs = buildCollectionTabs(collections);
+
+  useEffect(() => {
+    getAllCollections().then(setCollections).catch(() => setCollections([]));
+  }, []);
+
+  const fetchProductsForTab = useCallback(async (tabKey: string) => {
+    switch (tabKey) {
+      case "all":
+        return getAllProducts().then((r) => r.products);
+      case "new-arrivals": {
+        const all = await getAllProducts();
+        return [...all.products].sort((a, b) => b.id.localeCompare(a.id));
+      }
+      case "best-sellers":
+        return getBestSellerProducts();
+      default:
+        return getProductsByCollection({ handle: tabKey }).then((r) => r.products);
     }
-
-    const handles = categories.map((cat) => CATEGORY_COLLECTION_MAP[cat]).filter(Boolean);
-    if (handles.length === 0) return [];
-
-    const results = await Promise.all(
-      handles.map((h) => getProductsByCollection({ handle: h })),
-    );
-
-    const seen = new Set<string>();
-    return results.flatMap(({ products }) =>
-      products.filter((p) => {
-        if (seen.has(p.id)) return false;
-        seen.add(p.id);
-        return true;
-      }),
-    );
   }, []);
 
   useEffect(() => {
     let active = true;
     setLoading(true);
 
-    fetchCategoryProducts(selectedCategories)
+    fetchProductsForTab(activeTab)
       .then((result) => {
         if (!active) return;
         setBaseProducts(result);
@@ -159,7 +107,7 @@ const ViewAllPage = () => {
       });
 
     return () => { active = false; };
-  }, [selectedCategories, fetchCategoryProducts]);
+  }, [activeTab, fetchProductsForTab]);
 
   useEffect(() => {
     let sorted = [...baseProducts];
@@ -217,10 +165,7 @@ const ViewAllPage = () => {
     color: string[];
     price: [number, number];
     fit: string[];
-    category: string[];
   }) => {
-    setSelectedCategories(uiFilters.category);
-
     const shopifyFilters: ShopifyApiProductFilter[] = [];
 
     uiFilters.size.forEach((size) => {
@@ -248,16 +193,10 @@ const ViewAllPage = () => {
     <main className="bg-ivory min-h-[100svh]">
       <div className="max-w-7xl mx-auto px-4 md:px-8 py-16 md:py-24">
         <div className="text-center mb-12">
-          <h1
-            className="text-4xl md:text-5xl font-light tracking-wide text-charcoal mb-6"
-            style={{
-              fontFamily: "'Cormorant Garamond', 'Canela', serif",
-              letterSpacing: "0.05em",
-              fontWeight: 400,
-            }}
-          >
-            View All
-          </h1>
+          <div className="mb-10">
+            <CollectionNav tabs={tabs} activeTab={activeTab} onTabChange={setActiveTab} />
+          </div>
+
           <div className="flex items-center justify-center gap-4">
             <div className="shrink-0 w-8 h-px bg-stone/20"></div>
             <div className="shrink-0 w-2 h-2 rounded-full bg-stone/20"></div>
@@ -267,8 +206,8 @@ const ViewAllPage = () => {
 
         <div className="border-t border-b border-stone/10 py-4 mb-12 flex items-center justify-between">
           <div className="text-sm text-charcoal/70 tracking-wide font-sans">
-            Products ({products.length})
-            {loading && <span className="ml-2 text-warm-brown/60">Loading...</span>}
+            {loading && <span className="text-warm-brown/60">Loading...</span>}
+            {!loading && <span>Products ({products.length})</span>}
           </div>
 
           <div className="flex items-center gap-6 md:gap-8">
@@ -299,7 +238,7 @@ const ViewAllPage = () => {
         ) : (
           <div className={`grid ${gridCols} gap-6 md:gap-8`}>
             {products.map((product, index) => (
-              <ProductCard key={product.id} product={product} index={index} />
+              <ProductCard animate key={product.id} product={product} index={index} />
             ))}
           </div>
         )}
@@ -314,4 +253,4 @@ const ViewAllPage = () => {
   );
 };
 
-export default ViewAllPage;
+export default CollectionsPage;

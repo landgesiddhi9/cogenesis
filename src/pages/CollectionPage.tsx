@@ -6,6 +6,9 @@ import { getCollectionByHandle, getProductsByCollection } from "../services/coll
 import { logProductImageFailure } from "../lib/shopifyImageDiagnostics";
 import SortDropdown from "../components/SortDropdown";
 import FilterPanel from "../components/FilterPanel";
+import SalePrice from "../components/SalePrice";
+import { getBestCompareAtPrice } from "../utils/price";
+import { toTitleCase } from "../utils/text";
 import type { ShopifyProduct, ShopifyCollection } from "../types";
 import type { ShopifyApiProductFilter, ShopifyProductSortKeys } from "../graphql/queries/getProductsByCollection";
 
@@ -178,6 +181,12 @@ const CollectionProductCard = ({
 
       </div>
 
+          {/* Price */}
+          <SalePrice
+            price={product.priceRange.minVariantPrice.amount}
+            compareAtPrice={getBestCompareAtPrice(product)}
+            className="text-center"
+          />
       {/* Product info */}
       <div className="pt-5 pb-4 px-0">
         {/* Product name */}
@@ -407,7 +416,7 @@ const CollectionPage = ({ collectionHandle }: CollectionPageProps) => {
               fontWeight: 400,
             }}
           >
-            {collectionTitle}
+            {toTitleCase(collectionTitle)}
           </h1>
           {/* Subtle divider */}
           <div className="flex items-center justify-center gap-4">

@@ -1,13 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useWishlist } from '../hooks/useWishlist';
 import { searchProducts } from '../services/search.service';
 import { getFeaturedProducts } from '../services/product.service';
 import type { ShopifyProduct } from '../types';
+import ProductCard from '../components/ProductCard';
 
 const SearchPage = () => {
-  const { isWishlisted, toggleWishlist } = useWishlist();
-
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<ShopifyProduct[]>([]);
   const [loading, setLoading] = useState(false);
@@ -184,49 +182,13 @@ const SearchPage = () => {
             >
               <style>{`.search-rail::-webkit-scrollbar{display:none}`}</style>
               {results.map((p: ShopifyProduct) => (
-                <article
+                <div
                   key={p.id}
-                  className="flex-shrink-0 bg-transparent group cursor-pointer"
+                  className="flex-shrink-0"
                   style={{ width: 'clamp(280px, 18vw, 380px)' }}
-                  onClick={() => navigate(`/products/${p.handle}`)}
                 >
-                  <div className="relative overflow-hidden bg-[#f5f0eb] aspect-[3/4]">
-                    <img
-                      src={p.featuredImage.url}
-                      alt={p.featuredImage.altText}
-                      className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.02]"
-                      loading="lazy"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
-                    <button
-                      type="button"
-                      onClick={(e) => { e.stopPropagation(); e.preventDefault(); toggleWishlist(p.id); }}
-                      className={`absolute top-3 right-3 p-0 bg-transparent border-none cursor-pointer transition-opacity duration-200 z-10 ${
-                        isWishlisted(p.id) ? "opacity-100" : "opacity-0 group-hover:opacity-100"
-                      }`}
-                      aria-label={isWishlisted(p.id) ? "Remove from wishlist" : "Add to wishlist"}
-                    >
-                      <svg
-                        width="22"
-                        height="22"
-                        viewBox="0 0 24 24"
-                        fill={isWishlisted(p.id) ? "#431c1c" : "none"}
-                        stroke={isWishlisted(p.id) ? "#431c1c" : "#2A2420"}
-                        strokeWidth="1.8"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      >
-                        <path d="M6 2h12v16l-6-4l-6 4V2z" />
-                      </svg>
-                    </button>
-                  </div>
-                  <div className="mt-3">
-                    <h3 className="text-[15px] font-normal tracking-[0.02em] leading-[1.2] text-charcoal">
-                      {p.title}
-                    </h3>
-                    <p className="font-sans text-[12px] text-[#888] tracking-[0.02em] tabular-nums">₹{Number(p.priceRange.minVariantPrice.amount).toLocaleString("en-IN")}</p>
-                  </div>
-                </article>
+                  <ProductCard product={p} />
+                </div>
               ))}
             </div>
           )}

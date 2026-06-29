@@ -17,7 +17,7 @@ import LaunchingSoonPage from "./pages/LaunchingSoonPage";
 import FAQPage from "./pages/FAQPage";
 import ProductDetailPage from "./pages/ProductDetailPage";
 import BestSellersPage from "./pages/BestSellersPage";
-import ViewAllPage from "./pages/ViewAllPage";
+import CollectionsPage from "./pages/ViewAllPage";
 import WomenLaunchingSoonPage from "./pages/WomenLaunchingSoonPage";
 
 import LoginPage from "./components/LoginPage";
@@ -81,7 +81,11 @@ function App() {
             }
           />
 
-          {/* Collections */}
+          {/* Collections — redirect landing to view-all, keep direct handles */}
+          <Route
+            path="/collections"
+            element={<Navigate to="/men/view-all" replace />}
+          />
           <Route
             path="/collections/:handle"
             element={<CollectionRouteWrapper />}
@@ -135,7 +139,7 @@ function App() {
             element={<Navigate to="/men/view-all" replace />}
           />
           <Route path="/men/best-sellers" element={<BestSellersPage />} />
-          <Route path="/men/view-all" element={<ViewAllPage />} />
+          <Route path="/men/view-all" element={<CollectionsPage />} />
           <Route
             path="/men/:subcategory"
             element={<Navigate to="/launching-soon" replace />}
