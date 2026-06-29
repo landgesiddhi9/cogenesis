@@ -2,6 +2,8 @@ import { useState } from "react";
 import SizeGuideDrawer from "./SizeGuideDrawer";
 import SizeRecommenderModal from "./SizeRecommenderModal";
 import type { ShopifyProduct } from "../../types";
+import SalePrice from "../SalePrice";
+import { getBestCompareAtPrice } from "../../utils/price";
 
 interface ProductInfoProps {
   product: ShopifyProduct;
@@ -91,9 +93,7 @@ const ProductInfo = ({
             lineHeight: 1,
           }}
         >
-          <span className="font-sans text-[12px] text-[#888] tracking-[0.02em] tabular-nums">
-            ₹{Number(price).toLocaleString("en-IN")}
-          </span>
+          <SalePrice price={price} compareAtPrice={getBestCompareAtPrice(product)} />
         </p>
       </div>
 

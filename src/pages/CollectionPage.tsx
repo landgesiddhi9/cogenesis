@@ -6,6 +6,9 @@ import { getCollectionByHandle, getProductsByCollection } from "../services/coll
 import { logProductImageFailure } from "../lib/shopifyImageDiagnostics";
 import SortDropdown from "../components/SortDropdown";
 import FilterPanel from "../components/FilterPanel";
+import SalePrice from "../components/SalePrice";
+import { getBestCompareAtPrice } from "../utils/price";
+import { toTitleCase } from "../utils/text";
 import type { ShopifyProduct, ShopifyCollection } from "../types";
 import type { ShopifyApiProductFilter, ShopifyProductSortKeys } from "../graphql/queries/getProductsByCollection";
 
@@ -239,9 +242,11 @@ const getColorSwatches = (tags: string[]) => {
           )}
 
           {/* Price */}
-          <p className="font-sans text-[12px] text-[#888] mt-1 tracking-[0.02em] tabular-nums">
-            ₹{Number(product.priceRange.minVariantPrice.amount).toLocaleString("en-IN")}
-          </p>
+          <SalePrice
+            price={product.priceRange.minVariantPrice.amount}
+            compareAtPrice={getBestCompareAtPrice(product)}
+            className="text-center"
+          />
 
           {/* Color swatches */}
           {colors.length > 0 && (
@@ -453,7 +458,7 @@ const CollectionPage = ({ collectionHandle }: CollectionPageProps) => {
               fontWeight: 400,
             }}
           >
-            {collectionTitle}
+            {toTitleCase(collectionTitle)}
           </h1>
           {/* Subtle divider */}
           <div className="flex items-center justify-center gap-4">

@@ -1,155 +1,55 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { useWishlist } from "../hooks/useWishlist";
 import { getFeaturedProducts } from "../services/product.service";
 import type { ShopifyProduct } from "../types";
+import ProductCard from "../components/ProductCard";
 
 
 // ── Shirt sizes shown in the hover panel ──────────────────────────────────────
 const SIZES = ["S", "M", "L", "XL"];
 
-// ── Product card ──────────────────────────────────────────────────────────────
-const ProductCard = ({
-  product,
-  wishlisted,
-  onWishlistToggle,
-}: {
-  product: ShopifyProduct;
-  wishlisted: boolean;
-  onWishlistToggle: (id: string) => void;
-}) => {
-  console.log("PRODUCTCARD RENDER", product.title);
-  const navigate = useNavigate();
-  const [hovered, setHovered] = useState(false);
+// ── Size selector panel — slides up on hover ──────────────────────────────────
+const SizeSelector = () => {
   const [addedSize, setAddedSize] = useState<string | null>(null);
 
-  const handleAddToBag = async (size: string) => {
-    try {
-      const variant = product.variants.find((v) => v.title === size);
-      if (!variant) return;
-      
-      // Simulate backend cart addition
-      await new Promise(resolve => setTimeout(resolve, 300));
-      
-      setAddedSize(size);
-      setTimeout(() => setAddedSize(null), 1800);
-    } catch {
-      // fail gracefully
-    }
-  };
-
-  const handleProductClick = () => {
-    navigate(`/products/${product.handle}`);
+  const handleAdd = (size: string) => {
+    setAddedSize(size);
+    setTimeout(() => setAddedSize(null), 1800);
   };
 
   return (
-    <article
-      className="group relative flex flex-col cursor-pointer"
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => {
-        setHovered(false);
-        setAddedSize(null);
-      }}
-      onClick={handleProductClick}
-    >
-      {/* Image wrapper */}
-      <div className="relative overflow-hidden aspect-[3/4] bg-[#f0ede8]">
-        <img
-          src={product.featuredImage.url}
-          alt={product.featuredImage.altText}
-          className="w-full h-full object-cover object-top
-                     transition-transform duration-700 ease-out group-hover:scale-[1.04]"
-          loading="lazy"
-        />
-
-        {/* ── Bookmark icon ─────────────────────────────────────────────── */}
-        <button
-          type="button"
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            onWishlistToggle(product.id);
-          }}
-          className={`absolute top-3 right-3 z-20 p-0 bg-transparent border-none cursor-pointer transition-opacity duration-200
-            ${wishlisted ? "opacity-100" : "opacity-0 group-hover:opacity-100"}`}
-          aria-label={wishlisted ? "Remove from wishlist" : "Add to wishlist"}
-        >
-          <svg
-            width="22"
-            height="22"
-            viewBox="0 0 24 24"
-            fill={wishlisted ? "#431c1c" : "none"}
-            stroke={wishlisted ? "#431c1c" : "white"}
-            strokeWidth="1.8"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <path d="M6 2h12v16l-6-4l-6 4V2z" />
-          </svg>
-        </button>
-
-        {/* ── Size selector panel — slides up on hover ────────────────────── */}
-        <div
-          className={`absolute bottom-0 left-0 right-0 transition-transform duration-300 ease-out
-            ${hovered ? "translate-y-0" : "translate-y-full"}`}
-          onClick={(e) => e.stopPropagation()}
-        >
-          <div className="bg-[#f5f2ed]/96 backdrop-blur-sm px-4 pt-4 pb-3">
-            {addedSize ? (
-              /* Confirmation state */
-              <p className="text-center font-sans text-[11px] uppercase tracking-[0.18em] text-[#555] py-2">
-                Added to bag — {addedSize} ✓
-              </p>
-            ) : (
-              <>
-                <p
-                  className="text-center font-sans text-[9px] uppercase tracking-[0.2em]
-                              text-[#999] mb-2.5"
+    <div className="absolute bottom-0 left-0 right-0 transition-transform duration-300 ease-out translate-y-full group-hover:translate-y-0">
+      <div className="bg-[#f5f2ed]/96 backdrop-blur-sm px-4 pt-4 pb-3">
+        {addedSize ? (
+          <p className="text-center font-sans text-[11px] uppercase tracking-[0.18em] text-[#555] py-2">
+            Added to bag — {addedSize} ✓
+          </p>
+        ) : (
+          <>
+            <p className="text-center font-sans text-[9px] uppercase tracking-[0.2em] text-[#999] mb-2.5">
+              Select size
+            </p>
+            <div className="flex flex-wrap justify-center gap-x-4 gap-y-1.5">
+              {SIZES.map((s) => (
+                <button
+                  key={s}
+                  type="button"
+                  onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleAdd(s); }}
+                  className="font-sans text-[11px] uppercase tracking-[0.1em] text-[#444] hover:text-[#111] hover:font-semibold transition-all duration-100 py-0.5"
                 >
-                  Select size
-                </p>
-                <div className="flex flex-wrap justify-center gap-x-4 gap-y-1.5">
-                  {SIZES.map((size) => (
-                    <button
-                      key={size}
-                      type="button"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        handleAddToBag(size);
-                      }}
-                      className="font-sans text-[11px] uppercase tracking-[0.1em] text-[#444]
-                                 hover:text-[#111] hover:font-semibold transition-all duration-100
-                                 py-0.5"
-                    >
-                      {size}
-                    </button>
-                  ))}
-                </div>
-              </>
-            )}
-          </div>
-        </div>
+                  {s}
+                </button>
+              ))}
+            </div>
+          </>
+        )}
       </div>
-
-      {/* Product info */}
-      <div className="pt-3 pb-2">
-        <p className="font-sans text-[12px] tracking-[0.03em] text-[#111] leading-snug truncate">
-          {product.title}
-        </p>
-        <p className="font-sans text-[12px] text-[#888] mt-1 tracking-[0.02em] tabular-nums">
-          ₹{Number(product.priceRange.minVariantPrice.amount).toLocaleString("en-IN")}
-        </p>
-      </div>
-    </article>
+    </div>
   );
 };
 
 // ── New Arrivals page ─────────────────────────────────────────────────────────────────
 // Shows exactly 4 featured products in a full-width editorial grid.
 const NewArrivalsPage = () => {
-  const { isWishlisted, toggleWishlist } = useWishlist();
-
   const [products, setProducts] = useState<ShopifyProduct[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -206,8 +106,7 @@ const NewArrivalsPage = () => {
               <div key={product.id} className="bg-[#F7F5F2] p-0">
                 <ProductCard
                   product={product}
-                  wishlisted={isWishlisted(product.id)}
-                  onWishlistToggle={toggleWishlist}
+                  imageChildren={<SizeSelector />}
                 />
               </div>
             ))}
