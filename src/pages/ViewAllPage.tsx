@@ -106,7 +106,7 @@ function getSortedFilteredProducts(
 
 const CollectionsPage = () => {
   const [loading, setLoading] = useState(true);
-  const [columns, setColumns] = useState(4);
+  const [columns, setColumns] = useState(2);
   const [sortBy, setSortBy] = useState("featured");
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [otherFilters, setOtherFilters] = useState<ShopifyApiProductFilter[] | null>(null);
@@ -160,12 +160,7 @@ const CollectionsPage = () => {
     [baseProducts, sortBy, otherFilters],
   );
 
-  const gridCols =
-    columns === 2
-      ? "grid-cols-2"
-      : columns === 3
-        ? "grid-cols-2 md:grid-cols-3"
-        : "grid-cols-2 md:grid-cols-4";
+  const gridCols = columns === 1 ? "grid-cols-1" : "grid-cols-2";
 
   const handleApplyFilters = (uiFilters: {
     size: string[];
@@ -200,25 +195,18 @@ const CollectionsPage = () => {
   return (
     <main className="bg-ivory min-h-[100svh]">
       <div className="max-w-7xl mx-auto px-4 md:px-8 py-16 md:py-24">
-        <div className="text-center mb-12">
-          <div className="mb-10">
+        <div className="text-center mb-0 md:mb-12">
+          <div className="mb-3 md:mb-10">
             <CollectionNav tabs={tabs} activeTab={activeTab} onTabChange={setActiveTab} />
           </div>
 
-          <div className="flex items-center justify-center gap-4">
-            <div className="shrink-0 w-8 h-px bg-stone/20"></div>
-            <div className="shrink-0 w-2 h-2 rounded-full bg-stone/20"></div>
-            <div className="shrink-0 w-8 h-px bg-stone/20"></div>
-          </div>
+
         </div>
 
-        <div className="border-t border-b border-stone/10 py-4 mb-12 flex items-center justify-between">
-          <div className="text-sm text-charcoal/70 tracking-wide font-sans">
-            {loading && <span className="text-warm-brown/60">Loading...</span>}
-            {!loading && <span>Products ({products.length})</span>}
-          </div>
+        <div className="border-t border-b border-stone/10 py-4 mb-2 md:mb-12 flex items-center justify-between">
+          <div className="flex items-center gap-4 md:gap-6">
+            {loading && <span className="text-sm text-warm-brown/60 tracking-wide font-sans">Loading...</span>}
 
-          <div className="flex items-center gap-6 md:gap-8">
             <button
               onClick={() => setIsFilterOpen(true)}
               className="text-sm text-charcoal/70 hover:text-charcoal transition-colors tracking-wide font-sans"
@@ -230,9 +218,9 @@ const CollectionsPage = () => {
               <label className="text-sm text-charcoal/70 tracking-wide font-sans">Sort:</label>
               <SortDropdown options={sortOptions} selectedId={sortBy} onSelect={setSortBy} />
             </div>
-
-            <LayoutSwitcher columns={columns} onChange={setColumns} />
           </div>
+
+          <LayoutSwitcher columns={columns} onChange={setColumns} />
         </div>
 
         {loading ? (

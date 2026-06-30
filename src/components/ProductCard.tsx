@@ -111,12 +111,12 @@ const ProductCard = ({
       </div>
 
       <div className="pt-5 pb-4 px-0">
-        <h3 className="text-center font-medium text-[14px] md:text-[15px] tracking-wide text-charcoal mb-2 font-sans">
+        <h3 className="text-left md:text-center font-medium text-[11px] md:text-[14px] tracking-wide text-charcoal/50 md:text-charcoal mb-[3px] font-sans">
           {product.title}
         </h3>
 
         {fabric && (
-          <p className="text-center text-[12px] md:text-[13px] tracking-wide text-warm-brown/70 mb-3 font-sans">
+          <p className="text-left md:text-center text-[9px] md:text-[13px] tracking-wide text-charcoal/50 md:text-warm-brown/70 mb-[3px] font-sans">
             {fabric}
           </p>
         )}
@@ -124,7 +124,7 @@ const ProductCard = ({
         <SalePrice
           price={product.priceRange.minVariantPrice.amount}
           compareAtPrice={getBestCompareAtPrice(product)}
-          className="text-center"
+          className="text-left md:text-center"
         />
 
         {children}
