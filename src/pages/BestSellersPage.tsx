@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { getBestSellerProducts } from "../services/men.service";
 import SortDropdown from "../components/SortDropdown";
 import FilterPanel from "../components/FilterPanel";
@@ -27,8 +27,64 @@ const sortOptions = [
   { id: "z-a", label: "Alphabetically Z–A" },
 ];
 
+function getSortedFilteredProducts(
+  allProducts: ShopifyProduct[],
+  sortBy: string,
+  activeFilters: ShopifyApiProductFilter[] | null,
+): ShopifyProduct[] {
+  let sorted = [...allProducts];
+
+  const sortConfig = SORT_CONFIG[sortBy];
+  if (sortConfig) {
+    sorted.sort((a, b) => {
+      let comparison = 0;
+      if (sortConfig.sortKey === "PRICE") {
+        const aPrice = parseFloat(a.priceRange.minVariantPrice.amount);
+        const bPrice = parseFloat(b.priceRange.minVariantPrice.amount);
+        comparison = aPrice - bPrice;
+      } else if (sortConfig.sortKey === "TITLE") {
+        comparison = a.title.localeCompare(b.title);
+      } else if (sortConfig.sortKey === "CREATED") {
+        comparison = a.id.localeCompare(b.id);
+      }
+      return sortConfig.reverse ? -comparison : comparison;
+    });
+  }
+
+  if (activeFilters && activeFilters.length > 0) {
+    const productTypeFilters = activeFilters.filter((f) => f.productType);
+    const otherFilters = activeFilters.filter((f) => !f.productType);
+
+    sorted = sorted.filter((p) => {
+      if (productTypeFilters.length > 0) {
+        const matchesProductType = productTypeFilters.some(
+          (f) => f.productType === p.productType,
+        );
+        if (!matchesProductType) return false;
+      }
+
+      const price = parseFloat(p.priceRange.minVariantPrice.amount);
+      return otherFilters.every((f) => {
+        if (f.price) {
+          if (f.price.min && price < f.price.min) return false;
+          if (f.price.max && price > f.price.max) return false;
+        }
+        if (f.tag && !p.tags.includes(f.tag)) return false;
+        if (f.variantOption) {
+          const match = p.variants.some(
+            (v) => v.title === f.variantOption?.value,
+          );
+          if (!match) return false;
+        }
+        return true;
+      });
+    });
+  }
+
+  return sorted;
+}
+
 const BestSellersPage = () => {
-  const [products, setProducts] = useState<ShopifyProduct[]>([]);
   const [loading, setLoading] = useState(true);
   const [columns, setColumns] = useState(4);
   const [sortBy, setSortBy] = useState("best-selling");
@@ -44,10 +100,9 @@ const BestSellersPage = () => {
       .then((result) => {
         if (!active) return;
         setAllProducts(result);
-        setProducts(result);
       })
       .catch(() => {
-        if (active) setProducts([]);
+        if (active) setAllProducts([]);
       })
       .finally(() => {
         if (active) setLoading(false);
@@ -56,58 +111,10 @@ const BestSellersPage = () => {
     return () => { active = false; };
   }, []);
 
-  useEffect(() => {
-    let sorted = [...allProducts];
-
-    const sortConfig = SORT_CONFIG[sortBy];
-    if (sortConfig) {
-      sorted.sort((a, b) => {
-        let comparison = 0;
-        if (sortConfig.sortKey === "PRICE") {
-          const aPrice = parseFloat(a.priceRange.minVariantPrice.amount);
-          const bPrice = parseFloat(b.priceRange.minVariantPrice.amount);
-          comparison = aPrice - bPrice;
-        } else if (sortConfig.sortKey === "TITLE") {
-          comparison = a.title.localeCompare(b.title);
-        } else if (sortConfig.sortKey === "CREATED") {
-          comparison = a.id.localeCompare(b.id);
-        }
-        return sortConfig.reverse ? -comparison : comparison;
-      });
-    }
-
-    if (activeFilters && activeFilters.length > 0) {
-      const productTypeFilters = activeFilters.filter((f) => f.productType);
-      const otherFilters = activeFilters.filter((f) => !f.productType);
-
-      sorted = sorted.filter((p) => {
-        if (productTypeFilters.length > 0) {
-          const matchesProductType = productTypeFilters.some(
-            (f) => f.productType === p.productType,
-          );
-          if (!matchesProductType) return false;
-        }
-
-        const price = parseFloat(p.priceRange.minVariantPrice.amount);
-        return otherFilters.every((f) => {
-          if (f.price) {
-            if (f.price.min && price < f.price.min) return false;
-            if (f.price.max && price > f.price.max) return false;
-          }
-          if (f.tag && !p.tags.includes(f.tag)) return false;
-          if (f.variantOption) {
-            const match = p.variants.some(
-              (v) => v.title === f.variantOption?.value,
-            );
-            if (!match) return false;
-          }
-          return true;
-        });
-      });
-    }
-
-    setProducts(sorted);
-  }, [sortBy, activeFilters, allProducts]);
+  const products = useMemo(
+    () => getSortedFilteredProducts(allProducts, sortBy, activeFilters),
+    [allProducts, sortBy, activeFilters],
+  );
 
   const gridCols =
     columns === 2

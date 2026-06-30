@@ -1,22 +1,13 @@
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCart } from "../hooks/useCart";
+import { useWishlist } from "../hooks/useWishlist";
 import { getFeaturedProducts } from "../services/product.service";
 import type { ShopifyProduct } from "../types";
 import ProductCard from "../components/ProductCard";
 
 // ── Shared constants for the product strip ─────────────────────────────────────────
 const SIZES = ["S", "M", "L", "XL"];
-const WL_KEY = "wishlist";
-const readWL = (): string[] => {
-  try {
-    return JSON.parse(sessionStorage.getItem(WL_KEY) || "[]");
-  } catch {
-    return [];
-  }
-};
-const writeWL = (ids: string[]) =>
-  sessionStorage.setItem(WL_KEY, JSON.stringify(ids));
 
 // ── Size selector panel for "May Interest You" strip ───────────────────────────
 const SizeSelector = () => {
@@ -100,18 +91,12 @@ const formatPrice = (amount: string, currency: string) => {
 const CartPage = () => {
   const navigate = useNavigate();
   const { cart, updateCartLine, removeCartLine } = useCart();
+  const { isWishlisted, toggleWishlist } = useWishlist();
   const [processingLines, setProcessingLines] = useState<Set<string>>(new Set());
 
   // "May Interest You" strip state
   const stripRef = useRef<HTMLDivElement>(null);
   const [stripProducts, setStripProducts] = useState<ShopifyProduct[]>([]);
-  const [wlIds, setWlIds] = useState<string[]>(readWL);
-  const toggleWl = (id: string) =>
-    setWlIds((p) => {
-      const n = p.includes(id) ? p.filter((x) => x !== id) : [...p, id];
-      writeWL(n);
-      return n;
-    });
   const scrollStrip = (dir: "left" | "right") => {
     const el = stripRef.current;
     if (!el) return;
@@ -397,8 +382,8 @@ const CartPage = () => {
               >
                 <ProductCard
                   product={p}
-                  wishlisted={wlIds.includes(p.id)}
-                  onWishlistToggle={toggleWl}
+                  wishlisted={isWishlisted(p.id)}
+                  onWishlistToggle={toggleWishlist}
                   imageChildren={<SizeSelector />}
                   showImageControls={false}
                 />
