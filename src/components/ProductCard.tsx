@@ -2,6 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { useInView } from "../hooks/useInView";
 import { useWishlist } from "../hooks/useWishlist";
 import SalePrice from "./SalePrice";
+import ProductImageCarousel from "./ProductImageCarousel";
 import { getBestCompareAtPrice } from "../utils/price";
 import type { ShopifyProduct } from "../types";
 
@@ -20,6 +21,7 @@ interface ProductCardProps {
   aspectRatio?: string;
   imageBg?: string;
   hoverScale?: string;
+  showImageControls?: boolean;
 }
 
 const ProductCard = ({
@@ -34,6 +36,7 @@ const ProductCard = ({
   aspectRatio = "aspect-[3/4]",
   imageBg = "bg-stone/5",
   hoverScale = "",
+  showImageControls = true,
 }: ProductCardProps) => {
   const navigate = useNavigate();
   const { ref, isInView } = useInView({ threshold: 0.1 });
@@ -71,12 +74,14 @@ const ProductCard = ({
       style={animate ? { transitionDelay: `${index * 50}ms` } : undefined}
       onClick={() => navigate(`/products/${product.handle}`)}
     >
-      <div className={`${aspectRatio} overflow-hidden ${imageBg} relative group/image`}>
-        <img
-          src={product.featuredImage.url}
-          alt={product.featuredImage.altText || product.title}
-          className={`w-full h-full object-cover object-top transition-all duration-200 ${hoverScale}`}
-          loading="lazy"
+      <div className={`${aspectRatio} overflow-hidden ${imageBg} relative group/image product-gallery-frame`}>
+        <ProductImageCarousel
+          images={product.images}
+          fallbackImage={product.featuredImage}
+          fallbackAlt={product.title}
+          imageClassName="object-cover object-top"
+          hoverScale={hoverScale}
+          showControls={showImageControls}
         />
 
         <button
