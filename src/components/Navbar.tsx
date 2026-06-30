@@ -3,6 +3,7 @@ import { createPortal } from "react-dom";
 import { useLocation, useNavigate } from "react-router-dom";
 import SearchOverlay from "./SearchOverlay";
 import MegaMenuPanel from "./MegaMenuPanel";
+import MobileMenu from "./MobileMenu";
 import { getSession, SESSION_EVENT } from "../utils/auth";
 import { useCart } from "../hooks/useCart";
 
@@ -251,44 +252,50 @@ const Navbar = () => {
         </div>
       </nav>
 
-      {/* MEGA MENU — floating panel */}
+      {/* Menu — desktop mega menu or mobile drawer, always mounted for exit animations */}
       {createPortal(
-        <div
-          className="fixed inset-0 z-100 top-14 md:top-16"
-          id="navbar-dropdown"
-          style={{
-            pointerEvents: menuOpen ? "auto" : "none",
-          }}
-        >
-          {/* Backdrop */}
+        <>
+          {/* Desktop mega menu — hidden on mobile */}
           <div
-            className="fixed inset-0 bg-black/20"
+            className="hidden md:block fixed inset-0 z-100 top-14 md:top-16"
+            id="navbar-dropdown"
+            aria-hidden={!menuOpen}
+            inert={!menuOpen}
             style={{
-              opacity: menuOpen ? 1 : 0,
-              transition: menuOpen
-                ? 'opacity 650ms cubic-bezier(0.22, 1, 0.36, 1) 80ms'
-                : 'opacity 650ms cubic-bezier(0.22, 1, 0.36, 1)',
-              willChange: 'opacity',
-              pointerEvents: menuOpen ? 'auto' : 'none',
-            }}
-            onClick={() => setMenuOpen(false)}
-          />
-          {/* Dropdown panel */}
-          <div
-            className="flex justify-center"
-            style={{
-              opacity: menuOpen ? 1 : 0,
-              transform: `translateY(${menuOpen ? '0px' : '-28px'})`,
-              transition: menuOpen
-                ? 'opacity 650ms cubic-bezier(0.22, 1, 0.36, 1) 80ms, transform 650ms cubic-bezier(0.22, 1, 0.36, 1) 80ms'
-                : 'opacity 650ms cubic-bezier(0.22, 1, 0.36, 1), transform 650ms cubic-bezier(0.22, 1, 0.36, 1)',
-              willChange: 'transform, opacity',
-              pointerEvents: menuOpen ? 'auto' : 'none',
+              pointerEvents: menuOpen ? "auto" : "none",
             }}
           >
-            <MegaMenuPanel onNavigate={() => setMenuOpen(false)} isOpen={menuOpen} />
+            <div
+              className="fixed inset-0 bg-black/20"
+              style={{
+                opacity: menuOpen ? 1 : 0,
+                transition: menuOpen
+                  ? 'opacity 650ms cubic-bezier(0.22, 1, 0.36, 1) 80ms'
+                  : 'opacity 650ms cubic-bezier(0.22, 1, 0.36, 1)',
+                willChange: 'opacity',
+                pointerEvents: menuOpen ? 'auto' : 'none',
+              }}
+              onClick={() => setMenuOpen(false)}
+            />
+            <div
+              className="flex justify-center"
+              style={{
+                opacity: menuOpen ? 1 : 0,
+                transform: `translateY(${menuOpen ? '0px' : '-28px'})`,
+                transition: menuOpen
+                  ? 'opacity 650ms cubic-bezier(0.22, 1, 0.36, 1) 80ms, transform 650ms cubic-bezier(0.22, 1, 0.36, 1) 80ms'
+                  : 'opacity 650ms cubic-bezier(0.22, 1, 0.36, 1), transform 650ms cubic-bezier(0.22, 1, 0.36, 1)',
+                willChange: 'transform, opacity',
+                pointerEvents: menuOpen ? 'auto' : 'none',
+              }}
+            >
+              <MegaMenuPanel onNavigate={() => setMenuOpen(false)} isOpen={menuOpen} />
+            </div>
           </div>
-        </div>,
+
+          {/* Mobile drawer */}
+          <MobileMenu isOpen={menuOpen} onClose={() => setMenuOpen(false)} cartCount={cart?.totalQuantity ?? 0} />
+        </>,
         document.body,
       )}
 
