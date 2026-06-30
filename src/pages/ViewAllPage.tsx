@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { getBestSellerProducts } from "../services/men.service";
 import { getProductsByCollection, getAllCollections, getAllProducts } from "../services/collection.service";
 import CollectionNav, { type CollectionTab } from "../components/CollectionNav";
@@ -57,8 +57,54 @@ function buildCollectionTabs(collections: ShopifyCollection[]): CollectionTab[] 
   return [...specials, ...collectionTabs, ...suffixes];
 }
 
+function getSortedFilteredProducts(
+  baseProducts: ShopifyProduct[],
+  sortBy: string,
+  otherFilters: ShopifyApiProductFilter[] | null,
+): ShopifyProduct[] {
+  let sorted = [...baseProducts];
+
+  const sortConfig = SORT_CONFIG[sortBy];
+  if (sortConfig) {
+    sorted.sort((a, b) => {
+      let comparison = 0;
+      if (sortConfig.sortKey === "PRICE") {
+        const aPrice = parseFloat(a.priceRange.minVariantPrice.amount);
+        const bPrice = parseFloat(b.priceRange.minVariantPrice.amount);
+        comparison = aPrice - bPrice;
+      } else if (sortConfig.sortKey === "TITLE") {
+        comparison = a.title.localeCompare(b.title);
+      } else if (sortConfig.sortKey === "CREATED") {
+        comparison = a.id.localeCompare(b.id);
+      }
+      return sortConfig.reverse ? -comparison : comparison;
+    });
+  }
+
+  if (otherFilters && otherFilters.length > 0) {
+    sorted = sorted.filter((p) => {
+      const price = parseFloat(p.priceRange.minVariantPrice.amount);
+      return otherFilters.every((f) => {
+        if (f.price) {
+          if (f.price.min && price < f.price.min) return false;
+          if (f.price.max && price > f.price.max) return false;
+        }
+        if (f.tag && !p.tags.includes(f.tag)) return false;
+        if (f.variantOption) {
+          const match = p.variants.some(
+            (v) => v.title === f.variantOption?.value,
+          );
+          if (!match) return false;
+        }
+        return true;
+      });
+    });
+  }
+
+  return sorted;
+}
+
 const CollectionsPage = () => {
-  const [products, setProducts] = useState<ShopifyProduct[]>([]);
   const [loading, setLoading] = useState(true);
   const [columns, setColumns] = useState(4);
   const [sortBy, setSortBy] = useState("featured");
@@ -109,48 +155,10 @@ const CollectionsPage = () => {
     return () => { active = false; };
   }, [activeTab, fetchProductsForTab]);
 
-  useEffect(() => {
-    let sorted = [...baseProducts];
-
-    const sortConfig = SORT_CONFIG[sortBy];
-    if (sortConfig) {
-      sorted.sort((a, b) => {
-        let comparison = 0;
-        if (sortConfig.sortKey === "PRICE") {
-          const aPrice = parseFloat(a.priceRange.minVariantPrice.amount);
-          const bPrice = parseFloat(b.priceRange.minVariantPrice.amount);
-          comparison = aPrice - bPrice;
-        } else if (sortConfig.sortKey === "TITLE") {
-          comparison = a.title.localeCompare(b.title);
-        } else if (sortConfig.sortKey === "CREATED") {
-          comparison = a.id.localeCompare(b.id);
-        }
-        return sortConfig.reverse ? -comparison : comparison;
-      });
-    }
-
-    if (otherFilters && otherFilters.length > 0) {
-      sorted = sorted.filter((p) => {
-        const price = parseFloat(p.priceRange.minVariantPrice.amount);
-        return otherFilters.every((f) => {
-          if (f.price) {
-            if (f.price.min && price < f.price.min) return false;
-            if (f.price.max && price > f.price.max) return false;
-          }
-          if (f.tag && !p.tags.includes(f.tag)) return false;
-          if (f.variantOption) {
-            const match = p.variants.some(
-              (v) => v.title === f.variantOption?.value,
-            );
-            if (!match) return false;
-          }
-          return true;
-        });
-      });
-    }
-
-    setProducts(sorted);
-  }, [sortBy, otherFilters, baseProducts]);
+  const products = useMemo(
+    () => getSortedFilteredProducts(baseProducts, sortBy, otherFilters),
+    [baseProducts, sortBy, otherFilters],
+  );
 
   const gridCols =
     columns === 2
