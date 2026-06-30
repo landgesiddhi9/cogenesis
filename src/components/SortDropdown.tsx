@@ -37,7 +37,7 @@ const SortDropdown = ({ options, selectedId, onSelect }: SortDropdownProps) => {
         onClick={() => setIsOpen(!isOpen)}
         className="flex items-center gap-2 text-sm text-charcoal/70 hover:text-charcoal transition-colors tracking-wide"
       >
-        {selectedOption?.label}
+        <span className="hidden md:inline">{selectedOption?.label}</span>
         <svg
           width="16"
           height="16"
