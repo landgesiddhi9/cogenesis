@@ -28,7 +28,6 @@ import AccountPage from "./pages/AccountPage";
 import SearchPage from "./pages/SearchPage";
 import PurchasesPage from "./pages/PurchasesPage";
 import ReturnsPage from "./pages/ReturnsPage";
-import TestCartPage from "./pages/TestCartPage";
 
 import AIAssistant from "./components/AIAssistant";
 import { CartToast } from "./components/CartToast";
@@ -111,9 +110,6 @@ function App() {
 
           {/* Cart */}
           <Route path="/cart" element={<CartPage />} />
-
-          {/* Test Cart */}
-          <Route path="/test-cart" element={<TestCartPage />} />
 
           {/* Search */}
           <Route path="/search" element={<SearchPage />} />
