@@ -32,7 +32,7 @@ const ProductCard = ({
   return (
     <div
       ref={ref}
-      className={`group relative overflow-hidden cursor-pointer scroll-strip__panel w-[280px] md:w-[320px] lg:w-[360px] transition-all duration-700 ${
+      className={`group relative overflow-hidden cursor-pointer scroll-strip__panel w-[calc(100vw-40px)] md:w-[320px] lg:w-[360px] transition-all duration-700 ${
         isInView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
       }`}
       style={{ transitionDelay: `${index * 100}ms` }}

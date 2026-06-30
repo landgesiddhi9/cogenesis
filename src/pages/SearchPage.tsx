@@ -120,7 +120,7 @@ const SearchPage = () => {
   const showError = hasText && error;
 
   return (
-    <main className="bg-[#f8f8f8] min-h-[100svh] pt-20 md:pt-24 pb-16">
+    <main className="bg-[#f8f8f8] min-h-0 md:min-h-[100svh] pt-20 md:pt-24 pb-4 md:pb-16">
       <div className="max-w-[1400px] mx-auto px-6 md:px-10 flex flex-col font-serif">
         {/* Search bar */}
         <div className="flex items-center justify-between pt-[0.3cm]">
@@ -128,7 +128,7 @@ const SearchPage = () => {
             <label className="relative block pb-1 text-stone/70">
               <input
                 ref={inputRef}
-                className="w-full bg-transparent text-[24px] md:text-[28px] leading-none font-serif font-normal text-black placeholder:text-[#c4aea3] outline-none pr-8 pb-1"
+                className="w-full bg-transparent text-[22px] md:text-[25px] leading-none font-serif font-normal text-black placeholder:text-[#c4aea3] outline-none pr-8 pb-1"
                 placeholder="Search"
                 aria-label="Search"
                 value={query}
@@ -199,28 +199,37 @@ const SearchPage = () => {
               <p className="text-stone/60 text-sm tracking-wide">Something went wrong. Please try again.</p>
             </div>
           ) : (
-            <div
+            <>
+              <div
               ref={railRef}
-              className="flex gap-0 overflow-x-auto overflow-y-hidden pb-4 scroll-smooth -mx-6 md:-mx-10 pl-10 search-rail"
+              className="flex gap-0 overflow-x-auto overflow-y-hidden md:pb-4 scroll-smooth -mx-6 md:-mx-10 pl-6 search-rail snap-x snap-mandatory md:snap-none scroll-pl-6"
               onWheel={onRailWheel}
               style={hiddenScrollbarStyle}
             >
-              <style>{`.search-rail::-webkit-scrollbar{display:none}`}</style>
+              <style>{`
+                .search-rail::-webkit-scrollbar{display:none}
+                @media (max-width: 767px) {
+                  .search-rail > .product-card-wrapper {
+                    width: calc(100vw - 40px) !important;
+                  }
+                }
+              `}</style>
               {results.map((p: ShopifyProduct) => (
                 <div
                   key={p.id}
-                  className="flex-shrink-0"
-                  style={{ width: 'clamp(280px, 18vw, 380px)' }}
+                  className="flex-shrink-0 product-card-wrapper snap-start"
+                  style={{ width: 'clamp(255px, 16vw, 345px)' }}
                 >
                   <ProductCard product={p} showImageControls={false} />
                 </div>
               ))}
             </div>
+            </>
           )}
-        </div>
+          </div>
 
         {/* CTA */}
-        <div className="flex justify-center mt-12 pb-16">
+        <div className="flex justify-center mt-0 md:mt-3">
           <button className="px-6 py-2.5 border border-charcoal bg-transparent text-charcoal text-[11px] font-semibold uppercase tracking-[0.12em] hover:bg-charcoal hover:text-white transition-colors duration-200">
             View All Products
           </button>
