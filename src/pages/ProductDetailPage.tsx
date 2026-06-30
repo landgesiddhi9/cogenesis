@@ -134,7 +134,7 @@ const ProductDetailPage = ({ productHandle }: ProductDetailPageProps) => {
       <div className="max-w-[1600px] mx-auto px-6 md:px-12 lg:px-16 py-16 md:py-24">
         <div className="grid grid-cols-1 lg:grid-cols-[65%_35%] gap-12 lg:gap-20">
           {/* Left Side - Image Gallery */}
-          <div>
+          <div className="h-full">
             <ImageGallery product={product} selectedColor={selectedColor} />
           </div>
 
