@@ -187,7 +187,7 @@ const SearchPage = () => {
                   className="flex-shrink-0"
                   style={{ width: 'clamp(280px, 18vw, 380px)' }}
                 >
-                  <ProductCard product={p} />
+                  <ProductCard product={p} showImageControls={false} />
                 </div>
               ))}
             </div>
