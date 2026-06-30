@@ -9,7 +9,7 @@ const AIAssistant = () => {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="fixed bottom-6 right-6 z-50 w-8 h-8 md:w-10 md:h-10 bg-white/95 backdrop-blur-sm rounded-full shadow-[0_4px_24px_rgba(0,0,0,0.12)] flex items-center justify-center transition-all duration-300 ease-out hover:scale-105 active:scale-95"
+        className="fixed bottom-[calc(var(--bottom-nav-height,56px)+env(safe-area-inset-bottom,0px)+24px)] md:bottom-6 right-6 z-50 w-8 h-8 md:w-10 md:h-10 bg-white/95 backdrop-blur-sm rounded-full shadow-[0_4px_24px_rgba(0,0,0,0.12)] flex items-center justify-center transition-all duration-300 ease-out hover:scale-105 active:scale-95"
         aria-label="Open AI Shopping Assistant"
       >
         <svg
