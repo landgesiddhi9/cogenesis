@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { searchProducts } from '../services/search.service';
@@ -6,17 +6,9 @@ import { getFeaturedProducts } from '../services/product.service';
 import type { ShopifyProduct } from '../types';
 import SalePrice from './SalePrice';
 import { getBestCompareAtPrice } from '../utils/price';
+import { useWishlist } from '../hooks/useWishlist';
 
-const WL_KEY = "wishlist";
-const readWL = (): string[] => {
-  try {
-    return JSON.parse(sessionStorage.getItem(WL_KEY) || "[]");
-  } catch {
-    return [];
-  }
-};
-const writeWL = (ids: string[]) =>
-  sessionStorage.setItem(WL_KEY, JSON.stringify(ids));
+const hiddenScrollbarStyle: CSSProperties = { scrollbarWidth: 'none' };
 
 type Props = {
   isOpen: boolean;
@@ -25,6 +17,7 @@ type Props = {
 
 const SearchOverlay: React.FC<Props> = ({ isOpen, onClose }) => {
   const navigate = useNavigate();
+  const { isWishlisted, toggleWishlist: toggleWishlistById } = useWishlist();
   const railRef = useRef<HTMLDivElement | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
   const [query, setQuery] = useState('');
@@ -33,22 +26,37 @@ const SearchOverlay: React.FC<Props> = ({ isOpen, onClose }) => {
   const [initialLoading, setInitialLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searched, setSearched] = useState(false);
-  const [wishlist, setWishlist] = useState<string[]>(() => readWL());
 
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const featuredRequestIdRef = useRef(0);
+  const searchRequestIdRef = useRef(0);
+
+  const isAbortError = (error: unknown) =>
+    error instanceof DOMException && error.name === 'AbortError';
 
   // Load featured products on mount
   useEffect(() => {
     if (!isOpen) return;
+    const requestId = ++featuredRequestIdRef.current;
+    const controller = new AbortController();
+
     setInitialLoading(true);
-    getFeaturedProducts(7)
+    getFeaturedProducts(7, { signal: controller.signal })
       .then(({ products }) => {
+        if (requestId !== featuredRequestIdRef.current) return;
         setResults(products);
       })
-      .catch(() => {})
+      .catch((err) => {
+        if (isAbortError(err) || requestId !== featuredRequestIdRef.current) return;
+      })
       .finally(() => {
+        if (requestId !== featuredRequestIdRef.current) return;
         setInitialLoading(false);
       });
+
+    return () => {
+      controller.abort();
+    };
   }, [isOpen]);
 
   // Reset state when overlay opens
@@ -65,11 +73,7 @@ const SearchOverlay: React.FC<Props> = ({ isOpen, onClose }) => {
   const toggleWishlist = (e: React.MouseEvent, id: string) => {
     e.stopPropagation();
     e.preventDefault();
-    const next = wishlist.includes(id)
-      ? wishlist.filter((wid) => wid !== id)
-      : [...wishlist, id];
-    writeWL(next);
-    setWishlist(next);
+    toggleWishlistById(id);
   };
 
   useEffect(() => {
@@ -85,9 +89,13 @@ const SearchOverlay: React.FC<Props> = ({ isOpen, onClose }) => {
   useEffect(() => {
     const trimmed = query.trim();
     if (!trimmed) {
+      searchRequestIdRef.current += 1;
       setSearched(false);
       return;
     }
+
+    const requestId = ++searchRequestIdRef.current;
+    const controller = new AbortController();
 
     if (debounceRef.current) {
       clearTimeout(debounceRef.current);
@@ -98,15 +106,18 @@ const SearchOverlay: React.FC<Props> = ({ isOpen, onClose }) => {
       setLoading(true);
       setError(null);
 
-      searchProducts(trimmed, 20)
+      searchProducts(trimmed, 20, { signal: controller.signal })
         .then(({ products }) => {
+          if (requestId !== searchRequestIdRef.current) return;
           setResults(products);
         })
         .catch((err) => {
+          if (isAbortError(err) || requestId !== searchRequestIdRef.current) return;
           setError(err instanceof Error ? err.message : String(err));
           setResults([]);
         })
         .finally(() => {
+          if (requestId !== searchRequestIdRef.current) return;
           setLoading(false);
         });
     }, 300);
@@ -115,6 +126,7 @@ const SearchOverlay: React.FC<Props> = ({ isOpen, onClose }) => {
       if (debounceRef.current) {
         clearTimeout(debounceRef.current);
       }
+      controller.abort();
     };
   }, [query]);
 
@@ -240,7 +252,7 @@ const SearchOverlay: React.FC<Props> = ({ isOpen, onClose }) => {
                 ref={railRef}
                 className="flex gap-0 overflow-x-auto overflow-y-hidden pb-4 scroll-smooth -mx-6 md:-mx-10 pl-10 search-rail"
                 onWheel={onRailWheel}
-                style={{ scrollbarWidth: 'none' as any }}
+                style={hiddenScrollbarStyle}
               >
                 <style>{`.search-rail::-webkit-scrollbar{display:none}`}</style>
                 {results.map((p: ShopifyProduct) => (
@@ -261,16 +273,16 @@ const SearchOverlay: React.FC<Props> = ({ isOpen, onClose }) => {
                         type="button"
                         onClick={(e) => toggleWishlist(e, p.id)}
                         className={`absolute top-3 right-3 p-0 bg-transparent border-none cursor-pointer transition-opacity duration-200 z-10 ${
-                          wishlist.includes(p.id) ? "opacity-100" : "opacity-0 group-hover:opacity-100"
+                          isWishlisted(p.id) ? "opacity-100" : "opacity-0 group-hover:opacity-100"
                         }`}
-                        aria-label={wishlist.includes(p.id) ? "Remove from wishlist" : "Add to wishlist"}
+                        aria-label={isWishlisted(p.id) ? "Remove from wishlist" : "Add to wishlist"}
                       >
                         <svg
                           width="22"
                           height="22"
                           viewBox="0 0 24 24"
-                          fill={wishlist.includes(p.id) ? "#431c1c" : "none"}
-                          stroke={wishlist.includes(p.id) ? "#431c1c" : "#2A2420"}
+                          fill={isWishlisted(p.id) ? "#431c1c" : "none"}
+                          stroke={isWishlisted(p.id) ? "#431c1c" : "#2A2420"}
                           strokeWidth="1.8"
                           strokeLinecap="round"
                           strokeLinejoin="round"

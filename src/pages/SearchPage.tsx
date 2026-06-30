@@ -1,9 +1,11 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { searchProducts } from '../services/search.service';
 import { getFeaturedProducts } from '../services/product.service';
 import type { ShopifyProduct } from '../types';
 import ProductCard from '../components/ProductCard';
+
+const hiddenScrollbarStyle: CSSProperties = { scrollbarWidth: 'none' };
 
 const SearchPage = () => {
   const [query, setQuery] = useState('');
@@ -17,20 +19,35 @@ const SearchPage = () => {
   const inputRef = useRef<HTMLInputElement | null>(null);
   const navigate = useNavigate();
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const featuredRequestIdRef = useRef(0);
+  const searchRequestIdRef = useRef(0);
+
+  const isAbortError = (error: unknown) =>
+    error instanceof DOMException && error.name === 'AbortError';
 
   // Load featured products on mount as default "May interest you"
   useEffect(() => {
+    const requestId = ++featuredRequestIdRef.current;
+    const controller = new AbortController();
+
     setInitialLoading(true);
-    getFeaturedProducts(7)
+    getFeaturedProducts(7, { signal: controller.signal })
       .then(({ products }) => {
+        if (requestId !== featuredRequestIdRef.current) return;
         setResults(products);
       })
-      .catch(() => {
+      .catch((err) => {
+        if (isAbortError(err) || requestId !== featuredRequestIdRef.current) return;
         // silently fail - show empty state
       })
       .finally(() => {
+        if (requestId !== featuredRequestIdRef.current) return;
         setInitialLoading(false);
       });
+
+    return () => {
+      controller.abort();
+    };
   }, []);
 
   // Focus input on mount
@@ -43,9 +60,13 @@ const SearchPage = () => {
     const trimmed = query.trim();
     if (!trimmed) {
       // Restore featured products when query is cleared
+      searchRequestIdRef.current += 1;
       setSearched(false);
       return;
     }
+
+    const requestId = ++searchRequestIdRef.current;
+    const controller = new AbortController();
 
     if (debounceRef.current) {
       clearTimeout(debounceRef.current);
@@ -56,15 +77,18 @@ const SearchPage = () => {
       setLoading(true);
       setError(null);
 
-      searchProducts(trimmed, 20)
+      searchProducts(trimmed, 20, { signal: controller.signal })
         .then(({ products }) => {
+          if (requestId !== searchRequestIdRef.current) return;
           setResults(products);
         })
         .catch((err) => {
+          if (isAbortError(err) || requestId !== searchRequestIdRef.current) return;
           setError(err instanceof Error ? err.message : String(err));
           setResults([]);
         })
         .finally(() => {
+          if (requestId !== searchRequestIdRef.current) return;
           setLoading(false);
         });
     }, 300);
@@ -73,6 +97,7 @@ const SearchPage = () => {
       if (debounceRef.current) {
         clearTimeout(debounceRef.current);
       }
+      controller.abort();
     };
   }, [query]);
 
@@ -178,7 +203,7 @@ const SearchPage = () => {
               ref={railRef}
               className="flex gap-0 overflow-x-auto overflow-y-hidden pb-4 scroll-smooth -mx-6 md:-mx-10 pl-10 search-rail"
               onWheel={onRailWheel}
-              style={{ scrollbarWidth: 'none' as any }}
+              style={hiddenScrollbarStyle}
             >
               <style>{`.search-rail::-webkit-scrollbar{display:none}`}</style>
               {results.map((p: ShopifyProduct) => (

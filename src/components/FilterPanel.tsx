@@ -1,9 +1,18 @@
 import { useState } from "react";
 
+export interface FilterPanelFilters {
+  size: string[];
+  material: string[];
+  color: string[];
+  price: [number, number];
+  fit: string[];
+  category: string[];
+}
+
 interface FilterPanelProps {
   isOpen: boolean;
   onClose: () => void;
-  onApply: (filters: any) => void;
+  onApply: (filters: FilterPanelFilters) => void;
 }
 
 const FilterAccordion = ({
@@ -51,6 +60,7 @@ const FilterPanel = ({ isOpen, onClose, onApply }: FilterPanelProps) => {
     color: [] as string[],
     price: [1500, 5000] as [number, number],
     fit: [] as string[],
+    category: [] as string[],
   });
 
   const colors = [
@@ -95,6 +105,7 @@ const FilterPanel = ({ isOpen, onClose, onApply }: FilterPanelProps) => {
       color: [],
       price: [1500, 5000],
       fit: [],
+      category: [],
     });
   };
 

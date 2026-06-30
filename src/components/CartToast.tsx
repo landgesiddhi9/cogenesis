@@ -9,6 +9,7 @@ interface Toast {
 
 export function CartToast() {
   const { cart } = useCart();
+  const cartTotalQuantity = cart?.totalQuantity;
   const [toasts, setToasts] = useState<Toast[]>([]);
   const idRef = useRef(0);
   const prevQtyRef = useRef<number | null>(null);
@@ -23,9 +24,9 @@ export function CartToast() {
   }, []);
 
   useEffect(() => {
-    if (!cart) return;
+    if (cartTotalQuantity == null) return;
 
-    const currentQty = cart.totalQuantity;
+    const currentQty = cartTotalQuantity;
 
     if (!initialized.current) {
       initialized.current = true;
@@ -38,7 +39,7 @@ export function CartToast() {
     }
 
     prevQtyRef.current = currentQty;
-  }, [cart?.totalQuantity, addToast]);
+  }, [cartTotalQuantity, addToast]);
 
   useEffect(() => {
     const handler = (e: Event) => {
