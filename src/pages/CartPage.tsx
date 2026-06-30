@@ -400,6 +400,7 @@ const CartPage = () => {
                   wishlisted={wlIds.includes(p.id)}
                   onWishlistToggle={toggleWl}
                   imageChildren={<SizeSelector />}
+                  showImageControls={false}
                 />
               </div>
             ))}

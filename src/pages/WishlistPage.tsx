@@ -171,7 +171,7 @@ const WishlistPage = () => {
         >
           <div className="grid gap-6" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))" }}>
             {wishlistProducts.map((p) => (
-              <ProductCard key={p.id} product={p} wishlisted={true} onWishlistToggle={toggle} />
+              <ProductCard key={p.id} product={p} wishlisted={true} onWishlistToggle={toggle} showImageControls={false} />
             ))}
           </div>
         </section>

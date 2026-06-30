@@ -7,6 +7,7 @@ import { logProductImageFailure } from "../lib/shopifyImageDiagnostics";
 import SortDropdown from "../components/SortDropdown";
 import FilterPanel from "../components/FilterPanel";
 import SalePrice from "../components/SalePrice";
+import ProductImageCarousel from "../components/ProductImageCarousel";
 import { getBestCompareAtPrice } from "../utils/price";
 import { toTitleCase } from "../utils/text";
 import type { ShopifyProduct, ShopifyCollection } from "../types";
@@ -52,30 +53,6 @@ const getColorSwatches = (tags: string[]) => {
     .slice(0, 3); // Show max 3 swatches
 };
 
-// Get model image URL based on product type and color
-const getModelImageUrl = (tags: string[]) => {
-  // Return model wearing shirt Unsplash images based on product colors
-  const isWhite = tags.includes("white");
-  const isBlue = tags.includes("blue") || tags.includes("navy");
-  const isGreen = tags.includes("green") || tags.includes("olive");
-  const isBlack = tags.includes("black");
-  const isBeige = tags.includes("beige") || tags.includes("cream");
-
-  if (isWhite) {
-    return "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&h=750&fit=crop&crop=top";
-  } else if (isBlue) {
-    return "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=600&h=750&fit=crop&crop=top";
-  } else if (isGreen) {
-    return "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=600&h=750&fit=crop&crop=top";
-  } else if (isBlack) {
-    return "https://images.unsplash.com/photo-1617137968427-85924c800a22?w=600&h=750&fit=crop&crop=top";
-  } else if (isBeige) {
-    return "https://images.unsplash.com/photo-1532073150508-0c1df022e452?w=600&h=750&fit=crop&crop=top";
-  }
-
-  // Default fallback
-  return "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&h=750&fit=crop&crop=top";
-};
 
 // Product card for collection grid
 const CollectionProductCard = ({
@@ -112,12 +89,6 @@ const CollectionProductCard = ({
   // Get color swatches
   const colors = getColorSwatches(product.tags);
 
-  // Get model image
-  const modelImageUrl = getModelImageUrl(product.tags);
-
-  // Determine which image to show
-  const imageUrl = product.featuredImage.url || null;
-  const displayImage = isHovered ? modelImageUrl : imageUrl;
 
   return (
     <div
@@ -129,31 +100,25 @@ const CollectionProductCard = ({
     >
       {/* Image container with hover effect */}
       <div
-        className="aspect-3/4 overflow-hidden bg-stone/5 relative group/image"
+        className="aspect-3/4 overflow-hidden bg-stone/5 relative group/image product-gallery-frame"
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >
         {/* Base image */}
-        {displayImage && (
-          <img
-            src={displayImage}
-            alt={product.featuredImage.altText}
-            style={{
-              transform: isHovered ? "scale(1.03)" : "scale(1)",
-              transition: "transform 300ms ease-in-out",
-            }}
-            className="w-full h-full object-cover object-center"
-            loading="lazy"
-            onError={() => {
-              logProductImageFailure(
-                `collection-card:${product.handle}`,
-                rawProduct,
-                product,
-                displayImage,
-              );
-            }}
-          />
-        )}
+        <ProductImageCarousel
+          images={product.images}
+          fallbackImage={product.featuredImage}
+          fallbackAlt={product.title}
+          imageClassName="object-cover object-center"
+          onImageError={(imageUrl) => {
+            logProductImageFailure(
+              `collection-card:${product.handle}`,
+              rawProduct,
+              product,
+              imageUrl,
+            );
+          }}
+        />
 
         {/* Wishlist button */}
         <button
