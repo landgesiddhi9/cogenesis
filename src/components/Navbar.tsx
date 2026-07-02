@@ -346,12 +346,15 @@ const Navbar = () => {
         </div>
       </div>
 
-      {/* Desktop Mega Menu + Mobile Drawer */}
+      {/* Menu — desktop mega menu or mobile drawer */}
       {createPortal(
         <>
+          {/* Desktop mega menu — hidden on mobile */}
           <div
             className="hidden md:block fixed inset-0 z-100 top-[68px] md:top-16"
             id="navbar-dropdown"
+            aria-hidden={!menuOpen}
+            inert={!menuOpen}
             style={{
               pointerEvents: menuOpen ? "auto" : "none",
             }}
@@ -386,7 +389,8 @@ const Navbar = () => {
             </div>
           </div>
 
-          <MobileMenu isOpen={menuOpen} onNavigate={() => setMenuOpen(false)} />
+          {/* Mobile drawer */}
+          <MobileMenu isOpen={menuOpen} onClose={() => setMenuOpen(false)} cartCount={cart?.totalQuantity ?? 0} />
         </>,
         document.body,
       )}
