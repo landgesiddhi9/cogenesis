@@ -42,12 +42,40 @@ const Navbar = () => {
   const activeStroke = (isActive: boolean) =>
     isActive ? "stroke-[1.4]" : "stroke-[1.2]";
 
+  // Auto-hide bottom nav when footer is in view
+  const [showBottomNav, setShowBottomNav] = useState(true);
+
   // Scroll effect
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 50);
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  // IntersectionObserver: hide bottom nav when footer enters viewport
+  useEffect(() => {
+    const footer = document.getElementById('site-footer');
+    if (!footer) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (document.documentElement.scrollHeight <= window.innerHeight + 100) {
+          setShowBottomNav(true);
+          return;
+        }
+        setShowBottomNav(!entry.isIntersecting);
+      },
+      { rootMargin: '0px 0px -90px 0px', threshold: 0 }
+    );
+
+    observer.observe(footer);
+    return () => observer.disconnect();
+  }, []);
+
+  // Sync CSS variable for chatbot position
+  useEffect(() => {
+    document.documentElement.style.setProperty('--bottom-nav-height', showBottomNav ? '56px' : '0px');
+  }, [showBottomNav]);
 
   // Lock body scroll when menu OR search overlay is open (preserve scroll position)
   useEffect(() => {
@@ -92,8 +120,8 @@ const Navbar = () => {
             : 'background-color 200ms cubic-bezier(0.22, 1, 0.36, 1) 300ms, border-color 200ms cubic-bezier(0.22, 1, 0.36, 1) 300ms',
         }}
       >
-        <div className="w-full px-4 md:px-8">
-          <div className="relative flex items-center justify-between h-14 md:h-16">
+        <div className="w-full px-5 md:px-8">
+          <div className="relative flex items-center justify-between h-[68px] md:h-16">
             {/* Hamburger menu / Close button */}
             <button
               className="flex flex-col gap-1.25 p-2 relative z-60 transition-all duration-300"
@@ -141,9 +169,9 @@ const Navbar = () => {
               <img
                 src="/images/Monogram.png"
                 alt="Cogenesis Monogram"
-                className="h-[58px] w-auto object-contain shrink-0 logo-monogram"
+                className="h-[50px] md:h-[58px] w-auto object-contain shrink-0 logo-monogram"
               />
-              <div className="logo-wordmark" style={{ width: 180, height: 30, overflow: 'hidden', flexShrink: 0, marginLeft: -20 }}>
+              <div className="logo-wordmark w-[155px] md:w-[180px] h-[26px] md:h-[30px] overflow-hidden flex-shrink-0 -ml-5">
                 <img
                   src="/images/logo.png"
                   alt="COGENESIS"
@@ -154,7 +182,7 @@ const Navbar = () => {
 
             {/* Right-side icons — cherry-pick active-state version */}
             <div
-              className="flex items-center gap-4 md:gap-5 text-charcoal transition-opacity duration-300 opacity-100"
+              className="hidden md:flex items-center gap-4 md:gap-5 text-charcoal transition-opacity duration-300 opacity-100"
             >
               {/* Search */}
               <button
@@ -252,12 +280,78 @@ const Navbar = () => {
         </div>
       </nav>
 
-      {/* Menu — desktop mega menu or mobile drawer, always mounted for exit animations */}
+      {/* Mobile bottom navigation — auto-hides when footer is visible */}
+      <div
+        className={`md:hidden fixed bottom-0 left-0 right-0 z-40 backdrop-blur-2xl bg-[rgba(250,248,245,0.85)] border-t border-[rgba(122,113,104,0.1)] transition duration-[250ms] ease-out ${
+          showBottomNav ? 'translate-y-0 opacity-100' : 'translate-y-full opacity-0'
+        }`}
+        style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
+      >
+        <div className="flex items-center justify-around h-14 px-4">
+          {/* Search */}
+          <button
+            className="flex items-center justify-center w-11 h-11 text-charcoal hover:text-[#111] transition-colors"
+            aria-label="Search"
+            onClick={() => navigate("/search")}
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2">
+              <circle cx="11" cy="11" r="8" />
+              <path d="M21 21l-4.35-4.35" />
+            </svg>
+          </button>
+
+          {/* Account */}
+          <button
+            className="flex items-center justify-center w-11 h-11 text-charcoal hover:text-[#111] transition-colors"
+            aria-label="Account"
+            onClick={() => navigate(isLoggedIn ? "/account" : "/login")}
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2">
+              <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" />
+              <circle cx="12" cy="7" r="4" />
+            </svg>
+          </button>
+
+          {/* Wishlist */}
+          <button
+            className="flex items-center justify-center w-11 h-11 text-charcoal hover:text-[#111] transition-colors"
+            aria-label="Wishlist"
+            onClick={() => navigate("/wishlist")}
+          >
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M6 2h12v16l-6-4l-6 4V2z" />
+            </svg>
+          </button>
+
+          {/* Cart */}
+          <button
+            className="flex items-center justify-center w-11 h-11 text-charcoal hover:text-[#111] transition-colors relative"
+            aria-label="Shopping bag"
+            onClick={() => navigate("/cart")}
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2">
+              <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z" />
+              <line x1="3" y1="6" x2="21" y2="6" />
+              <path d="M16 10a4 4 0 01-8 0" />
+            </svg>
+            {cart && cart.totalQuantity > 0 && (
+              <span
+                className="absolute -top-0.5 -right-0.5 bg-[#111] text-white text-[9px] font-sans font-semibold w-4 h-4 rounded-full flex items-center justify-center"
+                style={{ lineHeight: 0 }}
+              >
+                {cart.totalQuantity}
+              </span>
+            )}
+          </button>
+        </div>
+      </div>
+
+      {/* Menu — desktop mega menu or mobile drawer */}
       {createPortal(
         <>
           {/* Desktop mega menu — hidden on mobile */}
           <div
-            className="hidden md:block fixed inset-0 z-100 top-14 md:top-16"
+            className="hidden md:block fixed inset-0 z-100 top-[68px] md:top-16"
             id="navbar-dropdown"
             aria-hidden={!menuOpen}
             inert={!menuOpen}
@@ -265,6 +359,7 @@ const Navbar = () => {
               pointerEvents: menuOpen ? "auto" : "none",
             }}
           >
+            {/* Backdrop */}
             <div
               className="fixed inset-0 bg-black/20"
               style={{
@@ -277,6 +372,7 @@ const Navbar = () => {
               }}
               onClick={() => setMenuOpen(false)}
             />
+            {/* Dropdown panel */}
             <div
               className="flex justify-center"
               style={{
