@@ -191,6 +191,15 @@ body {
     -ms-overflow-style: none;
 }
 
+@media (max-width: 767px) {
+    .scroll-strip {
+        scroll-padding: 0 20px;
+    }
+    .scroll-strip__track {
+        padding-right: 20px;
+    }
+}
+
 .scroll-strip::-webkit-scrollbar {
     display: none;
 }
@@ -688,7 +697,7 @@ html::-webkit-scrollbar {
     .brand-story-split__image {
         width: 100%;
         height: auto;
-        min-height: 45svh;
+        min-height: 55svh;
         aspect-ratio: 4 / 5;
     }
 
@@ -702,7 +711,7 @@ html::-webkit-scrollbar {
 .campaign-banner {
     position: relative;
     width: 100%;
-    min-height: 60svh;
+    min-height: 90svh;
     overflow: hidden;
     margin: 0;
     padding: 0;

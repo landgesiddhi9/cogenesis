@@ -46,9 +46,9 @@ const inputClsCmpct =
 const labelClsCmpct =
   "block text-[10px] uppercase tracking-[0.12em] text-[#666] mb-1";
 const primaryBtnCls =
-  "w-full h-[40px] bg-black text-white uppercase tracking-[0.12em] font-medium text-[12px] transition-opacity duration-200 hover:opacity-90";
+  "w-full h-[48px] md:h-[40px] bg-black text-white uppercase tracking-[0.12em] font-medium text-[12px] transition-opacity duration-200 hover:opacity-90";
 const socialBtnCls =
-  "w-full h-[40px] flex items-center justify-center gap-3 border border-[#111] bg-white text-[#111] uppercase tracking-[0.08em] text-[12px] transition-colors duration-150 hover:bg-[#F8F8F8]";
+  "w-full h-[48px] md:h-[40px] flex items-center justify-center gap-3 border border-[#111] bg-white text-[#111] uppercase tracking-[0.08em] text-[12px] transition-colors duration-150 hover:bg-[#F8F8F8]";
 const backBtnCls =
   "text-[12px] uppercase tracking-[0.2em] text-[#666] cursor-pointer hover:text-[#111] transition-colors duration-150";
 const errCls = "text-[11px] text-red-500 mt-1.5";
@@ -57,12 +57,12 @@ const eyeBtnCls =
 
 // ─── OR divider ──────────────────────────────────────────────────────────────
 const OrDivider = () => (
-  <div className="flex items-center gap-4">
-    <div className="flex-1 h-px bg-[#222]" />
+  <div className="flex items-center gap-2 md:gap-4">
+    <div className="flex-1 h-px bg-[#ccc] md:bg-[#222]" />
     <span className="text-[12px] uppercase tracking-[0.35em] text-[#666]">
       OR
     </span>
-    <div className="flex-1 h-px bg-[#222]" />
+    <div className="flex-1 h-px bg-[#ccc] md:bg-[#222]" />
   </div>
 );
 
@@ -267,11 +267,11 @@ const LoginPage: React.FC = () => {
   // STATE 1 ─ Email Entry
   const renderEmail = () => (
     <>
-      <h1 className="text-[22px] font-light leading-[1.15] tracking-[-0.02em] text-[#111] text-center mb-6">
+      <h1 className="text-[24px] md:text-[22px] font-light leading-[1.15] tracking-[-0.02em] text-[#111] text-center mb-6">
         Sign in
       </h1>
 
-      <div className="mb-2">
+      <div className="mb-4 md:mb-2">
         <label className={labelCls}>Email address</label>
         <input
           type="email"
@@ -288,7 +288,7 @@ const LoginPage: React.FC = () => {
         {errors.email && <p className={errCls}>{errors.email}</p>}
       </div>
 
-      <div className="mb-2">
+      <div className="mb-4 md:mb-2">
         <PasswordInput
           value={password}
           onChange={(v) => {
@@ -303,7 +303,7 @@ const LoginPage: React.FC = () => {
         {password.length > 0 && <PasswordHints password={password} />}
       </div>
 
-      <div className="h-6"></div>
+      <div className="h-2 md:h-6"></div>
 
       <div className="mb-2 flex justify-end">
         <button
@@ -319,7 +319,7 @@ const LoginPage: React.FC = () => {
         Sign In
       </button>
 
-      <div className="mb-2">
+      <div className="mb-1 md:mb-2">
         <OrDivider />
       </div>
 
@@ -327,7 +327,7 @@ const LoginPage: React.FC = () => {
         <SocialButtons />
       </div>
 
-      <p className="text-[13px] text-[#666] leading-[1.4] mb-2">
+      <p className="text-[12px] md:text-[13px] text-[#666] leading-[1.4] mb-2">
         By logging in with my social login, I agree to link my account as per
         the{" "}
         <Link to="#" className="underline">
@@ -336,7 +336,7 @@ const LoginPage: React.FC = () => {
         .
       </p>
 
-      <div className="text-center mt-8 mb-2">
+      <div className="text-center mt-7 md:mt-8 mb-2">
         <p className="mb-1 uppercase tracking-[0.2em] text-[#666] text-[10px]">
           New user?
         </p>
@@ -539,15 +539,15 @@ const LoginPage: React.FC = () => {
   // ── Root render ──────────────────────────────────────────────────────────────
   return (
     <div
-      className={`fixed right-0 top-0 h-screen w-[clamp(420px,35vw,520px)] border-l border-[#EAEAEA] bg-ivory z-[120] font-sans transition-all duration-[350ms] ease-[cubic-bezier(0.22,1,0.36,1)] ${
+      className={`fixed inset-0 md:left-auto w-full md:w-[clamp(420px,35vw,520px)] h-screen bg-ivory z-[120] font-sans md:border-l border-[#EAEAEA] transition-all duration-[350ms] ease-[cubic-bezier(0.22,1,0.36,1)] ${
         drawerVisible
           ? "translate-x-0 opacity-100"
           : "translate-x-full opacity-0"
       }`}
     >
-      <div className="relative h-full overflow-hidden">
-        <div className={`min-h-full flex flex-col px-8 ${
-          authState === "email" || authState === "create" ? "justify-start pt-10" : "justify-center"
+      <div className="relative h-full overflow-y-auto md:overflow-hidden">
+        <div className={`min-h-full flex flex-col px-6 md:px-8 ${
+          authState === "email" || authState === "create" ? "justify-start pt-8 md:pt-10" : "justify-center"
         }`}>
           {/* Close button — unchanged */}
           <button
