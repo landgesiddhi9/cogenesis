@@ -45,6 +45,7 @@ const AIAssistant = () => {
           <span className="font-sans text-[12px] font-semibold uppercase tracking-[0.2em] text-[#2a2420]">
             AI Assistant
           </span>
+
           <button
             type="button"
             onClick={() => setOpen(false)}
@@ -82,11 +83,14 @@ const AIAssistant = () => {
               <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
             </svg>
           </div>
+
           <h3 className="font-sans text-[13px] font-semibold uppercase tracking-[0.2em] text-[#2a2420] mb-3">
             How can I help you?
           </h3>
+
           <p className="font-sans text-[12px] text-[#7a7168] leading-relaxed max-w-[260px]">
-            Ask me about products, sizes, styling advice, or anything else about your shopping experience.
+            Ask me about products, sizes, styling advice, or anything else about
+            your shopping experience.
           </p>
 
           {/* Input */}
@@ -97,6 +101,7 @@ const AIAssistant = () => {
                 placeholder="Type your question..."
                 className="flex-1 bg-transparent font-sans text-[12px] text-[#2a2420] placeholder:text-[#a39890] outline-none"
               />
+
               <button type="button" className="flex-shrink-0">
                 <svg
                   width="16"
