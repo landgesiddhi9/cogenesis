@@ -23,12 +23,16 @@ const ProductDetailPage = ({ productHandle }: ProductDetailPageProps) => {
   const { addToCart: addToCartService } = useCart();
   const [addingToCart, setAddingToCart] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [prevHandle, setPrevHandle] = useState(productHandle);
+
+  if (productHandle !== prevHandle) {
+    setPrevHandle(productHandle);
+    setLoading(true);
+    setProduct(null);
+  }
 
   useEffect(() => {
     let active = true;
-
-    setLoading(true);
-    setProduct(null);
 
     getProductByHandle(productHandle)
       .then(({ product: foundProduct }) => {

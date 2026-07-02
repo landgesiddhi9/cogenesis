@@ -1,6 +1,7 @@
 import { useState } from "react";
 import type { ShopifyProduct } from "../../types";
 import QuickViewOverlay from "./QuickViewOverlay";
+import { shopifyImageUrl, shopifyImageSrcSet } from "../../utils/shopifyImage";
 
 interface ImageGalleryProps {
   product: ShopifyProduct;
@@ -30,7 +31,9 @@ const ImageGallery = ({ product }: ImageGalleryProps) => {
             onClick={() => setQuickViewIndex(idx)}
           >
             <img
-              src={url}
+              src={shopifyImageUrl(url, 600)}
+              srcSet={shopifyImageSrcSet(url, [600, 1200])}
+              sizes="(max-width: 768px) 50vw, 400px"
               alt={`${product.title} - ${labels[idx]}`}
               className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
               loading={idx === 0 ? "eager" : "lazy"}

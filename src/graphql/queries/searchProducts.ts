@@ -8,12 +8,17 @@ export const SEARCH_PRODUCTS_QUERY = `
   ${PRODUCT_VARIANT_FIELDS_FRAGMENT}
   ${PRODUCT_FIELDS_FRAGMENT}
 
-  query SearchProducts($query: String!, $first: Int!) {
-    products(first: $first, query: $query) {
+  query SearchProducts($query: String!, $first: Int!, $after: String) {
+    products(first: $first, after: $after, query: $query) {
       edges {
         node {
           ...ProductFields
         }
+      }
+      pageInfo {
+        hasNextPage
+        hasPreviousPage
+        endCursor
       }
     }
   }
@@ -22,6 +27,7 @@ export const SEARCH_PRODUCTS_QUERY = `
 export interface SearchProductsVariables {
   query: string;
   first: number;
+  after?: string | null;
 }
 
 export interface SearchProductsResponse {
@@ -29,5 +35,10 @@ export interface SearchProductsResponse {
     edges: Array<{
       node: ShopifyApiProduct;
     }>;
+    pageInfo: {
+      hasNextPage: boolean;
+      hasPreviousPage: boolean;
+      endCursor: string;
+    };
   };
 }
