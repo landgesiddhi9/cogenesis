@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useCart } from "../hooks/useCart";
 import { useWishlist } from "../hooks/useWishlist";
 import { getFeaturedProducts } from "../services/product.service";
+import { shopifyImageUrl } from "../utils/shopifyImage";
 import type { ShopifyProduct } from "../types";
 import ProductCard from "../components/ProductCard";
 
@@ -223,7 +224,7 @@ const CartPage = () => {
                   >
                     <div className="w-24 h-28 flex-shrink-0 bg-[#f0ede8] overflow-hidden">
                       <img
-                        src={line.merchandise.product.featuredImage?.url}
+                        src={shopifyImageUrl(line.merchandise.product.featuredImage?.url ?? "", 200)}
                         alt={line.merchandise.product.featuredImage?.altText ?? ""}
                         className="w-full h-full object-cover object-top"
                       />

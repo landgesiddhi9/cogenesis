@@ -12,7 +12,7 @@ import {
   type GetProductByHandleVariables,
 } from "../graphql/queries/getProductByHandle";
 import type { ShopifyApiProduct } from "../types/shopify-api";
-import type { ShopifyProduct } from "../types";
+import type { PageInfo, ShopifyProduct } from "../types";
 
 const DEFAULT_FEATURED_PRODUCTS_LIMIT = 12;
 
@@ -24,6 +24,7 @@ export interface ProductServiceResult {
 export interface FeaturedProductsResult {
   products: ShopifyProduct[];
   raw: ShopifyApiProduct[];
+  pageInfo: PageInfo;
 }
 
 function mapProductNode(
@@ -57,16 +58,17 @@ export async function getProductByHandle(
 export async function getFeaturedProducts(
   first: number = DEFAULT_FEATURED_PRODUCTS_LIMIT,
   options: ShopifyRequestOptions = {},
+  after?: string | null,
 ): Promise<FeaturedProductsResult> {
   const data = await shopifyRequest<
     GetFeaturedProductsResponse,
     GetFeaturedProductsVariables
-  >(GET_FEATURED_PRODUCTS_QUERY, { first }, options);
+  >(GET_FEATURED_PRODUCTS_QUERY, { first, after: after ?? undefined }, options);
 
   const raw = data.products.edges.map(({ node }) => node);
   const products = raw
     .map((node, index) => mapProductNode(node, `featured-product:${index}`))
     .filter((product): product is ShopifyProduct => product !== null);
 
-  return { products, raw };
+  return { products, raw, pageInfo: data.products.pageInfo };
 }

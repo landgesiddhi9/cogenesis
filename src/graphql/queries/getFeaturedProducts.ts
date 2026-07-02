@@ -8,12 +8,17 @@ export const GET_FEATURED_PRODUCTS_QUERY = `
   ${PRODUCT_VARIANT_FIELDS_FRAGMENT}
   ${PRODUCT_FIELDS_FRAGMENT}
 
-  query GetFeaturedProducts($first: Int!) {
-    products(first: $first, sortKey: BEST_SELLING) {
+  query GetFeaturedProducts($first: Int!, $after: String) {
+    products(first: $first, after: $after, sortKey: BEST_SELLING) {
       edges {
         node {
           ...ProductFields
         }
+      }
+      pageInfo {
+        hasNextPage
+        hasPreviousPage
+        endCursor
       }
     }
   }
@@ -21,6 +26,7 @@ export const GET_FEATURED_PRODUCTS_QUERY = `
 
 export interface GetFeaturedProductsVariables {
   first: number;
+  after?: string | null;
 }
 
 export interface GetFeaturedProductsResponse {
@@ -28,5 +34,10 @@ export interface GetFeaturedProductsResponse {
     edges: Array<{
       node: ShopifyApiProduct;
     }>;
+    pageInfo: {
+      hasNextPage: boolean;
+      hasPreviousPage: boolean;
+      endCursor: string;
+    };
   };
 }

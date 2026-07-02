@@ -1,3 +1,10 @@
+// Shared pagination info for cursor-based product queries
+export interface PageInfo {
+  hasNextPage: boolean;
+  hasPreviousPage: boolean;
+  endCursor: string;
+}
+
 // Shopify Storefront API compatible interfaces
 // These interfaces mirror Shopify's data structures for seamless future integration
 

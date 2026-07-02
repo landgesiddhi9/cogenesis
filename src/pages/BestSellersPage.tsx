@@ -94,8 +94,6 @@ const BestSellersPage = () => {
 
   useEffect(() => {
     let active = true;
-    setLoading(true);
-
     getBestSellerProducts()
       .then((result) => {
         if (!active) return;

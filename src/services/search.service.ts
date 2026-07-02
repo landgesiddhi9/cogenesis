@@ -7,28 +7,30 @@ import {
   type SearchProductsVariables,
 } from "../graphql/queries/searchProducts";
 import type { ShopifyApiProduct } from "../types/shopify-api";
-import type { ShopifyProduct } from "../types";
+import type { PageInfo, ShopifyProduct } from "../types";
 
 const DEFAULT_SEARCH_LIMIT = 20;
 
 export interface SearchProductsResult {
   products: ShopifyProduct[];
   raw: ShopifyApiProduct[];
+  pageInfo: PageInfo;
 }
 
 export async function searchProducts(
   query: string,
   first: number = DEFAULT_SEARCH_LIMIT,
   options: ShopifyRequestOptions = {},
+  after?: string | null,
 ): Promise<SearchProductsResult> {
   if (!query.trim()) {
-    return { products: [], raw: [] };
+    return { products: [], raw: [], pageInfo: { hasNextPage: false, hasPreviousPage: false, endCursor: "" } };
   }
 
   const data = await shopifyRequest<
     SearchProductsResponse,
     SearchProductsVariables
-  >(SEARCH_PRODUCTS_QUERY, { query: query.trim(), first }, options);
+  >(SEARCH_PRODUCTS_QUERY, { query: query.trim(), first, after: after ?? undefined }, options);
 
   const raw = data.products.edges.map(({ node }) => node);
   const products = raw
@@ -47,5 +49,5 @@ export async function searchProducts(
     })
     .filter((product): product is ShopifyProduct => product !== null);
 
-  return { products, raw };
+  return { products, raw, pageInfo: data.products.pageInfo };
 }

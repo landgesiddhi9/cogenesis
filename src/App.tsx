@@ -1,5 +1,5 @@
-import { useLocation, useParams } from "react-router-dom";
-import { Routes, Route, Navigate } from "react-router-dom";
+import { lazy, Suspense } from "react";
+import { Routes, Route, Navigate, useLocation, useParams } from "react-router-dom";
 
 import Navbar from "./components/Navbar";
 import Hero from "./components/Hero";
@@ -12,25 +12,26 @@ import GallerySection from "./components/GallerySection";
 import VideoSection from "./components/VideoSection";
 import Footer from "./components/Footer";
 
-import CollectionPage from "./pages/CollectionPage";
-import LaunchingSoonPage from "./pages/LaunchingSoonPage";
-import FAQPage from "./pages/FAQPage";
-import ProductDetailPage from "./pages/ProductDetailPage";
-import BestSellersPage from "./pages/BestSellersPage";
-import CollectionsPage from "./pages/ViewAllPage";
-import WomenLaunchingSoonPage from "./pages/WomenLaunchingSoonPage";
-
-import LoginPage from "./components/LoginPage";
-import WishlistPage from "./pages/WishlistPage";
-import CartPage from "./pages/CartPage";
-import NewArrivalsPage from "./pages/NewArrivalsPage";
-import AccountPage from "./pages/AccountPage";
-import SearchPage from "./pages/SearchPage";
-import PurchasesPage from "./pages/PurchasesPage";
-import ReturnsPage from "./pages/ReturnsPage";
-
+import ErrorBoundary from "./components/ErrorBoundary";
+import LoadingFallback from "./components/LoadingFallback";
 import AIAssistant from "./components/AIAssistant";
 import { CartToast } from "./components/CartToast";
+
+const CollectionPage = lazy(() => import("./pages/CollectionPage"));
+const LaunchingSoonPage = lazy(() => import("./pages/LaunchingSoonPage"));
+const FAQPage = lazy(() => import("./pages/FAQPage"));
+const ProductDetailPage = lazy(() => import("./pages/ProductDetailPage"));
+const BestSellersPage = lazy(() => import("./pages/BestSellersPage"));
+const CollectionsPage = lazy(() => import("./pages/ViewAllPage"));
+const WomenLaunchingSoonPage = lazy(() => import("./pages/WomenLaunchingSoonPage"));
+const LoginPage = lazy(() => import("./components/LoginPage"));
+const WishlistPage = lazy(() => import("./pages/WishlistPage"));
+const CartPage = lazy(() => import("./pages/CartPage"));
+const NewArrivalsPage = lazy(() => import("./pages/NewArrivalsPage"));
+const AccountPage = lazy(() => import("./pages/AccountPage"));
+const SearchPage = lazy(() => import("./pages/SearchPage"));
+const PurchasesPage = lazy(() => import("./pages/PurchasesPage"));
+const ReturnsPage = lazy(() => import("./pages/ReturnsPage"));
 
 const CollectionRouteWrapper = () => {
   const { handle } = useParams<{ handle: string }>();
@@ -51,7 +52,9 @@ function App() {
       <Navbar />
 
       <main>
-        <Routes>
+        <ErrorBoundary>
+          <Suspense fallback={<LoadingFallback />}>
+            <Routes>
           {/* Home */}
           <Route
             path="/"
@@ -161,6 +164,8 @@ function App() {
           {/* 404 */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
+          </Suspense>
+        </ErrorBoundary>
       </main>
 
       {!isLoginPage && <Footer />}
