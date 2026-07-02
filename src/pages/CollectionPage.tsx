@@ -123,7 +123,7 @@ const CollectionProductCard = ({
         {/* Wishlist button */}
         <button
           onClick={handleWishlistToggle}
-          className={`absolute top-5 right-5 z-20 p-0 bg-transparent border-none cursor-pointer transition-opacity duration-300 ${isHovered
+          className={`absolute top-2 right-2 md:top-5 md:right-5 z-20 p-0 bg-transparent border-none cursor-pointer transition-opacity duration-300 ${isHovered
             ? "opacity-100"
             : "opacity-0 group-hover/image:opacity-100"
             }`}
@@ -146,30 +146,26 @@ const CollectionProductCard = ({
 
       </div>
 
-          {/* Price */}
-          <SalePrice
-            price={product.priceRange.minVariantPrice.amount}
-            compareAtPrice={getBestCompareAtPrice(product)}
-            className="text-center"
-          />
+      {/* Price */}
+      <SalePrice
+        price={product.priceRange.minVariantPrice.amount}
+        compareAtPrice={getBestCompareAtPrice(product)}
+        className="text-left md:text-center mt-3"
+      />
+
       {/* Product info */}
-      <div className="pt-5 pb-4 px-0">
+      <div className="pt-1 pb-3 md:pt-3 md:pb-4 px-0">
         {/* Product name */}
-        <h3 className="text-center font-medium text-[14px] md:text-[15px] tracking-wide text-charcoal mb-2 font-sans">
+        <h3 className="text-left md:text-center font-medium text-[11px] md:text-[12px] tracking-wide text-charcoal/50 md:text-charcoal mb-[3px] font-sans">
           {product.title}
         </h3>
 
         {/* Fabric */}
         {fabric && (
-          <p className="text-center text-[12px] md:text-[13px] tracking-wide text-warm-brown/70 mb-3 font-sans">
+          <p className="text-left md:text-center text-[9px] md:text-[12px] tracking-wide text-charcoal/50 md:text-warm-brown/70 mb-[3px] font-sans">
             {fabric}
           </p>
         )}
-
-        {/* Price */}
-        <p className="font-sans text-[12px] text-[#888] mt-1 tracking-[0.02em] tabular-nums">
-          ₹{Number(product.priceRange.minVariantPrice.amount).toLocaleString("en-IN")}
-        </p>
 
         {/* Color swatches */}
         {colors.length > 0 && (
@@ -372,7 +368,7 @@ const CollectionPage = ({ collectionHandle }: CollectionPageProps) => {
       {/* Collection header - refined */}
       <div className="max-w-7xl mx-auto px-4 md:px-8 py-16 md:py-24">
         {/* Title with serif typography */}
-        <div className="text-center mb-12">
+        <div className="text-left md:text-center mb-6">
           <h1
             className="text-4xl md:text-5xl font-light tracking-wide text-charcoal mb-6"
             style={{
@@ -383,16 +379,10 @@ const CollectionPage = ({ collectionHandle }: CollectionPageProps) => {
           >
             {toTitleCase(collectionTitle)}
           </h1>
-          {/* Subtle divider */}
-          <div className="flex items-center justify-center gap-4">
-            <div className="shrink-0 w-8 h-px bg-stone/20"></div>
-            <div className="shrink-0 w-2 h-2 rounded-full bg-stone/20"></div>
-            <div className="shrink-0 w-8 h-px bg-stone/20"></div>
-          </div>
         </div>
 
         {/* Filter bar */}
-        <div className="border-t border-stone/10 py-4 mb-12 flex items-center justify-between">
+        <div className="border-t border-stone/10 py-4 mb-2 md:mb-12 flex items-center justify-between">
           <div className="text-sm text-charcoal/70 tracking-wide font-sans">
             Products ({collection.products.length})
             {productsLoading && (
@@ -410,7 +400,7 @@ const CollectionPage = ({ collectionHandle }: CollectionPageProps) => {
 
             <div className="flex items-center gap-2">
               <label className="text-sm text-charcoal/70 tracking-wide font-sans">
-                Sort:
+                Sort
               </label>
               <SortDropdown
                 options={sortOptions}
@@ -422,7 +412,7 @@ const CollectionPage = ({ collectionHandle }: CollectionPageProps) => {
         </div>
 
         {/* Product grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
+        <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-2 md:gap-8">
           {collection.products.map((product, index) => (
             <CollectionProductCard
               key={product.id}
