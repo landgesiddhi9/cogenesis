@@ -6,6 +6,7 @@ import { getFeaturedProducts } from '../services/product.service';
 import type { ShopifyProduct } from '../types';
 import SalePrice from './SalePrice';
 import { getBestCompareAtPrice } from '../utils/price';
+import { shopifyImageUrl, shopifyImageSrcSet } from '../utils/shopifyImage';
 import { useWishlist } from '../hooks/useWishlist';
 
 const hiddenScrollbarStyle: CSSProperties = { scrollbarWidth: 'none' };
@@ -20,6 +21,7 @@ const SearchOverlay: React.FC<Props> = ({ isOpen, onClose }) => {
   const { isWishlisted, toggleWishlist: toggleWishlistById } = useWishlist();
   const railRef = useRef<HTMLDivElement | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
+  const [prevIsOpen, setPrevIsOpen] = useState(isOpen);
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<ShopifyProduct[]>([]);
   const [loading, setLoading] = useState(false);
@@ -34,13 +36,22 @@ const SearchOverlay: React.FC<Props> = ({ isOpen, onClose }) => {
   const isAbortError = (error: unknown) =>
     error instanceof DOMException && error.name === 'AbortError';
 
+  if (isOpen !== prevIsOpen) {
+    setPrevIsOpen(isOpen);
+    if (isOpen) {
+      setQuery('');
+      setSearched(false);
+      setError(null);
+      setInitialLoading(true);
+    }
+  }
+
   // Load featured products on mount
   useEffect(() => {
     if (!isOpen) return;
     const requestId = ++featuredRequestIdRef.current;
     const controller = new AbortController();
 
-    setInitialLoading(true);
     getFeaturedProducts(7, { signal: controller.signal })
       .then(({ products }) => {
         if (requestId !== featuredRequestIdRef.current) return;
@@ -59,13 +70,9 @@ const SearchOverlay: React.FC<Props> = ({ isOpen, onClose }) => {
     };
   }, [isOpen]);
 
-  // Reset state when overlay opens
+  // Focus after a short delay to allow the animation to start
   useEffect(() => {
     if (isOpen) {
-      setQuery('');
-      setSearched(false);
-      setError(null);
-      // Focus after a short delay to allow the animation to start
       setTimeout(() => inputRef.current?.focus(), 100);
     }
   }, [isOpen]);
@@ -90,7 +97,6 @@ const SearchOverlay: React.FC<Props> = ({ isOpen, onClose }) => {
     const trimmed = query.trim();
     if (!trimmed) {
       searchRequestIdRef.current += 1;
-      setSearched(false);
       return;
     }
 
@@ -133,7 +139,11 @@ const SearchOverlay: React.FC<Props> = ({ isOpen, onClose }) => {
   const onOverlayClick = () => onClose();
 
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setQuery(event.target.value);
+    const value = event.target.value;
+    if (value.trim() === '') {
+      setSearched(false);
+    }
+    setQuery(value);
   };
 
   const hasText = query.trim().length > 0;
@@ -264,7 +274,9 @@ const SearchOverlay: React.FC<Props> = ({ isOpen, onClose }) => {
                   >
                     <div className="relative overflow-hidden bg-[#f5f0eb] aspect-[3/4]">
                       <img
-                        src={p.featuredImage.url}
+                        src={shopifyImageUrl(p.featuredImage.url, 400)}
+                        srcSet={shopifyImageSrcSet(p.featuredImage.url, [400, 800])}
+                        sizes="(max-width: 768px) 50vw, 380px"
                         alt={p.featuredImage.altText}
                         className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.02]"
                         loading="lazy"

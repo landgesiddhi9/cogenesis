@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import type { ShopifyImage } from "../types";
 import ProductImageNav from "./ProductImageNav";
+import { shopifyImageUrl, shopifyImageSrcSet } from "../utils/shopifyImage";
 
 interface ProductImageCarouselProps {
   images: ShopifyImage[];
@@ -73,7 +74,9 @@ const ProductImageCarousel = ({
       {previousImage && (
         <img
           key={"previous-" + previousImage.url + "-" + currentImage.url}
-          src={previousImage.url}
+          src={shopifyImageUrl(previousImage.url, 400)}
+          srcSet={shopifyImageSrcSet(previousImage.url, [400, 800])}
+          sizes="(max-width: 768px) 50vw, 300px"
           alt={previousImage.altText || fallbackAlt}
           className={
             "product-gallery-image product-gallery-image--exit-" +
@@ -91,7 +94,9 @@ const ProductImageCarousel = ({
 
       <img
         key={"current-" + currentImage.url}
-        src={currentImage.url}
+        src={shopifyImageUrl(currentImage.url, 400)}
+        srcSet={shopifyImageSrcSet(currentImage.url, [400, 800])}
+        sizes="(max-width: 768px) 50vw, 300px"
         alt={currentImage.altText || fallbackAlt}
         className={
           "product-gallery-image " +

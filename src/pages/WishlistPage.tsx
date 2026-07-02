@@ -69,11 +69,15 @@ const WishlistPage = () => {
   const [popularProducts, setPopularProducts] = useState<ShopifyProduct[]>([]);
   const [loading, setLoading] = useState(true);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const [prevIds, setPrevIds] = useState(wishlistIds);
+
+  if (wishlistIds !== prevIds) {
+    setPrevIds(wishlistIds);
+    setLoading(true);
+  }
 
   useEffect(() => {
     let active = true;
-
-    setLoading(true);
 
     Promise.all([
       getWishlistProductsByIds(wishlistIds),

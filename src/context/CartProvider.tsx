@@ -12,7 +12,7 @@ interface CartProviderProps {
 export const CartProvider = ({ children }: CartProviderProps) => {
   const [cart, setCart] = useState<ShopifyCart | null>(null);
   const [cartId, setCartId] = useState<string | null>(() => readCartId());
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [processing, setProcessing] = useState(false);
   const processingRef = useRef(false);
@@ -26,8 +26,7 @@ export const CartProvider = ({ children }: CartProviderProps) => {
 
     let active = true;
 
-    setLoading(true);
-    setError(null);
+    setTimeout(() => setError(null), 0);
 
     serviceGetCart(storedCartId)
       .then((result) => {

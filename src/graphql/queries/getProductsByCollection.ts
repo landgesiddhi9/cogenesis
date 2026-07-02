@@ -11,6 +11,7 @@ export const GET_PRODUCTS_BY_COLLECTION_QUERY = `
   query GetProductsByCollection(
     $handle: String!,
     $first: Int!,
+    $after: String,
     $sortKey: ProductCollectionSortKeys,
     $reverse: Boolean,
     $filters: [ProductFilter!]
@@ -18,11 +19,16 @@ export const GET_PRODUCTS_BY_COLLECTION_QUERY = `
     collection(handle: $handle) {
       id
       handle
-      products(first: $first, sortKey: $sortKey, reverse: $reverse, filters: $filters) {
+      products(first: $first, after: $after, sortKey: $sortKey, reverse: $reverse, filters: $filters) {
         edges {
           node {
             ...ProductFields
           }
+        }
+        pageInfo {
+          hasNextPage
+          hasPreviousPage
+          endCursor
         }
       }
     }
@@ -60,6 +66,7 @@ export interface ShopifyApiProductFilter {
 export interface GetProductsByCollectionVariables {
   handle: string;
   first: number;
+  after?: string | null;
   sortKey?: ShopifyProductSortKeys | null;
   reverse?: boolean | null;
   filters?: ShopifyApiProductFilter[] | null;
@@ -73,6 +80,11 @@ export interface GetProductsByCollectionResponse {
       edges: Array<{
         node: ShopifyApiProduct;
       }>;
+      pageInfo: {
+        hasNextPage: boolean;
+        hasPreviousPage: boolean;
+        endCursor: string;
+      };
     };
   } | null;
 }
