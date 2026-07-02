@@ -209,17 +209,21 @@ const CollectionPage = ({ collectionHandle }: CollectionPageProps) => {
 
   const lastFetchRef = useRef(0);
   const initializedHandle = useRef<string | null>(null);
+  const [prevHandle, setPrevHandle] = useState(collectionHandle);
 
-  // Initial load: collection metadata + products
-  useEffect(() => {
-    let active = true;
-
+  if (collectionHandle !== prevHandle) {
+    setPrevHandle(collectionHandle);
     setLoading(true);
     setError(null);
     setCollection(null);
     setRawProductsByHandle({});
     setSortBy("featured");
     setActiveFilters(null);
+  }
+
+  // Initial load: collection metadata + products
+  useEffect(() => {
+    let active = true;
 
     getCollectionByHandle(collectionHandle)
       .then(({ collection: data, raw }) => {

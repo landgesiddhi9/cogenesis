@@ -114,6 +114,12 @@ const CollectionsPage = () => {
 
   const [collections, setCollections] = useState<ShopifyCollection[]>([]);
   const [activeTab, setActiveTab] = useState("all");
+  const [prevTab, setPrevTab] = useState(activeTab);
+
+  if (activeTab !== prevTab) {
+    setPrevTab(activeTab);
+    setLoading(true);
+  }
 
   const tabs = buildCollectionTabs(collections);
 
@@ -138,7 +144,6 @@ const CollectionsPage = () => {
 
   useEffect(() => {
     let active = true;
-    setLoading(true);
 
     fetchProductsForTab(activeTab)
       .then((result) => {

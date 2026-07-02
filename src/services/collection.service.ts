@@ -22,18 +22,20 @@ import {
   type GetAllCollectionsVariables,
 } from "../graphql/queries/getAllCollections";
 import type { ShopifyApiCollection, ShopifyApiProduct } from "../types/shopify-api";
-import type { ShopifyCollection, ShopifyProduct } from "../types";
+import type { PageInfo, ShopifyCollection, ShopifyProduct } from "../types";
 
 const DEFAULT_COLLECTION_PRODUCTS_LIMIT = 250;
 
 export interface CollectionServiceResult {
   collection: ShopifyCollection | null;
   raw: ShopifyApiCollection | null;
+  pageInfo: PageInfo;
 }
 
 export interface CollectionProductsResult {
   products: ShopifyProduct[];
   raw: ShopifyApiProduct[];
+  pageInfo: PageInfo;
 }
 
 function mapCollectionNode(
@@ -62,21 +64,27 @@ export async function getCollectionByHandle(
   handle: string,
   first: number = DEFAULT_COLLECTION_PRODUCTS_LIMIT,
   options: ShopifyRequestOptions = {},
+  after?: string | null,
 ): Promise<CollectionServiceResult> {
   const data = await shopifyRequest<
     GetCollectionByHandleResponse,
     GetCollectionByHandleVariables
-  >(GET_COLLECTION_BY_HANDLE_QUERY, { handle, first }, options);
+  >(GET_COLLECTION_BY_HANDLE_QUERY, { handle, first, after: after ?? undefined }, options);
 
   const raw = data.collection;
   const collection = mapCollectionNode(raw);
 
-  return { collection, raw };
+  return {
+    collection,
+    raw,
+    pageInfo: raw?.products?.pageInfo ?? { hasNextPage: false, hasPreviousPage: false, endCursor: "" },
+  };
 }
 
 export interface GetProductsByCollectionParams {
   handle: string;
   first?: number;
+  after?: string | null;
   sortKey?: ShopifyProductSortKeys | null;
   reverse?: boolean | null;
   filters?: ShopifyApiProductFilter[] | null;
@@ -86,9 +94,9 @@ export interface GetProductsByCollectionParams {
 export async function getProductsByCollection(
   params: GetProductsByCollectionParams,
 ): Promise<CollectionProductsResult> {
-  const { handle, first = DEFAULT_COLLECTION_PRODUCTS_LIMIT, sortKey, reverse, filters, options = {} } = params;
+  const { handle, first = DEFAULT_COLLECTION_PRODUCTS_LIMIT, after, sortKey, reverse, filters, options = {} } = params;
 
-  const variables: GetProductsByCollectionVariables = { handle, first };
+  const variables: GetProductsByCollectionVariables = { handle, first, after: after ?? undefined };
   if (sortKey) variables.sortKey = sortKey;
   if (reverse != null) variables.reverse = reverse;
   if (filters && filters.length > 0) variables.filters = filters;
@@ -117,7 +125,11 @@ export async function getProductsByCollection(
     })
     .filter((product): product is ShopifyProduct => product !== null);
 
-  return { products, raw };
+  return {
+    products,
+    raw,
+    pageInfo: data.collection?.products.pageInfo ?? { hasNextPage: false, hasPreviousPage: false, endCursor: "" },
+  };
 }
 
 export async function getAllCollections(
@@ -153,5 +165,5 @@ export async function getAllProducts(
     }),
   );
 
-  return { products, raw: [] };
+  return { products, raw: [], pageInfo: { hasNextPage: false, hasPreviousPage: false, endCursor: "" } };
 }

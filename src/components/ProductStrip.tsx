@@ -5,6 +5,7 @@ import { useWishlist } from "../hooks/useWishlist";
 import { getFeaturedProducts } from "../services/product.service";
 import SalePrice from "./SalePrice";
 import { getBestCompareAtPrice } from "../utils/price";
+import { shopifyImageUrl, shopifyImageSrcSet } from "../utils/shopifyImage";
 import type { ShopifyProduct } from "../types";
 
 const ProductCard = ({
@@ -42,7 +43,9 @@ const ProductCard = ({
       {/* Image */}
       <div className="aspect-[5/8] overflow-hidden media-cover relative">
         <img
-          src={product.featuredImage.url}
+          src={shopifyImageUrl(product.featuredImage.url, 400)}
+          srcSet={shopifyImageSrcSet(product.featuredImage.url, [400, 800])}
+          sizes="(max-width: 768px) 100vw, 360px"
           alt={product.featuredImage.altText}
           className="product-img object-top"
           loading="lazy"

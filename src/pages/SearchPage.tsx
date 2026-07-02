@@ -30,7 +30,6 @@ const SearchPage = () => {
     const requestId = ++featuredRequestIdRef.current;
     const controller = new AbortController();
 
-    setInitialLoading(true);
     getFeaturedProducts(7, { signal: controller.signal })
       .then(({ products }) => {
         if (requestId !== featuredRequestIdRef.current) return;
@@ -59,9 +58,7 @@ const SearchPage = () => {
   useEffect(() => {
     const trimmed = query.trim();
     if (!trimmed) {
-      // Restore featured products when query is cleared
       searchRequestIdRef.current += 1;
-      setSearched(false);
       return;
     }
 
@@ -102,7 +99,11 @@ const SearchPage = () => {
   }, [query]);
 
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setQuery(event.target.value);
+    const value = event.target.value;
+    if (value.trim() === '') {
+      setSearched(false);
+    }
+    setQuery(value);
   };
 
   const hasText = query.trim().length > 0;

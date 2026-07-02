@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
+import { shopifyImageUrl, shopifyImageSrcSet } from "../../utils/shopifyImage";
 
 interface QuickViewOverlayProps {
   images: string[];
@@ -80,7 +81,7 @@ const QuickViewOverlay = ({
             }`}
           >
             <img
-              src={url}
+              src={shopifyImageUrl(url, 200)}
               alt={`${productTitle} thumbnail ${idx + 1}`}
               className="w-full h-full object-cover"
             />
@@ -102,7 +103,9 @@ const QuickViewOverlay = ({
               className="w-full max-w-[80%] flex flex-col items-center"
             >
               <img
-                src={url}
+                src={shopifyImageUrl(url, 800)}
+                srcSet={shopifyImageSrcSet(url, [800, 1600])}
+                sizes="(max-width: 768px) 100vw, 800px"
                 alt={`${productTitle} - ${labels[idx]}`}
                 className="w-full h-auto object-contain"
               />

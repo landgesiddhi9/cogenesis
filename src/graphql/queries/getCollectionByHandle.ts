@@ -10,14 +10,19 @@ export const GET_COLLECTION_BY_HANDLE_QUERY = `
   ${COLLECTION_FIELDS_FRAGMENT}
   ${PRODUCT_FIELDS_FRAGMENT}
 
-  query GetCollectionByHandle($handle: String!, $first: Int!) {
+  query GetCollectionByHandle($handle: String!, $first: Int!, $after: String) {
     collection(handle: $handle) {
       ...CollectionFields
-      products(first: $first) {
+      products(first: $first, after: $after) {
         edges {
           node {
             ...ProductFields
           }
+        }
+        pageInfo {
+          hasNextPage
+          hasPreviousPage
+          endCursor
         }
       }
     }
@@ -27,6 +32,7 @@ export const GET_COLLECTION_BY_HANDLE_QUERY = `
 export interface GetCollectionByHandleVariables {
   handle: string;
   first: number;
+  after?: string | null;
 }
 
 export interface GetCollectionByHandleResponse {

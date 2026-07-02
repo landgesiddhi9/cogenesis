@@ -53,13 +53,14 @@ export interface ShopifyApiCollection {
   handle: string;
   description: string;
   image?: ShopifyApiImage | null;
-  products?: {
-    edges: Array<{
-      node: ShopifyApiProduct;
-    }>;
-    pageInfo?: {
-      hasNextPage: boolean;
-      endCursor?: string | null;
-    };
-  } | null;
+    products?: {
+      edges: Array<{
+        node: ShopifyApiProduct;
+      }>;
+      pageInfo?: {
+        hasNextPage: boolean;
+        hasPreviousPage: boolean;
+        endCursor: string;
+      };
+    } | null;
 }
