@@ -18,7 +18,7 @@ const OrderCard = ({ order }: { order: Order }) => {
   const itemCount = order.items.reduce((s, i) => s + i.quantity, 0);
 
   return (
-    <div className="border border-[#e4e1db] bg-white">
+    <div className="border border-[#e4e1db] bg-[#F8F7F5]">
       {/* Order header */}
       <div className="flex items-center justify-between px-5 py-3 border-b border-[#e4e1db]">
         <div className="flex items-center gap-4">

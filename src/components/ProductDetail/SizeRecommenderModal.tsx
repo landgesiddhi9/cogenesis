@@ -12,11 +12,11 @@ const SizeRecommenderModal = ({
   return (
     <div className="fixed inset-0 bg-black/40 z-50 flex items-end md:items-center justify-center">
       <div
-        className="bg-[#f7f5f1] w-full md:w-96 md:rounded-lg max-h-[90vh] overflow-y-auto"
+        className="bg-[#F8F7F5] w-full md:w-96 md:rounded-lg max-h-[90vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="sticky top-0 bg-[#f7f5f1] border-b border-stone/15 px-6 md:px-8 py-6 flex items-center justify-between">
+        <div className="sticky top-0 bg-[#F8F7F5] border-b border-stone/15 px-6 md:px-8 py-6 flex items-center justify-between">
           <h2
             className="text-charcoal"
             style={{

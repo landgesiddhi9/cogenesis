@@ -89,11 +89,15 @@ const formatPrice = (amount: string, currency: string) => {
 };
 
 // ── Cart page ─────────────────────────────────────────────────────────────────
+// Checkout: redirects to Shopify hosted checkout via cart.checkoutUrl.
+// Shopify Basic does not support custom Thank You page redirects.
+// See docs/shopify-checkout.md for details on future custom order success page.
 const CartPage = () => {
   const navigate = useNavigate();
   const { cart, updateCartLine, removeCartLine } = useCart();
   const { isWishlisted, toggleWishlist } = useWishlist();
   const [processingLines, setProcessingLines] = useState<Set<string>>(new Set());
+  const [checkoutLoading, setCheckoutLoading] = useState(false);
 
   // "May Interest You" strip state
   const stripRef = useRef<HTMLDivElement>(null);
@@ -203,7 +207,7 @@ const CartPage = () => {
   const hasItems = cart && cart.lines.length > 0;
 
   return (
-    <main className="bg-[#F7F5F2] min-h-[100svh] pb-24 flex flex-col">
+    <main className="bg-[#F8F7F5] min-h-[100svh] pb-24 flex flex-col">
       <div className="h-14 md:h-16" />
 
       {hasItems ? (
@@ -283,7 +287,7 @@ const CartPage = () => {
 
               {/* Order summary */}
               <div className="w-full lg:w-80">
-                <div className="bg-white p-6">
+                <div className="bg-[#F8F7F5] p-6">
                   <h2 className="font-sans text-[12px] font-semibold uppercase tracking-[0.15em] text-[#111] mb-5">
                     Order Summary
                   </h2>
@@ -313,16 +317,15 @@ const CartPage = () => {
 
                     <button
                       type="button"
+                      disabled={!cart?.checkoutUrl || checkoutLoading}
                       onClick={() => {
-                        if (cart.checkoutUrl) {
-                          window.open(cart.checkoutUrl, "_blank");
-                        } else {
-                          alert("Checkout URL is not available. Please try again.");
-                        }
+                        if (!cart?.checkoutUrl) return;
+                        setCheckoutLoading(true);
+                        window.location.href = cart.checkoutUrl;
                       }}
-                      className="w-full h-[52px] bg-[#111] text-white font-sans text-[12px] font-semibold uppercase tracking-[0.2em] hover:bg-[#2a2a2a] transition-colors duration-200 mt-6"
+                      className="w-full h-[52px] bg-[#111] text-white font-sans text-[12px] font-semibold uppercase tracking-[0.2em] hover:bg-[#2a2a2a] transition-colors duration-200 mt-6 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      Checkout
+                      {checkoutLoading ? "Redirecting..." : "Checkout"}
                     </button>
                   </div>
                 </div>
