@@ -3,6 +3,7 @@ import { getBestSellerProducts } from "../services/men.service";
 import SortDropdown from "../components/SortDropdown";
 import FilterPanel from "../components/FilterPanel";
 import LayoutSwitcher from "../components/LayoutSwitcher";
+import LayoutSwitcherDesktop from "../components/LayoutSwitcherDesktop";
 import ProductCard from "../components/ProductCard";
 import type { ShopifyProduct } from "../types";
 import type { ShopifyApiProductFilter, ShopifyProductSortKeys } from "../graphql/queries/getProductsByCollection";
@@ -86,7 +87,8 @@ function getSortedFilteredProducts(
 
 const BestSellersPage = () => {
   const [loading, setLoading] = useState(true);
-  const [columns, setColumns] = useState(2);
+  const [mobileColumns, setMobileColumns] = useState(2);
+  const [desktopColumns, setDesktopColumns] = useState(4);
   const [sortBy, setSortBy] = useState("best-selling");
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [activeFilters, setActiveFilters] = useState<ShopifyApiProductFilter[] | null>(null);
@@ -114,7 +116,14 @@ const BestSellersPage = () => {
     [allProducts, sortBy, activeFilters],
   );
 
-  const gridCols = columns === 1 ? "grid-cols-1" : "grid-cols-2";
+  const mobileGridCols = mobileColumns === 1 ? "grid-cols-1" : "grid-cols-2";
+  const desktopGridColsMap: Record<number, string> = {
+    2: "md:grid-cols-2",
+    4: "md:grid-cols-3 lg:grid-cols-4",
+    12: "md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 2xl:grid-cols-12",
+  };
+  const gridCols = `${mobileGridCols} ${desktopGridColsMap[desktopColumns]}`;
+  const gapClass = desktopColumns === 12 ? "gap-6 md:gap-2" : "gap-6 md:gap-8";
 
   const handleApplyFilters = (uiFilters: {
     size: string[];
@@ -185,7 +194,12 @@ const BestSellersPage = () => {
             </div>
           </div>
 
-          <LayoutSwitcher columns={columns} onChange={setColumns} />
+          <div className="md:hidden">
+            <LayoutSwitcher columns={mobileColumns} onChange={setMobileColumns} />
+          </div>
+          <div className="hidden md:flex">
+            <LayoutSwitcherDesktop columns={desktopColumns} onChange={setDesktopColumns} />
+          </div>
         </div>
 
         {loading ? (
@@ -197,7 +211,7 @@ const BestSellersPage = () => {
             <p className="text-center text-lg text-charcoal font-sans">No products found.</p>
           </div>
         ) : (
-          <div className={`grid ${gridCols} gap-6 md:gap-8`}>
+          <div className={`grid ${gridCols} ${gapClass}`}>
             {products.map((product, index) => (
               <ProductCard animate
                 key={product.id}
