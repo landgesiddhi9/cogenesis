@@ -7,6 +7,15 @@ import MobileMenu from "./MobileMenu";
 import { getSession, SESSION_EVENT } from "../utils/auth";
 import { useCart } from "../hooks/useCart";
 
+// ---- Unified animation timing ----
+// Same easing + duration for open and close, no asymmetric delays.
+// This is what makes the dropdown feel like one smooth motion
+// played forward (open) and backward (close), instead of two
+// different animations bolted together.
+const EASE = "cubic-bezier(0.22, 1, 0.36, 1)";
+const DURATION = 600;
+const NAV_BG_DURATION = 400;
+
 const Navbar = () => {
   // Images: Monogram.png and Logo.png are in public/images/
   // Branding: Monogram (h-15) + Logo (h-32) with 8-10px visible gap + color #5C3432 + trim margins for PNG padding
@@ -29,7 +38,6 @@ const Navbar = () => {
     window.addEventListener(SESSION_EVENT, sync);
     return () => window.removeEventListener(SESSION_EVENT, sync);
   }, []);
-
 
   // Helper: icon button class with active state (cherry-pick)
   const iconButtonClass = (isActive: boolean) =>
@@ -54,7 +62,7 @@ const Navbar = () => {
 
   // IntersectionObserver: hide bottom nav when footer enters viewport
   useEffect(() => {
-    const footer = document.getElementById('site-footer');
+    const footer = document.getElementById("site-footer");
     if (!footer) return;
 
     const observer = new IntersectionObserver(
@@ -65,7 +73,7 @@ const Navbar = () => {
         }
         setShowBottomNav(!entry.isIntersecting);
       },
-      { rootMargin: '0px 0px -90px 0px', threshold: 0 }
+      { rootMargin: "0px 0px -90px 0px", threshold: 0 },
     );
 
     observer.observe(footer);
@@ -74,7 +82,10 @@ const Navbar = () => {
 
   // Sync CSS variable for chatbot position
   useEffect(() => {
-    document.documentElement.style.setProperty('--bottom-nav-height', showBottomNav ? '56px' : '0px');
+    document.documentElement.style.setProperty(
+      "--bottom-nav-height",
+      showBottomNav ? "56px" : "0px",
+    );
   }, [showBottomNav]);
 
   // Lock body scroll when menu OR search overlay is open (preserve scroll position)
@@ -106,20 +117,16 @@ const Navbar = () => {
           } ${scrolled ? "backdrop-blur-md shadow-sm" : ""}`}
         style={{
           backgroundColor: menuOpen
-            ? '#FFF6ED'
+            ? "#FFF6ED"
             : scrolled
-              ? 'rgba(250, 248, 245, 0.9)'
-              : 'transparent',
+              ? "rgba(250, 248, 245, 0.9)"
+              : "transparent",
           borderBottom: menuOpen
-            ? '1px solid #D9D2C7'
+            ? "1px solid #D9D2C7"
             : scrolled
-              ? '1px solid rgba(122, 113, 104, 0.1)'
-              : '1px solid transparent',
-          transition: menuOpen
-            ? 'background-color 200ms cubic-bezier(0.22, 1, 0.36, 1), border-color 200ms cubic-bezier(0.22, 1, 0.36, 1)'
-            : scrolled
-              ? 'background-color 350ms cubic-bezier(0.22, 1, 0.36, 1) 450ms, border-color 350ms cubic-bezier(0.22, 1, 0.36, 1) 450ms'
-              : 'background-color 0ms, border-color 0ms',
+              ? "1px solid rgba(122, 113, 104, 0.1)"
+              : "1px solid transparent",
+          transition: `background-color ${NAV_BG_DURATION}ms ${EASE}, border-color ${NAV_BG_DURATION}ms ${EASE}`,
         }}
       >
         <div className="w-full px-5 md:px-8">
@@ -177,15 +184,13 @@ const Navbar = () => {
                 <img
                   src="/images/logo.png"
                   alt="COGENESIS"
-                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
                 />
               </div>
             </a>
 
             {/* Right-side icons — cherry-pick active-state version */}
-            <div
-              className="hidden md:flex items-center gap-4 md:gap-5 text-charcoal transition-opacity duration-300 opacity-100"
-            >
+            <div className="hidden md:flex items-center gap-4 md:gap-5 text-charcoal transition-opacity duration-300 opacity-100">
               {/* Search */}
               <button
                 className={iconButtonClass(activePath === "/search")}
@@ -284,9 +289,8 @@ const Navbar = () => {
 
       {/* Mobile bottom navigation — auto-hides when footer is visible */}
       <div
-        className={`md:hidden fixed bottom-0 left-0 right-0 z-40 backdrop-blur-2xl bg-[rgba(250,248,245,0.85)] border-t border-[rgba(122,113,104,0.1)] transition duration-[250ms] ease-out ${
-          showBottomNav ? 'translate-y-0 opacity-100' : 'translate-y-full opacity-0'
-        }`}
+        className={`md:hidden fixed bottom-0 left-0 right-0 z-40 backdrop-blur-2xl bg-[rgba(250,248,245,0.85)] border-t border-[rgba(122,113,104,0.1)] transition duration-[250ms] ease-out ${showBottomNav ? "translate-y-0 opacity-100" : "translate-y-full opacity-0"
+          }`}
         style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
       >
         <div className="flex items-center justify-around h-14 px-4">
@@ -366,11 +370,9 @@ const Navbar = () => {
               className="fixed inset-0 bg-black/20"
               style={{
                 opacity: menuOpen ? 1 : 0,
-                transition: menuOpen
-                  ? 'opacity 250ms cubic-bezier(0.22, 1, 0.36, 1)'
-                  : 'opacity 250ms cubic-bezier(0.22, 1, 0.36, 1) 550ms',
-                willChange: 'opacity',
-                pointerEvents: menuOpen ? 'auto' : 'none',
+                transition: `opacity ${DURATION}ms ${EASE}`,
+                willChange: "opacity",
+                pointerEvents: menuOpen ? "auto" : "none",
               }}
               onClick={() => setMenuOpen(false)}
             />
@@ -379,12 +381,10 @@ const Navbar = () => {
               className="flex justify-center"
               style={{
                 opacity: menuOpen ? 1 : 0,
-                transform: `translateY(${menuOpen ? '0px' : '-28px'})`,
-                transition: menuOpen
-                  ? 'opacity 250ms cubic-bezier(0.22, 1, 0.36, 1), transform 250ms cubic-bezier(0.22, 1, 0.36, 1)'
-                  : 'opacity 250ms cubic-bezier(0.22, 1, 0.36, 1) 550ms, transform 250ms cubic-bezier(0.22, 1, 0.36, 1) 550ms',
-                willChange: 'transform, opacity',
-                pointerEvents: menuOpen ? 'auto' : 'none',
+                transform: `translateY(${menuOpen ? "0px" : "-28px"})`,
+                transition: `opacity ${DURATION}ms ${EASE}, transform ${DURATION}ms ${EASE}`,
+                willChange: "transform, opacity",
+                pointerEvents: menuOpen ? "auto" : "none",
               }}
             >
               <MegaMenuPanel onNavigate={() => setMenuOpen(false)} isOpen={menuOpen} />
@@ -392,7 +392,11 @@ const Navbar = () => {
           </div>
 
           {/* Mobile drawer */}
-          <MobileMenu isOpen={menuOpen} onClose={() => setMenuOpen(false)} cartCount={cart?.totalQuantity ?? 0} />
+          <MobileMenu
+            isOpen={menuOpen}
+            onClose={() => setMenuOpen(false)}
+            cartCount={cart?.totalQuantity ?? 0}
+          />
         </>,
         document.body,
       )}
