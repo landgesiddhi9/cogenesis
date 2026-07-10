@@ -13,7 +13,7 @@ const EditorialGrid = () => {
         {/* Left column — collar detail image + text below */}
         <div
           ref={leftRef}
-          className={`bg-[#F5F0EB] flex flex-col h-full min-h-0 transition-all duration-1000 ${
+          className={`bg-[#F8F7F5] flex flex-col h-full min-h-0 transition-all duration-1000 ${
             leftInView
               ? "opacity-100 translate-y-0"
               : "opacity-0 translate-y-10"
@@ -44,7 +44,7 @@ const EditorialGrid = () => {
         {/* Right column — packaging image, full bleed on white */}
         <div
           ref={rightRef}
-          className={`bg-white flex h-full min-h-0 overflow-hidden transition-all duration-1000 delay-200 ${
+          className={`bg-[#F8F7F5] flex h-full min-h-0 overflow-hidden transition-all duration-1000 delay-200 ${
             rightInView
               ? "opacity-100 translate-y-0"
               : "opacity-0 translate-y-10"

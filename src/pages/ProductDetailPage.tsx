@@ -110,7 +110,7 @@ const ProductDetailPage = ({ productHandle }: ProductDetailPageProps) => {
 
   if (loading) {
     return (
-      <div className="w-full h-screen flex items-center justify-center bg-[#f7f5f1]">
+      <div className="w-full h-screen flex items-center justify-center bg-[#F8F7F5]">
         <p className="text-charcoal text-lg font-sans">Loading...</p>
       </div>
     );
@@ -118,7 +118,7 @@ const ProductDetailPage = ({ productHandle }: ProductDetailPageProps) => {
 
   if (!product) {
     return (
-      <div className="w-full h-screen flex items-center justify-center bg-[#f7f5f1]">
+      <div className="w-full h-screen flex items-center justify-center bg-[#F8F7F5]">
         <p className="text-charcoal text-lg font-sans">Product not found</p>
       </div>
     );
@@ -133,7 +133,7 @@ const ProductDetailPage = ({ productHandle }: ProductDetailPageProps) => {
     }, this piece combines timeless elegance with contemporary design. Perfect for the discerning gentleman who appreciates quality, durability, and understated sophistication.`;
 
   return (
-    <div className="bg-[#f7f5f1] min-h-screen">
+    <div className="bg-[#F8F7F5] min-h-screen">
       {/* Main Product Section with Sticky Info Panel */}
       <div className="max-w-[1600px] mx-auto px-6 md:px-12 lg:px-16 py-16 md:py-24">
         <div className="grid grid-cols-1 lg:grid-cols-[65%_35%] gap-12 lg:gap-20">
