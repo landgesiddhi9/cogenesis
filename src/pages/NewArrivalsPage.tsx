@@ -79,7 +79,7 @@ const NewArrivalsPage = () => {
   }, []);
 
   return (
-    <main className="bg-[#F8F7F5] min-h-[100svh] pb-24">
+    <main className="bg-ivory min-h-[100svh] pb-24">
       <div className="h-14 md:h-16" />
 
       {/* ── Page header ──────────────────────────────────────────────── */}
@@ -103,7 +103,7 @@ const NewArrivalsPage = () => {
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-4 gap-[1px] bg-[#e0ddd8]">
             {products.map((product) => (
-              <div key={product.id} className="bg-[#F8F7F5] p-0">
+              <div key={product.id} className="bg-ivory p-0">
                 <ProductCard
                   product={product}
                   imageChildren={<SizeSelector />}

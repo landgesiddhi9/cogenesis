@@ -87,12 +87,12 @@ const SizeGuideDrawer = ({
 
       {/* Drawer */}
       <div
-        className={`fixed top-0 right-0 h-screen w-full lg:w-[35%] bg-[#F8F7F5] z-50 overflow-y-auto transition-transform duration-300 ease-out ${
+        className={`fixed top-0 right-0 h-screen w-full lg:w-[35%] bg-ivory z-50 overflow-y-auto transition-transform duration-300 ease-out ${
           isOpen ? "translate-x-0" : "translate-x-full"
         }`}
       >
         {/* Header */}
-        <div className="sticky top-0 bg-[#F8F7F5] border-b border-stone/15 px-6 md:px-8 py-6 flex items-center justify-between">
+        <div className="sticky top-0 bg-ivory border-b border-stone/15 px-6 md:px-8 py-6 flex items-center justify-between">
           <h2
             className="text-charcoal"
             style={{

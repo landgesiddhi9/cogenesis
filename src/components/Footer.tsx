@@ -13,7 +13,7 @@ const Footer = () => {
   };
 
   return (
-    <footer className="bg-[#F8F7F5]" id="site-footer">
+    <footer className="bg-ivory border-t border-[#E7E2DA]" id="site-footer">
       {/* ── Mobile footer ── */}
       <div className="md:hidden px-5 pt-4 pb-3">
         {/* Newsletter */}

@@ -167,7 +167,7 @@ const SearchOverlay: React.FC<Props> = ({ isOpen, onClose }) => {
 
   const overlay = (
     <div
-      className={`fixed inset-0 z-[120] bg-[#F8F7F5] ${
+      className={`fixed inset-0 z-[120] bg-ivory ${
         isOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
       } transition-opacity duration-300`}
       role="dialog"
