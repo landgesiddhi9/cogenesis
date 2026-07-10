@@ -18,7 +18,7 @@ const statusColor = (status: ReturnRequest["status"]) => {
 
 const ReturnCard = ({ ret }: { ret: ReturnRequest }) => {
   return (
-    <div className="border border-[#e4e1db] bg-white">
+    <div className="border border-[#e4e1db] bg-[#F8F7F5]">
       {/* Return header */}
       <div className="flex items-center justify-between px-5 py-3 border-b border-[#e4e1db]">
         <div className="flex items-center gap-4">
