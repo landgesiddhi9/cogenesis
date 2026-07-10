@@ -117,9 +117,9 @@ const Navbar = () => {
           } ${scrolled ? "backdrop-blur-md shadow-sm" : ""}`}
         style={{
           backgroundColor: menuOpen
-            ? "#FFF6ED"
+            ? "#FAF8F4"
             : scrolled
-              ? "rgba(250, 248, 245, 0.9)"
+              ? "rgba(250, 248, 244, 0.9)"
               : "transparent",
           borderBottom: menuOpen
             ? "1px solid #D9D2C7"
@@ -190,7 +190,7 @@ const Navbar = () => {
             </a>
 
             {/* Right-side icons — cherry-pick active-state version */}
-            <div className="hidden md:flex items-center gap-4 md:gap-5 text-charcoal transition-opacity duration-300 opacity-100">
+            <div className="hidden md:flex items-center gap-[5px] md:gap-[10px] text-charcoal transition-opacity duration-300 opacity-100">
               {/* Search */}
               <button
                 className={iconButtonClass(activePath === "/search")}
@@ -199,8 +199,8 @@ const Navbar = () => {
                 onClick={() => navigate("/search")}
               >
                 <svg
-                  width="20"
-                  height="20"
+                  width="17"
+                  height="17"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
@@ -221,8 +221,8 @@ const Navbar = () => {
                 onClick={() => navigate(isLoggedIn ? "/account" : "/login")}
               >
                 <svg
-                  width="20"
-                  height="20"
+                  width="17"
+                  height="17"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
@@ -241,8 +241,8 @@ const Navbar = () => {
                 onClick={() => navigate("/wishlist")}
               >
                 <svg
-                  width="22"
-                  height="22"
+                  width="19"
+                  height="19"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
@@ -262,8 +262,8 @@ const Navbar = () => {
                 onClick={() => navigate("/cart")}
               >
                 <svg
-                  width="20"
-                  height="20"
+                  width="17"
+                  height="17"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
@@ -289,7 +289,7 @@ const Navbar = () => {
 
       {/* Mobile bottom navigation — auto-hides when footer is visible */}
       <div
-        className={`md:hidden fixed bottom-0 left-0 right-0 z-40 backdrop-blur-2xl bg-[rgba(250,248,245,0.85)] border-t border-[rgba(122,113,104,0.1)] transition duration-[250ms] ease-out ${showBottomNav ? "translate-y-0 opacity-100" : "translate-y-full opacity-0"
+        className={`md:hidden fixed bottom-0 left-0 right-0 z-40 backdrop-blur-2xl bg-[rgba(250,248,244,0.85)] border-t border-[rgba(122,113,104,0.1)] transition duration-[250ms] ease-out ${showBottomNav ? "translate-y-0 opacity-100" : "translate-y-full opacity-0"
           }`}
         style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
       >

@@ -18,7 +18,7 @@ const statusColor = (status: ReturnRequest["status"]) => {
 
 const ReturnCard = ({ ret }: { ret: ReturnRequest }) => {
   return (
-    <div className="border border-[#e4e1db] bg-[#F8F7F5]">
+    <div className="border border-[#e4e1db] bg-ivory">
       {/* Return header */}
       <div className="flex items-center justify-between px-5 py-3 border-b border-[#e4e1db]">
         <div className="flex items-center gap-4">
@@ -68,7 +68,7 @@ const ReturnCard = ({ ret }: { ret: ReturnRequest }) => {
       </div>
 
       {/* Reason + status info */}
-      <div className="px-5 py-2.5 bg-[#faf8f5] border-t border-[#e4e1db] space-y-1">
+      <div className="px-5 py-2.5 bg-ivory border-t border-[#e4e1db] space-y-1">
         <p className="font-sans text-[11px] text-[#888]">
           Reason: <span className="text-[#555]">{ret.reason}</span>
         </p>

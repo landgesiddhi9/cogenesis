@@ -61,7 +61,7 @@ const QuickViewOverlay = ({
   return (
     <div
       ref={overlayRef}
-      className="fixed inset-0 z-50 flex bg-[#F8F7F5]"
+      className="fixed inset-0 z-50 flex bg-ivory"
       style={{ animation: "fadeIn 0.25s ease" }}
       onMouseLeave={onClose}
     >
