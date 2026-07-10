@@ -36,7 +36,7 @@ const AIAssistant = () => {
 
       {/* Drawer */}
       <div
-        className={`fixed top-0 right-0 z-50 h-full w-[400px] max-w-[90vw] bg-[#faf8f5] shadow-[-4px_0_32px_rgba(0,0,0,0.08)] transform transition-transform duration-400 ease-out ${
+        className={`fixed top-0 right-0 z-50 h-full w-[400px] max-w-[90vw] bg-ivory shadow-[-4px_0_32px_rgba(0,0,0,0.08)] transform transition-transform duration-400 ease-out ${
           open ? "translate-x-0" : "translate-x-full"
         }`}
       >
