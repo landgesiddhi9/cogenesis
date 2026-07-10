@@ -207,7 +207,7 @@ const CartPage = () => {
   const hasItems = cart && cart.lines.length > 0;
 
   return (
-    <main className="bg-[#F7F5F2] min-h-[100svh] pb-24 flex flex-col">
+    <main className="bg-[#F8F7F5] min-h-[100svh] pb-24 flex flex-col">
       <div className="h-14 md:h-16" />
 
       {hasItems ? (
@@ -287,7 +287,7 @@ const CartPage = () => {
 
               {/* Order summary */}
               <div className="w-full lg:w-80">
-                <div className="bg-white p-6">
+                <div className="bg-[#F8F7F5] p-6">
                   <h2 className="font-sans text-[12px] font-semibold uppercase tracking-[0.15em] text-[#111] mb-5">
                     Order Summary
                   </h2>

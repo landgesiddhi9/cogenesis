@@ -121,7 +121,7 @@ const SearchPage = () => {
   const showError = hasText && error;
 
   return (
-    <main className="bg-[#f8f8f8] min-h-0 md:min-h-[100svh] pt-20 md:pt-24 pb-4 md:pb-16">
+    <main className="bg-[#F8F7F5] min-h-0 md:min-h-[100svh] pt-20 md:pt-24 pb-4 md:pb-16">
       <div className="max-w-[1400px] mx-auto px-6 md:px-10 flex flex-col font-serif">
         {/* Search bar */}
         <div className="flex items-center justify-between pt-[0.3cm]">
