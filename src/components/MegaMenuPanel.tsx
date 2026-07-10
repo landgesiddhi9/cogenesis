@@ -88,13 +88,6 @@ const imageAnimationStyle = (isOpen: boolean) => ({
   willChange: "transform, opacity",
 });
 
-const submenuAnimationStyle = (isOpen: boolean) => ({
-  opacity: isOpen ? 1 : 0,
-  transform: isOpen ? "translateY(0)" : "translateY(6px)",
-  transition: `opacity ${DURATION}ms ${EASE}, transform ${DURATION}ms ${EASE}`,
-  transitionDelay: "300ms",
-  willChange: "transform, opacity",
-});
 
 const MegaMenuPanel = ({ onNavigate, isOpen = false }: MegaMenuPanelProps) => {
   const navigate = useNavigate();
