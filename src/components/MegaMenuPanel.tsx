@@ -173,7 +173,7 @@ const MegaMenuPanel = ({ onNavigate, isOpen = false }: MegaMenuPanelProps) => {
       }}
     >
       <div className="relative">
-        <div className="absolute inset-0 bg-gradient-to-t from-[#F8F7F5] via-[#F8F7F5]/60 to-transparent pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-t from-ivory via-ivory/60 to-transparent pointer-events-none" />
         <div className="relative z-10 flex flex-col items-center py-4 gap-[5px]">
           {items.map((item) => (
             <button
@@ -194,7 +194,7 @@ const MegaMenuPanel = ({ onNavigate, isOpen = false }: MegaMenuPanelProps) => {
   );
 
   return (
-    <div className="w-full bg-[#F8F7F5] h-[605px] overflow-hidden">
+    <div className="w-full bg-ivory h-[605px] overflow-hidden">
       <style>{`
         .mega-heading-line {
           position: relative;

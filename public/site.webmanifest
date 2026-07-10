@@ -4,8 +4,8 @@
   "description": "Luxury essentials crafted for the modern wardrobe.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#FAF8F5",
-  "theme_color": "#FAF8F5",
+  "background_color": "#FAF8F4",
+  "theme_color": "#FAF8F4",
   "icons": [
     {
       "src": "/android-chrome-192x192.png",

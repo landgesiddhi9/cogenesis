@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 
 interface SortOption {
   id: string;
@@ -13,28 +13,45 @@ interface SortDropdownProps {
 
 const SortDropdown = ({ options, selectedId, onSelect }: SortDropdownProps) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [closing, setClosing] = useState(false);
+  const closeTimerRef = useRef<ReturnType<typeof setTimeout>>();
   const dropdownRef = useRef<HTMLDivElement>(null);
   const selectedOption = options.find((opt) => opt.id === selectedId);
 
   useEffect(() => {
+    return () => {
+      if (closeTimerRef.current) clearTimeout(closeTimerRef.current);
+    };
+  }, []);
+
+  const startClose = useCallback(() => {
+    if (!isOpen || closing) return;
+    setClosing(true);
+    closeTimerRef.current = setTimeout(() => {
+      setIsOpen(false);
+      setClosing(false);
+    }, 550);
+  }, [isOpen, closing]);
+
+  useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node)
-      ) {
-        setIsOpen(false);
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        startClose();
       }
     };
 
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+  }, [startClose]);
 
   return (
     <div ref={dropdownRef} className="relative inline-block">
       {/* Dropdown trigger */}
       <button
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={() => {
+          if (isOpen) startClose();
+          else setIsOpen(true);
+        }}
         className="flex items-center gap-2 text-sm text-charcoal/70 hover:text-charcoal transition-colors tracking-wide"
       >
         <span className="hidden md:inline">{selectedOption?.label}</span>
@@ -54,11 +71,18 @@ const SortDropdown = ({ options, selectedId, onSelect }: SortDropdownProps) => {
       </button>
 
       {/* Dropdown panel */}
-      {isOpen && (
+      {(isOpen || closing) && (
         <div
-          className="absolute top-full right-0 mt-2 w-56 bg-ivory border border-stone/15 rounded-lg shadow-lg overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200 z-40"
+          className={`absolute top-full right-0 mt-2 w-56 bg-ivory border border-stone/15 rounded-lg shadow-lg overflow-hidden z-40 transition-all ${
+            closing
+              ? "opacity-0 translate-y-[-3px] scale-[0.98] pointer-events-none"
+              : "opacity-100 translate-y-0 scale-100"
+          }`}
           style={{
-            animation: "fadeIn 150ms ease-out",
+            transitionDuration: closing ? "550ms" : "200ms",
+            transitionTimingFunction: closing
+              ? "cubic-bezier(0.19, 1, 0.22, 1)"
+              : "cubic-bezier(0.16, 1, 0.3, 1)",
           }}
         >
           <div className="py-2">
@@ -67,7 +91,7 @@ const SortDropdown = ({ options, selectedId, onSelect }: SortDropdownProps) => {
                 key={option.id}
                 onClick={() => {
                   onSelect(option.id);
-                  setIsOpen(false);
+                  startClose();
                 }}
                 className={`w-full text-left px-4 py-3 text-sm transition-all duration-150 flex items-center justify-between ${
                   option.id === selectedId
@@ -94,18 +118,7 @@ const SortDropdown = ({ options, selectedId, onSelect }: SortDropdownProps) => {
         </div>
       )}
 
-      <style>{`
-        @keyframes fadeIn {
-          from {
-            opacity: 0;
-            transform: translateY(-8px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-      `}</style>
+
     </div>
   );
 };

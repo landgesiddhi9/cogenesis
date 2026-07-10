@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 @theme {
-    --color-ivory: #F8F7F5;
+    --color-ivory: #FAF8F4;
     --color-cream: #f5f0eb;
     --color-sand: #e8e0d8;
     --color-warm-gray: #a39890;
@@ -580,7 +580,7 @@ html::-webkit-scrollbar {
 }
 
 .brand-story-split__text {
-    background: #F8F7F5;
+    background: #FAF8F4;
     border-left: 1.5px solid #5a0f12;
     border-top: 1.5px solid #5a0f12;
     border-bottom: 1.5px solid #5a0f12;
