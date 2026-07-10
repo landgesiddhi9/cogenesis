@@ -117,7 +117,9 @@ const Navbar = () => {
               : '1px solid transparent',
           transition: menuOpen
             ? 'background-color 200ms cubic-bezier(0.22, 1, 0.36, 1), border-color 200ms cubic-bezier(0.22, 1, 0.36, 1)'
-            : 'background-color 200ms cubic-bezier(0.22, 1, 0.36, 1) 300ms, border-color 200ms cubic-bezier(0.22, 1, 0.36, 1) 300ms',
+            : scrolled
+              ? 'background-color 350ms cubic-bezier(0.22, 1, 0.36, 1) 450ms, border-color 350ms cubic-bezier(0.22, 1, 0.36, 1) 450ms'
+              : 'background-color 0ms, border-color 0ms',
         }}
       >
         <div className="w-full px-5 md:px-8">
@@ -365,8 +367,8 @@ const Navbar = () => {
               style={{
                 opacity: menuOpen ? 1 : 0,
                 transition: menuOpen
-                  ? 'opacity 650ms cubic-bezier(0.22, 1, 0.36, 1) 80ms'
-                  : 'opacity 650ms cubic-bezier(0.22, 1, 0.36, 1)',
+                  ? 'opacity 250ms cubic-bezier(0.22, 1, 0.36, 1)'
+                  : 'opacity 250ms cubic-bezier(0.22, 1, 0.36, 1) 550ms',
                 willChange: 'opacity',
                 pointerEvents: menuOpen ? 'auto' : 'none',
               }}
@@ -379,8 +381,8 @@ const Navbar = () => {
                 opacity: menuOpen ? 1 : 0,
                 transform: `translateY(${menuOpen ? '0px' : '-28px'})`,
                 transition: menuOpen
-                  ? 'opacity 650ms cubic-bezier(0.22, 1, 0.36, 1) 80ms, transform 650ms cubic-bezier(0.22, 1, 0.36, 1) 80ms'
-                  : 'opacity 650ms cubic-bezier(0.22, 1, 0.36, 1), transform 650ms cubic-bezier(0.22, 1, 0.36, 1)',
+                  ? 'opacity 250ms cubic-bezier(0.22, 1, 0.36, 1), transform 250ms cubic-bezier(0.22, 1, 0.36, 1)'
+                  : 'opacity 250ms cubic-bezier(0.22, 1, 0.36, 1) 550ms, transform 250ms cubic-bezier(0.22, 1, 0.36, 1) 550ms',
                 willChange: 'transform, opacity',
                 pointerEvents: menuOpen ? 'auto' : 'none',
               }}

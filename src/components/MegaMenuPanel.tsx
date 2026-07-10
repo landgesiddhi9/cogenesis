@@ -66,24 +66,24 @@ function useImageCrossfade(defaultSrc: string) {
 
 const headingAnimationStyle = (isOpen: boolean) => ({
     opacity: isOpen ? 1 : 0,
-    transform: isOpen ? 'translateY(0)' : 'translateY(15px)',
-    transition: 'opacity 500ms cubic-bezier(0.22, 1, 0.36, 1), transform 500ms cubic-bezier(0.22, 1, 0.36, 1)',
-    transitionDelay: isOpen ? '80ms' : '0ms',
+    transform: isOpen ? 'translateY(0)' : 'translateY(6px)',
+    transition: 'opacity 200ms cubic-bezier(0.22, 1, 0.36, 1), transform 200ms cubic-bezier(0.22, 1, 0.36, 1)',
+    transitionDelay: isOpen ? '250ms' : '400ms',
     willChange: 'transform, opacity',
   });
 
   const imageAnimationStyle = (isOpen: boolean) => ({
     opacity: isOpen ? 1 : 0,
-    transform: isOpen ? 'translateY(0)' : 'translateY(15px)',
-    transition: 'opacity 500ms cubic-bezier(0.22, 1, 0.36, 1), transform 500ms cubic-bezier(0.22, 1, 0.36, 1)',
-    transitionDelay: isOpen ? '200ms' : '0ms',
+    transform: isOpen ? 'scale(1)' : 'scale(0.98)',
+    transition: 'opacity 250ms cubic-bezier(0.22, 1, 0.36, 1), transform 250ms cubic-bezier(0.22, 1, 0.36, 1)',
+    transitionDelay: isOpen ? '450ms' : '200ms',
     willChange: 'transform, opacity',
   });
 
   const submenuAnimationStyle = (isOpen: boolean) => ({
     opacity: isOpen ? 1 : 0,
-    transition: 'opacity 400ms cubic-bezier(0.22, 1, 0.36, 1)',
-    transitionDelay: isOpen ? '280ms' : '0ms',
+    transition: 'opacity 200ms cubic-bezier(0.22, 1, 0.36, 1)',
+    transitionDelay: isOpen ? '700ms' : '0ms',
     willChange: 'opacity',
   });
 
@@ -105,7 +105,7 @@ const headingAnimationStyle = (isOpen: boolean) => ({
 
   const getOpacity = (column: ActiveColumn) => {
     if (activeColumn === null) return "opacity-100";
-    return activeColumn === column ? "opacity-100" : "opacity-[0.55]";
+    return activeColumn === column ? "opacity-100" : "opacity-[0.65]";
   };
 
   const handleSubcategoryHover = (column: ActiveColumn, image: string) => {
@@ -128,7 +128,7 @@ const headingAnimationStyle = (isOpen: boolean) => ({
             style={{
               opacity: img.fading ? 0 : 1,
               transform: img.fading ? "scale(1) translateY(-20px)" : "scale(1.02) translateY(-20px)",
-              transition: "opacity 300ms ease-in-out, transform 300ms ease-in-out",
+              transition: "opacity 350ms cubic-bezier(0.22, 1, 0.36, 1), transform 350ms cubic-bezier(0.22, 1, 0.36, 1)",
               willChange: "opacity, transform",
             }}
           />
@@ -162,9 +162,10 @@ const headingAnimationStyle = (isOpen: boolean) => ({
       }`}
       style={{
         top: "calc(72% - 17px)",
-        ...submenuAnimationStyle(isOpen),
-        opacity: isActive ? 1 : 0,
-        transition: "opacity 250ms cubic-bezier(0.22, 1, 0.36, 1)",
+        opacity: isActive && isOpen ? 1 : 0,
+        transition: isOpen
+          ? 'opacity 400ms cubic-bezier(0.22, 1, 0.36, 1)'
+          : 'opacity 150ms cubic-bezier(0.22, 1, 0.36, 1)',
       }}
     >
       <div className="relative">
@@ -173,7 +174,7 @@ const headingAnimationStyle = (isOpen: boolean) => ({
           {items.map((item) => (
             <button
               key={item.label}
-              className="font-display text-[18.5px] font-normal leading-[1.7] text-[#4A2E2A] hover:underline transition-all duration-200"
+              className="mega-sub-link font-display text-[18.5px] font-normal leading-[1.7] text-[#4A2E2A]"
               onMouseEnter={() => handleSubcategoryHover(column, item.image)}
               onClick={() => {
                 navigate(item.to);
@@ -190,16 +191,60 @@ const headingAnimationStyle = (isOpen: boolean) => ({
 
   return (
     <div className="w-full bg-[#FFF6ED] h-[605px] overflow-hidden">
-      <div className="max-w-[1400px] mx-auto pt-[40px] px-[64px] pb-[24px]">
+      <style>{`
+        .mega-heading-line {
+          position: relative;
+          display: inline-block;
+        }
+        .mega-heading-line::after {
+          content: '';
+          position: absolute;
+          bottom: -8px;
+          left: 0;
+          width: 100%;
+          height: 1.5px;
+          background-color: #4A2E2A;
+          transform: scaleX(0);
+          transform-origin: left center;
+          transition: transform 200ms cubic-bezier(0.22, 1, 0.36, 1) 250ms;
+        }
+        .mega-heading-line.is-open::after {
+          transform: scaleX(1);
+        }
+        .mega-sub-link {
+          position: relative;
+          transition: color 300ms cubic-bezier(0.22, 1, 0.36, 1), transform 300ms cubic-bezier(0.22, 1, 0.36, 1);
+        }
+        .mega-sub-link::after {
+          content: '';
+          position: absolute;
+          bottom: 0;
+          left: 0;
+          width: 100%;
+          height: 1px;
+          background-color: #4A2E2A;
+          transform: scaleX(0);
+          transform-origin: left center;
+          transition: transform 300ms cubic-bezier(0.22, 1, 0.36, 1);
+        }
+        .mega-sub-link:hover::after {
+          transform: scaleX(1);
+        }
+        .mega-sub-link:hover {
+          transform: translateX(3px);
+        }
+      `}</style>
+    <div className="max-w-[1400px] mx-auto pt-[40px] px-[64px] pb-[24px]">
         <div className="grid grid-cols-3 gap-16 items-start">
           {/* MEN */}
           <div
-            className={`flex flex-col items-center transition-opacity duration-250 ease-out ${getOpacity("men")}`}
+            className={`flex flex-col items-center ${getOpacity("men")}`}
             onMouseEnter={() => setActiveColumn("men")}
             onMouseLeave={() => setActiveColumn(null)}
+            style={{ transition: 'opacity 300ms cubic-bezier(0.22, 1, 0.36, 1)' }}
           >
-            <h2 className="mb-[44px]" style={headingAnimationStyle(isOpen)}>
-              <span className="inline-block border-b border-[#4A2E2A] pb-[1px] font-display text-[24px] font-normal tracking-[0.18em] text-[#4A2E2A] uppercase leading-none ">
+            <h2 className="mb-[28px]" style={headingAnimationStyle(isOpen)}>
+              <span className={`mega-heading-line${isOpen ? ' is-open' : ''} font-display text-[24px] font-normal tracking-[0.18em] text-[#4A2E2A] uppercase leading-none`}>
                 MEN
               </span>
             </h2>
@@ -211,12 +256,13 @@ const headingAnimationStyle = (isOpen: boolean) => ({
 
           {/* WOMEN */}
           <div
-            className={`flex flex-col items-center transition-opacity duration-250 ease-out ${getOpacity("women")}`}
+            className={`flex flex-col items-center ${getOpacity("women")}`}
             onMouseEnter={() => setActiveColumn("women")}
             onMouseLeave={() => setActiveColumn(null)}
+            style={{ transition: 'opacity 300ms cubic-bezier(0.22, 1, 0.36, 1)' }}
           >
-            <h2 className="mb-[44px]" style={headingAnimationStyle(isOpen)}>
-              <span className="inline-block border-b border-[#4A2E2A] pb-[1px] font-display text-[24px] font-normal tracking-[0.18em] text-[#4A2E2A] uppercase leading-none ">
+            <h2 className="mb-[28px]" style={headingAnimationStyle(isOpen)}>
+              <span className={`mega-heading-line${isOpen ? ' is-open' : ''} font-display text-[24px] font-normal tracking-[0.18em] text-[#4A2E2A] uppercase leading-none`}>
                 WOMEN
               </span>
             </h2>
@@ -228,12 +274,13 @@ const headingAnimationStyle = (isOpen: boolean) => ({
 
           {/* FABRIC */}
           <div
-            className={`flex flex-col items-center transition-opacity duration-250 ease-out ${getOpacity("fabric")}`}
+            className={`flex flex-col items-center ${getOpacity("fabric")}`}
             onMouseEnter={() => setActiveColumn("fabric")}
             onMouseLeave={() => setActiveColumn(null)}
+            style={{ transition: 'opacity 300ms cubic-bezier(0.22, 1, 0.36, 1)' }}
           >
-            <h2 className="mb-[44px]" style={headingAnimationStyle(isOpen)}>
-              <span className="inline-block border-b border-[#4A2E2A] pb-[1px] font-display text-[24px] font-normal tracking-[0.18em] text-[#4A2E2A] uppercase leading-none ">
+            <h2 className="mb-[28px]" style={headingAnimationStyle(isOpen)}>
+              <span className={`mega-heading-line${isOpen ? ' is-open' : ''} font-display text-[24px] font-normal tracking-[0.18em] text-[#4A2E2A] uppercase leading-none`}>
                 FABRIC
               </span>
             </h2>
