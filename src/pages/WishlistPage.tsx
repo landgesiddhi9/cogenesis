@@ -168,14 +168,24 @@ const WishlistPage = () => {
           </ul>
         </section>
       ) : (
-        /* Filled grid — responsive auto-fill, consistent card sizes */
+        /* Filled grid — flex-wrap, same card widths as Popular Right Now */
         <section
           className="px-10 md:px-16 mb-16"
           aria-label="Wishlist products"
         >
-          <div className="grid gap-6" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))" }}>
+          <div className="flex flex-wrap gap-[1px]">
             {wishlistProducts.map((p) => (
-              <ProductCard key={p.id} product={p} wishlisted={true} onWishlistToggle={toggle} showImageControls={false} />
+              <div
+                key={p.id}
+                className="
+                  flex-none
+                  w-[calc(50vw-2.8rem)]
+                  sm:w-[calc(33.333vw-2.2rem)]
+                  lg:w-[calc(20vw-1.7rem)]
+                "
+              >
+                <ProductCard product={p} wishlisted={true} onWishlistToggle={toggle} showImageControls={false} />
+              </div>
             ))}
           </div>
         </section>
