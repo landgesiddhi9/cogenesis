@@ -1,305 +1,208 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 
-type ActiveColumn = "men" | "women" | "fabric" | null;
+type Category = "men" | "women" | "fabric";
 
-interface MegaMenuPanelProps {
-  onNavigate?: () => void;
-  isOpen?: boolean;
+interface MenuLink {
+  label: string;
+  to: string;
+  image: string;
 }
 
-const submenus = {
+interface MegaMenuPanelProps {
+  isOpen: boolean;
+  onClose: () => void;
+  activeCategory: Category;
+}
+
+const CATEGORIES: { key: Category; label: string }[] = [
+  { key: "men", label: "MEN" },
+  { key: "women", label: "WOMEN" },
+  { key: "fabric", label: "FABRIC" },
+];
+
+const LINKS: Record<Category, MenuLink[]> = {
   men: [
-    { label: "Shirts", image: "/images/shirts dropdown.jpg", to: "/collections/shirts" },
-    { label: "Trousers", image: "/images/trouser dropdown.jpg", to: "/collections/trousers" },
-    { label: "Best Sellers", image: "/images/male model 2 .jpg", to: "/men/best-sellers" },
-    { label: "View All", image: "/images/male model 2 .jpg", to: "/men/view-all" },
+    { label: "Shirts", to: "/collections/shirts", image: "/images/shirts dropdown.jpg" },
+    { label: "Trousers", to: "/collections/trousers", image: "/images/trouser dropdown.jpg" },
+    { label: "Best Sellers", to: "/men/best-sellers", image: "/images/male model 2 .jpg" },
+    { label: "View All", to: "/men/view-all", image: "/images/male model .jpg" },
   ],
   women: [
-    { label: "Launching Soon", image: "/images/female model.jpg", to: "/women" },
+    { label: "Launching Soon", to: "/women", image: "/images/female model.jpg" },
   ],
   fabric: [
-    { label: "Linen", image: "/images/fabric drop down.jpg", to: "/collections/linen" },
-    { label: "Linen Blend", image: "/images/fabric2 dropdown.jpg", to: "/collections/linen-blend" },
-    { label: "Care Guide", image: "/images/fabric drop down.jpg", to: "/fabric/care-guide" },
-    { label: "Fabric Guide", image: "/images/fabric2 dropdown.jpg", to: "/fabric/guide" },
+    { label: "Linen", to: "/collections/linen", image: "/images/fabric drop down.jpg" },
+    { label: "Linen Blend", to: "/collections/linen-blend", image: "/images/fabric2 dropdown.jpg" },
+    { label: "Care Guide", to: "/fabric/care-guide", image: "/images/fabric drop down.jpg" },
+    { label: "Fabric Guide", to: "/fabric/guide", image: "/images/fabric2 dropdown.jpg" },
   ],
 };
 
-const defaultImages = {
+const DEFAULT_IMAGES: Record<Category, string> = {
   men: "/images/male model .jpg",
   women: "/images/female model.jpg",
   fabric: "/images/fabric drop down.jpg",
 };
 
-function useImageCrossfade(defaultSrc: string) {
-  const [displayedImage, setDisplayedImage] = useState(defaultSrc);
-  const [prevImage, setPrevImage] = useState<string | null>(null);
-  const [fading, setFading] = useState(false);
-  const cleanupRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const fadeRef = useRef<number | null>(null);
-
-  const switchImage = (newSrc: string) => {
-    if (newSrc === displayedImage) return;
-    if (cleanupRef.current) clearTimeout(cleanupRef.current);
-    if (fadeRef.current) cancelAnimationFrame(fadeRef.current);
-    setPrevImage(displayedImage);
-    setDisplayedImage(newSrc);
-    fadeRef.current = requestAnimationFrame(() => {
-      setFading(true);
-    });
-    cleanupRef.current = setTimeout(() => {
-      setPrevImage(null);
-      setFading(false);
-    }, 400);
-  };
-
-  useEffect(() => {
-    return () => {
-      if (cleanupRef.current) clearTimeout(cleanupRef.current);
-      if (fadeRef.current) cancelAnimationFrame(fadeRef.current);
-    };
-  }, []);
-
-  return { displayedImage, prevImage, fading, switchImage };
-}
-
-// ---- Unified animation timing ----
-// Same duration + easing + delay whether opening or closing.
-// Only the delay differs BETWEEN sections (heading -> image -> submenu),
-// never between open/close of the SAME section. This is what makes
-// closing feel like a mirror of opening instead of a different animation.
 const EASE = "cubic-bezier(0.22, 1, 0.36, 1)";
-const DURATION = 600;
+const EASE_LUXURY = "cubic-bezier(0.25, 0.46, 0.45, 0.94)";
 
-const headingAnimationStyle = (isOpen: boolean) => ({
-  opacity: isOpen ? 1 : 0,
-  transform: isOpen ? "translateY(0)" : "translateY(6px)",
-  transition: `opacity ${DURATION}ms ${EASE}, transform ${DURATION}ms ${EASE}`,
-  transitionDelay: "100ms",
-  willChange: "transform, opacity",
-});
+const DURATION = 400;
+const IMAGE_FADE_DURATION = 280;
 
-const imageAnimationStyle = (isOpen: boolean) => ({
-  opacity: isOpen ? 1 : 0,
-  transform: isOpen ? "scale(1)" : "scale(0.98)",
-  transition: `opacity ${DURATION}ms ${EASE}, transform ${DURATION}ms ${EASE}`,
-  transitionDelay: "200ms",
-  willChange: "transform, opacity",
-});
-
-
-const MegaMenuPanel = ({ onNavigate, isOpen = false }: MegaMenuPanelProps) => {
+const MegaMenuPanel = ({ isOpen, onClose, activeCategory }: MegaMenuPanelProps) => {
   const navigate = useNavigate();
-  const [activeColumn, setActiveColumn] = useState<ActiveColumn>(null);
+  const [hoveredCategory, setHoveredCategory] = useState<Category | null>(null);
+  const [hoveredLink, setHoveredLink] = useState<string | null>(null);
+  const [previewImage, setPreviewImage] = useState(DEFAULT_IMAGES[activeCategory]);
+  const [prevPreviewImage, setPrevPreviewImage] = useState<string | null>(null);
+  const [imageFading, setImageFading] = useState(false);
+  const imageTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const displayCategory = hoveredCategory ?? activeCategory;
 
   useEffect(() => {
-    const urls = Object.values(submenus).flat().map((item) => item.image);
-    urls.forEach((url) => {
+    const allImages = Object.values(LINKS).flat().map((l) => l.image);
+    const defaults = Object.values(DEFAULT_IMAGES);
+    [...allImages, ...defaults].forEach((src) => {
       const img = new Image();
-      img.src = url;
+      img.src = src;
     });
   }, []);
 
-  const men = useImageCrossfade(defaultImages.men);
-  const women = useImageCrossfade(defaultImages.women);
-  const fabric = useImageCrossfade(defaultImages.fabric);
-
-  const getOpacity = (column: ActiveColumn) => {
-    if (activeColumn === null) return "opacity-100";
-    return activeColumn === column ? "opacity-100" : "opacity-[0.65]";
+  const switchImage = (src: string) => {
+    if (src === previewImage) return;
+    if (imageTimerRef.current) clearTimeout(imageTimerRef.current);
+    setPrevPreviewImage(previewImage);
+    setPreviewImage(src);
+    imageTimerRef.current = setTimeout(() => {
+      setPrevPreviewImage(null);
+      setImageFading(false);
+    }, IMAGE_FADE_DURATION);
+    requestAnimationFrame(() => setImageFading(true));
   };
 
-  const handleSubcategoryHover = (column: ActiveColumn, image: string) => {
-    if (!column) return;
-    const img = column === "men" ? men : column === "women" ? women : fabric;
-    img.switchImage(image);
+  const handleLinkHover = (link: MenuLink) => {
+    setHoveredLink(link.label);
+    switchImage(link.image);
   };
 
-  const renderImage = (
-    img: ReturnType<typeof useImageCrossfade>,
-    isActive: boolean,
-  ) => (
-    <div className="absolute inset-0 overflow-hidden rounded-[2px]">
-      <div className="relative w-full h-full">
-        {img.prevImage && (
-          <img
-            src={img.prevImage}
-            alt=""
-            className="absolute inset-0 w-full h-full object-cover object-center pointer-events-none"
-            style={{
-              opacity: img.fading ? 0 : 1,
-              transform: img.fading ? "scale(1) translateY(-20px)" : "scale(1.02) translateY(-20px)",
-              transition: `opacity ${DURATION}ms ${EASE}, transform ${DURATION}ms ${EASE}`,
-              willChange: "opacity, transform",
-            }}
-          />
-        )}
-        <img
-          src={img.displayedImage}
-          alt=""
-          className="w-full h-full object-cover object-center"
-          style={{
-            opacity: img.prevImage ? (img.fading ? 1 : 0) : 1,
-            transform: isActive
-              ? "scale(0.72) translateY(-12px)"
-              : "scale(1) translateY(-20px)",
-            transformOrigin: "top center",
-            willChange: "transform, opacity",
-            transition: `opacity ${DURATION}ms ${EASE}, transform ${DURATION}ms ${EASE}`,
-          }}
-        />
-      </div>
-    </div>
-  );
+  const handleCategoryEnter = (cat: Category) => {
+    setHoveredCategory(cat);
+    setHoveredLink(null);
+    if (imageTimerRef.current) clearTimeout(imageTimerRef.current);
+    setPrevPreviewImage(previewImage);
+    setPreviewImage(DEFAULT_IMAGES[cat]);
+    requestAnimationFrame(() => setImageFading(true));
+    imageTimerRef.current = setTimeout(() => {
+      setPrevPreviewImage(null);
+      setImageFading(false);
+    }, IMAGE_FADE_DURATION);
+  };
 
-  const renderSubmenu = (
-    column: ActiveColumn,
-    items: { label: string; image: string; to: string }[],
-    isActive: boolean,
-  ) => (
-    <div
-      className={`absolute left-0 right-0 ${isActive ? "pointer-events-auto" : "pointer-events-none"
-        }`}
-      style={{
-        top: "calc(72% - 17px)",
-        opacity: isActive && isOpen ? 1 : 0,
-        transform:
-          isActive && isOpen
-            ? "translateY(0) scale(1)"
-            : "translateY(8px) scale(0.98)",
-        transition: `opacity ${DURATION}ms ${EASE}, transform ${DURATION}ms ${EASE}`,
-        willChange: "opacity, transform",
-      }}
-    >
-      <div className="relative">
-        <div className="absolute inset-0 bg-gradient-to-t from-ivory via-ivory/60 to-transparent pointer-events-none" />
-        <div className="relative z-10 flex flex-col items-center py-4 gap-[5px]">
-          {items.map((item) => (
-            <button
-              key={item.label}
-              className="mega-sub-link font-display text-[18.5px] font-normal leading-[1.7] text-[#4A2E2A]"
-              onMouseEnter={() => handleSubcategoryHover(column, item.image)}
-              onClick={() => {
-                navigate(item.to);
-                onNavigate?.();
-              }}
-            >
-              {item.label}
-            </button>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
+  const handleLeave = () => {
+    setHoveredCategory(null);
+    setHoveredLink(null);
+  };
 
   return (
-    <div className="w-full bg-ivory h-[605px] overflow-hidden">
-      <style>{`
-        .mega-heading-line {
-          position: relative;
-          display: inline-block;
-        }
-        .mega-heading-line::after {
-          content: '';
-          position: absolute;
-          bottom: -8px;
-          left: 0;
-          width: 100%;
-          height: 1.5px;
-          background-color: #4A2E2A;
-          transform: scaleX(0);
-          transform-origin: left center;
-          transition: transform ${DURATION}ms ${EASE} 100ms;
-        }
-        .mega-heading-line.is-open::after {
-          transform: scaleX(1);
-        }
-        .mega-sub-link {
-          position: relative;
-          transition: color 300ms ${EASE}, transform 300ms ${EASE};
-        }
-        .mega-sub-link::after {
-          content: '';
-          position: absolute;
-          bottom: 0;
-          left: 0;
-          width: 100%;
-          height: 1px;
-          background-color: #4A2E2A;
-          transform: scaleX(0);
-          transform-origin: left center;
-          transition: transform 300ms ${EASE};
-        }
-        .mega-sub-link:hover::after {
-          transform: scaleX(1);
-        }
-        .mega-sub-link:hover {
-          transform: translateX(3px);
-        }
-      `}</style>
-      <div className="max-w-[1400px] mx-auto pt-[40px] px-[64px] pb-[24px]">
-        <div className="grid grid-cols-3 gap-16 items-start">
-          {/* MEN */}
-          <div
-            className={`flex flex-col items-center ${getOpacity("men")}`}
-            onMouseEnter={() => setActiveColumn("men")}
-            onMouseLeave={() => setActiveColumn(null)}
-            style={{ transition: `opacity 300ms ${EASE}` }}
-          >
-            <h2 className="mb-[28px]" style={headingAnimationStyle(isOpen)}>
-              <span
-                className={`mega-heading-line${isOpen ? " is-open" : ""
-                  } font-display text-[24px] font-normal tracking-[0.18em] text-[#4A2E2A] uppercase leading-none`}
-              >
-                MEN
-              </span>
-            </h2>
-            <div className="w-full aspect-[4/5] relative" style={imageAnimationStyle(isOpen)}>
-              {renderImage(men, activeColumn === "men")}
-              {renderSubmenu("men", submenus.men, activeColumn === "men")}
-            </div>
-          </div>
+    <div className="flex justify-center w-full">
+      <div
+        className="w-full mb-6 bg-[#FAF8F4] rounded-b-2xl shadow-2xl overflow-hidden"
+        style={{
+          opacity: isOpen ? 1 : 0,
+          transform: isOpen
+            ? "translateY(0) scale(1)"
+            : "translateY(-12px) scale(0.98)",
+          transition: `opacity ${DURATION}ms ${EASE_LUXURY}, transform ${DURATION}ms ${EASE_LUXURY}`,
+          willChange: "transform, opacity",
+        }}
+      >
+        <div className="relative px-6 md:px-12 lg:px-14 py-6 md:py-8 lg:py-10">
+          {/* Content grid */}
+          <div className="grid grid-cols-[1fr_1fr_1fr_1.6fr] gap-12 md:gap-16 lg:gap-20">
+            {/* Text columns */}
+            {CATEGORIES.map((cat) => {
+              const isActiveCategory = displayCategory === cat.key;
+              return (
+                <div
+                  key={cat.key}
+                  className="flex flex-col"
+                  onMouseEnter={() => handleCategoryEnter(cat.key)}
+                  onMouseLeave={handleLeave}
+                >
+                  <h3
+                    className={`font-serif text-[15px] md:text-[20px] font-medium tracking-[0.22em] uppercase mb-6 pb-4 border-b transition-colors duration-200 ${
+                      isActiveCategory
+                        ? "text-[#4A2E2A] border-[#4A2E2A]/30"
+                        : "text-[#4A2E2A]/50 border-[#4A2E2A]/10"
+                    }`}
+                    style={{ fontFamily: "'Cormorant Garamond', 'Georgia', serif" }}
+                  >
+                    {cat.label}
+                  </h3>
+                  <div className="flex flex-col">
+                    {LINKS[cat.key].map((link) => {
+                      const isHovered = hoveredLink === link.label && hoveredCategory === cat.key;
+                      return (
+                        <button
+                          key={link.label}
+                          onClick={() => {
+                            navigate(link.to);
+                            onClose();
+                          }}
+                          onMouseEnter={() => handleLinkHover(link)}
+                          className={`group text-left w-full transition-all duration-250 ${
+                            isHovered
+                              ? "bg-[#EDE4D6]/40 translate-x-0.5"
+                              : "hover:bg-[#EDE4D6]/40 hover:translate-x-0.5"
+                          }`}
+                          style={{ padding: "4px 8px", margin: "0 -8px", borderRadius: "4px" }}
+                        >
+                          <span
+                            className={`font-serif text-[15px] md:text-[18px] leading-[2] md:leading-[2.5] transition-all duration-250 ${
+                              isHovered
+                                ? "text-[#4A2E2A]"
+                                : "text-[#6B5C53]/80 group-hover:text-[#4A2E2A]"
+                            }`}
+                            style={{ fontFamily: "'Cormorant Garamond', 'Georgia', serif" }}
+                          >
+                            {link.label}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })}
 
-          {/* WOMEN */}
-          <div
-            className={`flex flex-col items-center ${getOpacity("women")}`}
-            onMouseEnter={() => setActiveColumn("women")}
-            onMouseLeave={() => setActiveColumn(null)}
-            style={{ transition: `opacity 300ms ${EASE}` }}
-          >
-            <h2 className="mb-[28px]" style={headingAnimationStyle(isOpen)}>
-              <span
-                className={`mega-heading-line${isOpen ? " is-open" : ""
-                  } font-display text-[24px] font-normal tracking-[0.18em] text-[#4A2E2A] uppercase leading-none`}
-              >
-                WOMEN
-              </span>
-            </h2>
-            <div className="w-full aspect-[4/5] relative" style={imageAnimationStyle(isOpen)}>
-              {renderImage(women, activeColumn === "women")}
-              {renderSubmenu("women", submenus.women, activeColumn === "women")}
-            </div>
-          </div>
-
-          {/* FABRIC */}
-          <div
-            className={`flex flex-col items-center ${getOpacity("fabric")}`}
-            onMouseEnter={() => setActiveColumn("fabric")}
-            onMouseLeave={() => setActiveColumn(null)}
-            style={{ transition: `opacity 300ms ${EASE}` }}
-          >
-            <h2 className="mb-[28px]" style={headingAnimationStyle(isOpen)}>
-              <span
-                className={`mega-heading-line${isOpen ? " is-open" : ""
-                  } font-display text-[24px] font-normal tracking-[0.18em] text-[#4A2E2A] uppercase leading-none`}
-              >
-                FABRIC
-              </span>
-            </h2>
-            <div className="w-full aspect-[4/5] relative" style={imageAnimationStyle(isOpen)}>
-              {renderImage(fabric, activeColumn === "fabric")}
-              {renderSubmenu("fabric", submenus.fabric, activeColumn === "fabric")}
+            {/* Featured image */}
+            <div className="relative aspect-[3/4] md:aspect-[4/5] rounded-lg overflow-hidden bg-[#EDE4D6]">
+              {prevPreviewImage && imageFading && (
+                <img
+                  src={prevPreviewImage}
+                  alt=""
+                  className="absolute inset-0 w-full h-full object-cover"
+                  style={{
+                    opacity: imageFading ? 0 : 1,
+                    transition: `opacity ${IMAGE_FADE_DURATION}ms ${EASE}`,
+                  }}
+                />
+              )}
+              {previewImage && (
+                <img
+                  src={previewImage}
+                  alt={displayCategory}
+                  className="w-full h-full object-cover"
+                  style={{
+                    opacity: prevPreviewImage && imageFading ? 1 : 1,
+                    transition: `opacity ${IMAGE_FADE_DURATION}ms ${EASE}, transform ${IMAGE_FADE_DURATION}ms ${EASE}`,
+                    transform: imageFading ? "scale(1)" : "scale(1.03)",
+                  }}
+                />
+              )}
             </div>
           </div>
         </div>

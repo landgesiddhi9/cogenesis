@@ -21,6 +21,7 @@ const Navbar = () => {
   // Branding: Monogram (h-15) + Logo (h-32) with 8-10px visible gap + color #5C3432 + trim margins for PNG padding
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [activeCategory, setActiveCategory] = useState<"men" | "women" | "fabric">("men");
 
   // Cherry-pick: search overlay + router state
   const [searchOpen, setSearchOpen] = useState(false);
@@ -110,6 +111,16 @@ const Navbar = () => {
     };
   }, [menuOpen, searchOpen]);
 
+  // Escape key closes menu
+  useEffect(() => {
+    if (!menuOpen) return;
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setMenuOpen(false);
+    };
+    window.addEventListener("keydown", handleKey);
+    return () => window.removeEventListener("keydown", handleKey);
+  }, [menuOpen]);
+
   return (
     <>
       <nav
@@ -131,43 +142,34 @@ const Navbar = () => {
       >
         <div className="w-full px-5 md:px-8">
           <div className="relative flex items-center justify-between h-[68px] md:h-16">
-            {/* Hamburger menu / Close button */}
+            {/* Hamburger menu — visible on all sizes */}
             <button
-              className="flex flex-col gap-1.25 p-2 relative z-60 transition-all duration-300"
+              className="flex flex-col gap-1.25 p-2 relative z-60 transition-transform duration-350 ease-in-out active:scale-95"
               onClick={() => setMenuOpen(!menuOpen)}
-              aria-label={menuOpen ? "Close menu" : "Toggle menu"}
+              aria-label={menuOpen ? "Close menu" : "Open menu"}
+              aria-expanded={menuOpen}
+              aria-controls="navbar-dropdown"
               id="navbar-hamburger"
-              style={{
-                opacity: menuOpen ? 0.7 : 1,
-              }}
-              onMouseEnter={(e) => {
-                (e.currentTarget as HTMLElement).style.opacity = "1";
-              }}
-              onMouseLeave={(e) => {
-                (e.currentTarget as HTMLElement).style.opacity = menuOpen
-                  ? "0.7"
-                  : "1";
-              }}
             >
               <span
-                className={`block w-5 h-px bg-charcoal transition-all duration-300 origin-center ${menuOpen ? "rotate-45 translate-y-1.5" : ""
-                  }`}
-                style={{
-                  backgroundColor: menuOpen ? "#482C1B" : "currentColor",
-                }}
+                className={`block w-5 h-px bg-charcoal transition-all duration-350 ease-in-out origin-center ${
+                  menuOpen ? "rotate-45 translate-y-[5.5px]" : ""
+                }`}
               />
               <span
-                className={`block w-5 h-px bg-charcoal transition-all duration-300 ${menuOpen ? "opacity-0 scale-x-0" : ""
-                  }`}
+                className={`block w-5 h-px bg-charcoal transition-all duration-350 ease-in-out ${
+                  menuOpen ? "opacity-0 scale-x-0" : ""
+                }`}
               />
               <span
-                className={`block w-5 h-px bg-charcoal transition-all duration-300 origin-center ${menuOpen ? "-rotate-45 -translate-y-1.5" : ""
-                  }`}
-                style={{
-                  backgroundColor: menuOpen ? "#482C1B" : "currentColor",
-                }}
+                className={`block w-5 h-px bg-charcoal transition-all duration-350 ease-in-out origin-center ${
+                  menuOpen ? "-rotate-45 -translate-y-[5.5px]" : ""
+                }`}
               />
             </button>
+
+            {/* Spacer to balance flex layout */}
+            <div className="md:hidden w-[34px]" />
 
             {/* Center logo - monogram + wordmark */}
             <a
@@ -370,24 +372,19 @@ const Navbar = () => {
               className="fixed inset-0 bg-black/20"
               style={{
                 opacity: menuOpen ? 1 : 0,
-                transition: `opacity ${DURATION}ms ${EASE}`,
+                transition: `opacity 400ms cubic-bezier(0.22, 1, 0.36, 1)`,
                 willChange: "opacity",
                 pointerEvents: menuOpen ? "auto" : "none",
               }}
               onClick={() => setMenuOpen(false)}
             />
-            {/* Dropdown panel */}
-            <div
-              className="flex justify-center"
-              style={{
-                opacity: menuOpen ? 1 : 0,
-                transform: `translateY(${menuOpen ? "0px" : "-28px"})`,
-                transition: `opacity ${DURATION}ms ${EASE}, transform ${DURATION}ms ${EASE}`,
-                willChange: "transform, opacity",
-                pointerEvents: menuOpen ? "auto" : "none",
-              }}
-            >
-              <MegaMenuPanel onNavigate={() => setMenuOpen(false)} isOpen={menuOpen} />
+            {/* Mega menu panel */}
+            <div className="relative z-10">
+              <MegaMenuPanel
+                isOpen={menuOpen}
+                onClose={() => setMenuOpen(false)}
+                activeCategory={activeCategory}
+              />
             </div>
           </div>
 
