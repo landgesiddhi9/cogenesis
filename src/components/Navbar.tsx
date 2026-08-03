@@ -13,15 +13,15 @@ import { useCart } from "../hooks/useCart";
 // played forward (open) and backward (close), instead of two
 // different animations bolted together.
 const EASE = "cubic-bezier(0.22, 1, 0.36, 1)";
-const DURATION = 600;
+
 const NAV_BG_DURATION = 400;
 
 const Navbar = () => {
   // Images: Monogram.png and Logo.png are in public/images/
   // Branding: Monogram (h-15) + Logo (h-32) with 8-10px visible gap + color #5C3432 + trim margins for PNG padding
-  const [scrolled, setScrolled] = useState(false);
+
   const [menuOpen, setMenuOpen] = useState(false);
-  const [activeCategory, setActiveCategory] = useState<"men" | "women" | "fabric">("men");
+  const [activeCategory] = useState<"men" | "women" | "fabric">("men");
 
   // Cherry-pick: search overlay + router state
   const [searchOpen, setSearchOpen] = useState(false);
@@ -54,12 +54,7 @@ const Navbar = () => {
   // Auto-hide bottom nav when footer is in view
   const [showBottomNav, setShowBottomNav] = useState(true);
 
-  // Scroll effect
-  useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 50);
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+
 
   // IntersectionObserver: hide bottom nav when footer enters viewport
   useEffect(() => {
@@ -125,20 +120,17 @@ const Navbar = () => {
     <>
       <nav
         className={`fixed top-0 left-0 right-0 ${menuOpen ? "z-110" : "z-50"
-          } ${scrolled ? "backdrop-blur-md shadow-sm" : ""}`}
+          } backdrop-blur-md shadow-sm`}
         style={{
           backgroundColor: menuOpen
             ? "#FAF8F4"
-            : scrolled
-              ? "rgba(250, 248, 244, 0.9)"
-              : "transparent",
+            : "rgba(250, 248, 244, 0.95)",
           borderBottom: menuOpen
             ? "1px solid #D9D2C7"
-            : scrolled
-              ? "1px solid rgba(122, 113, 104, 0.1)"
-              : "1px solid transparent",
+            : "1px solid rgba(122, 113, 104, 0.1)",
           transition: `background-color ${NAV_BG_DURATION}ms ${EASE}, border-color ${NAV_BG_DURATION}ms ${EASE}`,
         }}
+
       >
         <div className="w-full px-5 md:px-8">
           <div className="relative flex items-center justify-between h-[68px] md:h-16">

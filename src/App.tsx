@@ -51,7 +51,7 @@ function App() {
     <div className="section-content bg-ivory">
       <Navbar />
 
-      <main>
+      <main className="pt-[68px] md:pt-16">
         <ErrorBoundary>
           <Suspense fallback={<LoadingFallback />}>
             <Routes>
