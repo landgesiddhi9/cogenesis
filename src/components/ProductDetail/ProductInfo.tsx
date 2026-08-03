@@ -16,6 +16,8 @@ interface ProductInfoProps {
   isWishlisted: boolean;
   toggleWishlist: () => void;
   addToCart: () => void;
+  buyNow: () => void;
+  buyingNow: boolean;
   description: string;
 }
 
@@ -41,6 +43,8 @@ const ProductInfo = ({
   isWishlisted,
   toggleWishlist,
   addToCart,
+  buyNow,
+  buyingNow,
   description,
 }: ProductInfoProps) => {
   const [isSizeGuideOpen, setIsSizeGuideOpen] = useState(false);
@@ -249,7 +253,9 @@ const ProductInfo = ({
           Add to Cart
         </button>
         <button
-          className="w-full bg-white text-charcoal py-4 font-light transition-colors duration-300 hover:bg-charcoal/5 tracking-wide border border-charcoal"
+          onClick={buyNow}
+          disabled={buyingNow}
+          className="w-full bg-white text-charcoal py-4 font-light transition-colors duration-300 hover:bg-charcoal/5 tracking-wide border border-charcoal disabled:opacity-60 disabled:cursor-not-allowed"
           style={{
             fontFamily: "'Cormorant Garamond', 'Canela', serif",
             fontSize: "16px",
@@ -257,7 +263,7 @@ const ProductInfo = ({
             letterSpacing: "0.08em",
           }}
         >
-          Buy Now
+          {buyingNow ? "Redirecting..." : "Buy Now"}
         </button>
       </div>
 

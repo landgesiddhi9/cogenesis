@@ -1,7 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useWishlist } from "../hooks/useWishlist";
 import { useCart } from "../hooks/useCart";
 import { getProductByHandle } from "../services/product.service";
+import { createCart as serviceCreateCart, cartLinesAdd as serviceCartLinesAdd } from "../services/cart.service";
+import { readCartId, writeCartId } from "../utils/cartStorage";
 import ImageGallery from "../components/ProductDetail/ImageGallery";
 import ProductInfo from "../components/ProductDetail/ProductInfo";
 import ProductAccordion from "../components/ProductDetail/ProductAccordion";
@@ -23,6 +25,7 @@ const ProductDetailPage = ({ productHandle }: ProductDetailPageProps) => {
   const { addToCart: addToCartService } = useCart();
   const [addingToCart, setAddingToCart] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [buyingNow, setBuyingNow] = useState(false);
   const [prevHandle, setPrevHandle] = useState(productHandle);
 
   if (productHandle !== prevHandle) {
@@ -77,19 +80,23 @@ const ProductDetailPage = ({ productHandle }: ProductDetailPageProps) => {
     toggleWishlist(product.id);
   };
 
+  const showToast = useCallback((message: string, type: "success" | "error" = "error") => {
+    window.dispatchEvent(new CustomEvent("cart-toast", { detail: { message, type } }));
+  }, []);
+
   const handleAddToCart = async () => {
     if (!selectedSize) {
-      alert("Please select a size");
+      showToast("Please select a size");
       return;
     }
     if (!product) {
-      alert("Product not found");
+      showToast("Product not found");
       return;
     }
 
     const variant = product.variants.find((v) => v.title === selectedSize);
     if (!variant) {
-      alert("Selected size is not available");
+      showToast("Selected size is not available");
       return;
     }
 
@@ -102,11 +109,59 @@ const ProductDetailPage = ({ productHandle }: ProductDetailPageProps) => {
       setShowSuccess(true);
       setTimeout(() => setShowSuccess(false), 2000);
     } catch {
-      alert("Failed to add to cart. Please try again.");
+      showToast("Failed to add to cart. Please try again.");
     } finally {
       setAddingToCart(false);
     }
   };
+
+  // Buy Now: directly calls Shopify cart service (bypasses CartProvider)
+  // so the CartToast "Product added to cart" notification does NOT fire.
+  const handleBuyNow = useCallback(async () => {
+    if (!selectedSize) {
+      showToast("Please select a size");
+      return;
+    }
+    if (!product) {
+      showToast("Product not found");
+      return;
+    }
+
+    const variant = product.variants.find((v) => v.title === selectedSize);
+    if (!variant) {
+      showToast("Selected size is not available");
+      return;
+    }
+
+    if (buyingNow) return;
+    setBuyingNow(true);
+
+    try {
+      // Get or create a cart ID directly via the service layer
+      let cartId = readCartId();
+
+      if (!cartId) {
+        const newCart = await serviceCreateCart();
+        writeCartId(newCart.id);
+        cartId = newCart.id;
+      }
+
+      // Add the item and get the updated cart with checkoutUrl
+      const updatedCart = await serviceCartLinesAdd(cartId, [
+        { merchandiseId: variant.id, quantity },
+      ]);
+
+      if (updatedCart?.checkoutUrl) {
+        window.location.href = updatedCart.checkoutUrl;
+      } else {
+        // Fallback: navigate to the cart page
+        window.location.href = "/cart";
+      }
+    } catch {
+      showToast("Failed to proceed to checkout. Please try again.");
+      setBuyingNow(false);
+    }
+  }, [product, selectedSize, quantity, buyingNow]);
 
   if (loading) {
     return (
@@ -155,6 +210,8 @@ const ProductDetailPage = ({ productHandle }: ProductDetailPageProps) => {
               isWishlisted={isWishlisted(product.id)}
               toggleWishlist={handleWishlistToggle}
               addToCart={handleAddToCart}
+              buyNow={handleBuyNow}
+              buyingNow={buyingNow}
               description={productDescription}
             />
 
