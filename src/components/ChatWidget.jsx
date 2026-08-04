@@ -1,15 +1,25 @@
 import React, { useEffect, useRef, useState } from 'react';
 
+const IS_DEV = import.meta.env.DEV === true;
+
 export default function ChatWidget() {
   const [isOpen, setIsOpen] = useState(false);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [messages, setMessages] = useState([]);
+  const [lastError, setLastError] = useState(null); // { status, body, message, stack }
   const messagesEndRef = useRef(null);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, loading, isOpen]);
+
+  // Auto-dismiss the dev error overlay after a few seconds so it doesn't linger.
+  useEffect(() => {
+    if (!lastError) return;
+    const t = setTimeout(() => setLastError(null), 8000);
+    return () => clearTimeout(t);
+  }, [lastError]);
 
   const handleSend = async (e) => {
     e.preventDefault();
@@ -20,6 +30,7 @@ export default function ChatWidget() {
     const newMessages = [...messages, { role: 'user', text: userText }];
     setMessages(newMessages);
     setLoading(true);
+    setLastError(null);
 
     try {
       const historyPayload = newMessages.slice(0, -1).map(m => ({
@@ -33,15 +44,44 @@ export default function ChatWidget() {
         body: JSON.stringify({ message: userText, history: historyPayload })
       });
 
-      const data = await response.json().catch(() => null);
+      // 1. Always read the raw body text first, so we never lose the response
+      //    payload (json() throws on non-JSON responses like HTML 404s).
+      const rawBody = await response.text();
+      let data = null;
+      try {
+        data = rawBody ? JSON.parse(rawBody) : null;
+      } catch (parseErr) {
+        console.error(
+          '[ChatWidget] Response was not valid JSON (status %d). Raw body follows:',
+          response.status,
+          rawBody.slice(0, 500),
+        );
+      }
 
       if (!response.ok || !data || !data.reply) {
-        console.error('Chat API error:', response.status, response.statusText, data);
-        throw new Error(data?.error || `Request failed with status ${response.status}`);
+        const detail = {
+          status: response.status,
+          statusText: response.statusText,
+          body: data,
+          rawBodyPreview: rawBody.slice(0, 300),
+          message: data?.error || `Request failed with status ${response.status}`,
+          stack: new Error().stack,
+        };
+        console.error('[ChatWidget] Chat API returned an error:', detail);
+        setLastError(detail);
+        throw new Error(detail.message);
       }
+
       setMessages(prev => [...prev, { role: 'model', text: data.reply }]);
     } catch (err) {
-      console.error('ChatWidget fetch failed:', err);
+      console.error('[ChatWidget] fetch failed:', err);
+      if (!lastError) {
+        setLastError({
+          status: 'network',
+          message: err.message,
+          stack: err.stack,
+        });
+      }
       setMessages(prev => [
         ...prev,
         { role: 'model', text: 'I couldn\'t reach the assistant right now. Please try again in a moment.' }
@@ -257,6 +297,45 @@ export default function ChatWidget() {
                 </div>
               )}
               <div ref={messagesEndRef} />
+            </div>
+          )}
+
+          {/* Dev-only error overlay — shows raw failure details while debugging */}
+          {IS_DEV && lastError && (
+            <div
+              style={{
+                marginTop: '12px',
+                padding: '12px 14px',
+                backgroundColor: '#FDF0EF',
+                border: '1px solid #F2C4C0',
+                borderRadius: '8px',
+                fontSize: '11px',
+                color: '#7A1F1B',
+                fontFamily: 'monospace',
+                lineHeight: 1.5,
+                wordBreak: 'break-word'
+              }}
+            >
+              <div style={{ fontWeight: 600, marginBottom: '6px' }}>
+                ⚠ API ERROR {lastError.status ? `(HTTP ${lastError.status})` : '(network)'}
+              </div>
+              <div>{lastError.message}</div>
+              {lastError.body && (
+                <div style={{ marginTop: '6px', whiteSpace: 'pre-wrap' }}>
+                  {JSON.stringify(lastError.body)}
+                </div>
+              )}
+              {lastError.rawBodyPreview && (
+                <div style={{ marginTop: '6px', whiteSpace: 'pre-wrap', color: '#8A3A36' }}>
+                  raw: {lastError.rawBodyPreview}
+                </div>
+              )}
+              {lastError.stack && (
+                <details style={{ marginTop: '6px' }}>
+                  <summary style={{ cursor: 'pointer' }}>stack trace</summary>
+                  <pre style={{ whiteSpace: 'pre-wrap', margin: '6px 0 0' }}>{lastError.stack}</pre>
+                </details>
+              )}
             </div>
           )}
         </div>

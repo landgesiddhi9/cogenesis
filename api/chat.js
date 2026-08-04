@@ -4,9 +4,9 @@ const genAI = new GoogleGenAI({
   apiKey: process.env.GEMINI_API_KEY,
 });
 
-// gemini-2.5-flash is no longer available to new users. Default to
-// gemini-2.5-pro; override with GEMINI_MODEL env var if needed.
-const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-2.5-pro";
+// Default to gemini-2.0-flash (gemini-1.5-flash is retired and returns
+// 404 for generateContent). Override with GEMINI_MODEL env var if needed.
+const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-2.0-flash";
 
 const SYSTEM_PROMPT = `
 You are the elegant AI concierge for CoGenesis, a luxury contemporary clothing brand.
@@ -55,6 +55,7 @@ export default async function handler(req, res) {
     const { message, history } = req.body ?? {};
 
     if (!message || typeof message !== "string") {
+      console.warn("[chat] Bad request body:", req.body);
       sendJson(res, 400, { error: "message is required" });
       return;
     }
@@ -79,6 +80,9 @@ export default async function handler(req, res) {
     const response = await genAI.models.generateContent({
       model: GEMINI_MODEL,
       contents: messages,
+      config: {
+        tools: [{ googleSearch: {} }],
+      },
     });
 
     const responseText =
@@ -86,7 +90,26 @@ export default async function handler(req, res) {
 
     sendJson(res, 200, { reply: responseText });
   } catch (error) {
-    console.error("Chat endpoint error:", error);
-    sendJson(res, 500, { error: "Something went wrong processing your request." });
+    // Log the full error (message, code, stack) server-side so Vercel logs
+    // contain the underlying provider failure, then surface a useful hint
+    // (never the raw key) back to the client.
+    console.error("[chat] handler error:", {
+      message: error.message,
+      status: error.status,
+      code: error.code,
+      name: error.name,
+      stack: error.stack,
+    });
+
+    const hint =
+      error.status === 429
+        ? "Rate limit / quota exceeded on the AI provider. Check GEMINI_API_KEY quota."
+        : error.status === 401 || error.status === 403
+          ? "AI provider rejected the API key. Verify GEMINI_API_KEY."
+          : error.status === 404
+            ? "AI provider model not found. Check GEMINI_MODEL."
+            : "Something went wrong processing your request.";
+
+    sendJson(res, 500, { error: hint, detail: error.message });
   }
 }
