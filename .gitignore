@@ -23,7 +23,8 @@ dist-ssr
 *.sln
 *.sw?
 
+# Env files — secrets stay local, only the placeholder example is committed
 .env
 .env.local
+.env.*.local
 .vercel
-.env*
