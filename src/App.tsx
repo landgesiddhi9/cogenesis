@@ -15,8 +15,7 @@ import Footer from "./components/Footer";
 import ErrorBoundary from "./components/ErrorBoundary";
 import LoadingFallback from "./components/LoadingFallback";
 import { CartToast } from "./components/CartToast";
-import ShopifyChat from "./components/ShopifyChat";
-import ChatWidget from "./components/ChatWidget";
+import ChatAssistant from "./components/ChatAssistant";
 
 const CollectionPage = lazy(() => import("./pages/CollectionPage"));
 const LaunchingSoonPage = lazy(() => import("./pages/LaunchingSoonPage"));
@@ -172,8 +171,7 @@ function App() {
       {!isLoginPage && <Footer />}
 
       <CartToast />
-      <ShopifyChat />
-      <ChatWidget />
+      <ChatAssistant />
     </div>
   );
 }
