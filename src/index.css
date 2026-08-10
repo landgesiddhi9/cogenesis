@@ -12,6 +12,21 @@
     --color-warm-brown: #4b403a;
     --color-deep-brown: #1a1512;
 
+    /* AI assistant palette — quiet, old-money, ivory + taupe */
+    --color-chat-panel: #F6F3EF;
+    --color-chat-secondary: #EAE4DD;
+    --color-chat-bubble: #E8E2DB;
+    --color-chat-border: #DED7CF;
+    --color-chat-hairline: #E6DFD7;
+    --color-chat-user-border: #E3DDD6;
+    --color-chat-ink: #1F1B18;
+    --color-chat-muted: #7B726A;
+    --color-chat-taupe: #C8BBAA;
+    --color-chat-soft: #EEE7DF;
+    --color-chat-send: #D8CCBE;
+    --color-chat-placeholder: #A99F96;
+    --color-chat-note: #9A9188;
+
     --font-display: "Cormorant Garamond", "Georgia", serif;
     --font-body: "Cormorant Garamond", "Georgia", serif;
     --font-accent: "Cormorant Garamond", "Georgia", serif;
@@ -245,6 +260,25 @@ html::-webkit-scrollbar {
 /* Letter spacing utility for editorial feel */
 .tracking-editorial {
     letter-spacing: 0.35em;
+}
+
+/* Thin, discreet scrollbar for the assistant message list */
+.chat-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: #d7cbbb transparent;
+}
+
+.chat-scroll::-webkit-scrollbar {
+    width: 4px;
+}
+
+.chat-scroll::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.chat-scroll::-webkit-scrollbar-thumb {
+    background: #c6b9a8;
+    border-radius: 9999px;
 }
 
 .tracking-wide-editorial {
