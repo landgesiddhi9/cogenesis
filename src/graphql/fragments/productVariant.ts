@@ -3,6 +3,10 @@ export const PRODUCT_VARIANT_FIELDS_FRAGMENT = `
     id
     title
     availableForSale
+    selectedOptions {
+      name
+      value
+    }
     price {
       amount
       currencyCode

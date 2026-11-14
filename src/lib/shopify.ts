@@ -27,10 +27,11 @@ export function getShopifyConfig(): ShopifyConfig {
   return {
     storeDomain: requireEnv("VITE_SHOPIFY_STORE_DOMAIN"),
     storefrontAccessToken: requireEnv("VITE_SHOPIFY_STOREFRONT_TOKEN"),
-    apiVersion: requireEnv("VITE_SHOPIFY_API_VERSION"),
+    apiVersion: import.meta.env.VITE_SHOPIFY_API_VERSION?.trim() || "2025-01",
   };
 }
 
 export function getStorefrontApiUrl(config: ShopifyConfig = getShopifyConfig()): string {
-  return `https://${config.storeDomain}/api/${config.apiVersion}/graphql.json`;
+  const cleanDomain = config.storeDomain.replace(/^https?:\/\//i, "").replace(/\/+$/, "");
+  return `https://${cleanDomain}/api/${config.apiVersion}/graphql.json`;
 }

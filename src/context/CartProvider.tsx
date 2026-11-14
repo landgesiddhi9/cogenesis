@@ -21,6 +21,7 @@ export const CartProvider = ({ children }: CartProviderProps) => {
     const storedCartId = readCartId();
 
     if (!storedCartId) {
+      setLoading(false);
       return;
     }
 
@@ -131,16 +132,24 @@ export const CartProvider = ({ children }: CartProviderProps) => {
 
     try {
       let currentCartId = readCartId();
+      let updatedCart: ShopifyCart | null = null;
 
-      if (!currentCartId) {
-        const newCart = await serviceCreateCart();
-
-        writeCartId(newCart.id);
-        setCartId(newCart.id);
-        currentCartId = newCart.id;
+      if (currentCartId) {
+        try {
+          updatedCart = await serviceCartLinesAdd(currentCartId, [{ merchandiseId, quantity }]);
+        } catch {
+          // Stored cart may be expired or deleted on Shopify; reset and create a new cart
+          removeCartId();
+          currentCartId = null;
+        }
       }
 
-      const updatedCart = await serviceCartLinesAdd(currentCartId!, [{ merchandiseId, quantity }]);
+      if (!currentCartId || !updatedCart) {
+        const newCart = await serviceCreateCart({ lines: [{ merchandiseId, quantity }] });
+        writeCartId(newCart.id);
+        setCartId(newCart.id);
+        updatedCart = newCart;
+      }
 
       if (updatedCart) {
         setCart(updatedCart);

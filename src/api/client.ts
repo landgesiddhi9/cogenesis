@@ -24,6 +24,16 @@ export class ShopifyGraphqlError extends Error {
   }
 }
 
+export class ShopifyUserError extends Error {
+  readonly userErrors: Array<{ field?: string[]; message: string }>;
+
+  constructor(message: string, userErrors: Array<{ field?: string[]; message: string }> = []) {
+    super(message);
+    this.name = "ShopifyUserError";
+    this.userErrors = userErrors;
+  }
+}
+
 export interface ShopifyGraphqlErrorDetail {
   message: string;
   locations?: Array<{ line: number; column: number }>;
