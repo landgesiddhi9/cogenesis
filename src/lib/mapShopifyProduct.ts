@@ -74,6 +74,16 @@ export function mapShopifyProduct(
     id: opt.id,
     name: opt.name,
     values: opt.values,
+    optionValues: opt.optionValues?.map((val) => ({
+      id: val.id,
+      name: val.name,
+      swatch: val.swatch
+        ? {
+            color: val.swatch.color ?? null,
+            imageUrl: val.swatch.image?.previewImage?.url ?? null,
+          }
+        : null,
+    })),
   }));
 
   return {

@@ -1,30 +1,33 @@
 import { useState, useEffect, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useWishlist } from "../hooks/useWishlist";
 import { useCart } from "../hooks/useCart";
-import { getProductByHandle } from "../services/product.service";
+import { getProductByHandle, getFeaturedProducts } from "../services/product.service";
 import { createCart as serviceCreateCart, cartLinesAdd as serviceCartLinesAdd } from "../services/cart.service";
 import { readCartId, writeCartId, removeCartId } from "../utils/cartStorage";
-import { resolveProductVariant, getProductSizes } from "../utils/variant";
+import { resolveProductVariant, getProductSizes, getProductColors, findSiblingProductForColor, predictProductHandleForColor } from "../utils/variant";
 import ImageGallery from "../components/ProductDetail/ImageGallery";
 import ProductInfo from "../components/ProductDetail/ProductInfo";
 import ProductAccordion from "../components/ProductDetail/ProductAccordion";
 import RelatedProducts from "../components/ProductDetail/RelatedProducts";
 import RecentlyViewed from "../components/ProductDetail/RecentlyViewed";
-import type { ShopifyProduct } from "../types";
+import type { ShopifyProduct, ShopifyProductVariant } from "../types";
 
 interface ProductDetailPageProps {
-  productHandle: string;
+  productHandle?: string;
 }
-
-const COLOR_NAMES = ["White", "Beige", "Stone", "Olive", "Charcoal", "Black"];
 
 const ProductDetailPage = ({ productHandle }: ProductDetailPageProps) => {
   const navigate = useNavigate();
+  const { handle: routeHandle } = useParams<{ handle: string }>();
+  const activeHandle = productHandle || routeHandle || "";
+
   const [product, setProduct] = useState<ShopifyProduct | null>(null);
+  const [catalog, setCatalog] = useState<ShopifyProduct[]>([]);
+  const [activeVariant, setActiveVariant] = useState<ShopifyProductVariant | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [selectedColor, setSelectedColor] = useState(0);
+  const [selectedColor, setSelectedColor] = useState<string>("");
   const [selectedSize, setSelectedSize] = useState("");
   const [quantity, setQuantity] = useState(1);
   const { isWishlisted, toggleWishlist } = useWishlist();
@@ -32,25 +35,74 @@ const ProductDetailPage = ({ productHandle }: ProductDetailPageProps) => {
   const [addingToCart, setAddingToCart] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [buyingNow, setBuyingNow] = useState(false);
-  const [prevHandle, setPrevHandle] = useState(productHandle);
+  const [prevHandle, setPrevHandle] = useState(activeHandle);
 
-  if (productHandle !== prevHandle) {
-    setPrevHandle(productHandle);
+  // Pre-load full catalog to identify sibling color products
+  useEffect(() => {
+    let active = true;
+    getFeaturedProducts(50)
+      .then(({ products }) => {
+        if (active) setCatalog(products);
+      })
+      .catch(() => {});
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  if (activeHandle !== prevHandle) {
+    setPrevHandle(activeHandle);
     setLoading(true);
     setError(null);
     setProduct(null);
+    setActiveVariant(null);
   }
 
   useEffect(() => {
     let active = true;
 
-    getProductByHandle(productHandle)
-      .then(({ product: foundProduct }) => {
+    const fetchProduct = async () => {
+      try {
+        let foundProduct: ShopifyProduct | null = null;
+
+        if (activeHandle) {
+          const res = await getProductByHandle(activeHandle);
+          foundProduct = res.product;
+        } else {
+          // If no handle provided (e.g. test route), fetch the first available product
+          const res = await getFeaturedProducts(1);
+          foundProduct = res.products[0] || null;
+        }
+
         if (!active) return;
 
         if (foundProduct) {
           setProduct(foundProduct);
           setError(null);
+
+          // Detect active color from this product's title or handle if separate products exist
+          const dynamicColors = getProductColors(foundProduct);
+          const currentProductColor =
+            dynamicColors.find((c) => {
+              const clean = c.trim().toLowerCase();
+              const slug = clean.replace(/\s+/g, "-");
+              return (
+                foundProduct.title.toLowerCase().includes(clean) ||
+                foundProduct.handle.toLowerCase().includes(slug)
+              );
+            }) || (dynamicColors.length > 0 ? dynamicColors[0] : "");
+
+          setSelectedColor(currentProductColor);
+          setSelectedSize("");
+
+          // Initialize active variant to the matching variant
+          const initialVariant = resolveProductVariant(
+            foundProduct,
+            "",
+            currentProductColor,
+          );
+          setActiveVariant(initialVariant);
+
           const recentlyViewedData = sessionStorage.getItem("recentlyViewed");
           const recentlyViewed: ShopifyProduct[] = recentlyViewedData
             ? JSON.parse(recentlyViewedData)
@@ -63,26 +115,81 @@ const ProductDetailPage = ({ productHandle }: ProductDetailPageProps) => {
               JSON.stringify(recentlyViewed),
             );
           }
-
         } else {
           setProduct(null);
+          setActiveVariant(null);
         }
-      })
-      .catch((err) => {
+      } catch (err) {
         if (!active) return;
         setError(err instanceof Error ? err.message : "Failed to load product details.");
         setProduct(null);
-      })
-      .finally(() => {
+        setActiveVariant(null);
+      } finally {
         if (active) {
           setLoading(false);
         }
-      });
+      }
+    };
+
+    fetchProduct();
 
     return () => {
       active = false;
     };
-  }, [productHandle]);
+  }, [activeHandle]);
+
+  // Color selection:
+  // 1. If separate products exist for each color in Shopify, navigate to that product's URL handle!
+  // 2. If variants belong to one single product, update state in-place.
+  const handleColorChange = useCallback(
+    (colorName: string, directVariant?: ShopifyProductVariant | null) => {
+      if (!product) return;
+
+      const cleanTarget = colorName.trim().toLowerCase();
+      if (selectedColor.toLowerCase() === cleanTarget) {
+        return;
+      }
+
+      // Check if separate product exists for this color
+      const siblingProduct = findSiblingProductForColor(product, colorName, catalog);
+      if (siblingProduct && siblingProduct.handle !== product.handle) {
+        navigate(`/products/${siblingProduct.handle}`);
+        return;
+      }
+
+      // Fallback: check predicted handle if catalog has it
+      const predicted = predictProductHandleForColor(product.handle, colorName);
+      if (
+        predicted &&
+        predicted !== product.handle &&
+        catalog.some((p) => p.handle.toLowerCase() === predicted.toLowerCase())
+      ) {
+        navigate(`/products/${predicted}`);
+        return;
+      }
+
+      // Single product setup: update state in-place
+      setSelectedColor(colorName);
+      const resolved =
+        resolveProductVariant(product, selectedSize, colorName) ||
+        directVariant ||
+        null;
+      setActiveVariant(resolved);
+    },
+    [product, selectedColor, selectedSize, catalog, navigate],
+  );
+
+  // Size selection: updates active variant matching both size and color
+  const handleSizeChange = useCallback(
+    (size: string) => {
+      setSelectedSize(size);
+      if (product) {
+        const resolved = resolveProductVariant(product, size, selectedColor);
+        setActiveVariant(resolved);
+      }
+    },
+    [product, selectedColor],
+  );
 
   const handleWishlistToggle = () => {
     if (!product) return;
@@ -105,8 +212,7 @@ const ProductDetailPage = ({ productHandle }: ProductDetailPageProps) => {
       return;
     }
 
-    const colorName = COLOR_NAMES[selectedColor] || "";
-    const variant = resolveProductVariant(product, selectedSize, colorName);
+    const variant = activeVariant || resolveProductVariant(product, selectedSize, selectedColor);
     if (!variant) {
       showToast("Selected option is not available");
       return;
@@ -146,8 +252,7 @@ const ProductDetailPage = ({ productHandle }: ProductDetailPageProps) => {
       return;
     }
 
-    const colorName = COLOR_NAMES[selectedColor] || "";
-    const variant = resolveProductVariant(product, selectedSize, colorName);
+    const variant = activeVariant || resolveProductVariant(product, selectedSize, selectedColor);
     if (!variant) {
       showToast("Selected option is not available");
       return;
@@ -194,7 +299,7 @@ const ProductDetailPage = ({ productHandle }: ProductDetailPageProps) => {
       showToast(msg);
       setBuyingNow(false);
     }
-  }, [product, selectedSize, selectedColor, quantity, buyingNow, navigate, showToast]);
+  }, [product, selectedSize, selectedColor, activeVariant, quantity, buyingNow, navigate, showToast]);
 
   if (loading) {
     return (
@@ -235,7 +340,11 @@ const ProductDetailPage = ({ productHandle }: ProductDetailPageProps) => {
         <div className="grid grid-cols-1 lg:grid-cols-[65%_35%] gap-12 lg:gap-20">
           {/* Left Side - Image Gallery */}
           <div className="h-full">
-            <ImageGallery product={product} selectedColor={selectedColor} />
+            <ImageGallery
+              product={product}
+              selectedColor={selectedColor}
+              activeVariant={activeVariant}
+            />
           </div>
 
           {/* Right Side - Sticky Product Info Panel */}
@@ -243,9 +352,11 @@ const ProductDetailPage = ({ productHandle }: ProductDetailPageProps) => {
             <ProductInfo
               product={product}
               selectedColor={selectedColor}
-              setSelectedColor={setSelectedColor}
+              setSelectedColor={handleColorChange}
               selectedSize={selectedSize}
-              setSelectedSize={setSelectedSize}
+              setSelectedSize={handleSizeChange}
+              activeVariant={activeVariant}
+              onColorChange={handleColorChange}
               quantity={quantity}
               setQuantity={setQuantity}
               isWishlisted={isWishlisted(product.id)}
