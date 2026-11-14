@@ -1,19 +1,37 @@
 import { useState, useEffect } from "react";
 import { getFeaturedProducts } from "../services/product.service";
+import { useCart } from "../hooks/useCart";
+import { resolveProductVariant, getProductSizes } from "../utils/variant";
 import type { ShopifyProduct } from "../types";
 import ProductCard from "../components/ProductCard";
 
-
-// ── Shirt sizes shown in the hover panel ──────────────────────────────────────
-const SIZES = ["S", "M", "L", "XL"];
-
 // ── Size selector panel — slides up on hover ──────────────────────────────────
-const SizeSelector = () => {
+const SizeSelector = ({ product }: { product: ShopifyProduct }) => {
   const [addedSize, setAddedSize] = useState<string | null>(null);
+  const [addingSize, setAddingSize] = useState<string | null>(null);
+  const { addToCart } = useCart();
+  const sizes = getProductSizes(product);
 
-  const handleAdd = (size: string) => {
-    setAddedSize(size);
-    setTimeout(() => setAddedSize(null), 1800);
+  const handleAdd = async (size: string) => {
+    if (addingSize) return;
+    setAddingSize(size);
+
+    try {
+      const variant = resolveProductVariant(product, size);
+      if (variant) {
+        await addToCart(variant.id, 1);
+        setAddedSize(size);
+        setTimeout(() => setAddedSize(null), 1800);
+      }
+    } catch {
+      window.dispatchEvent(
+        new CustomEvent("cart-toast", {
+          detail: { message: "Failed to add to bag", type: "error" },
+        }),
+      );
+    } finally {
+      setAddingSize(null);
+    }
   };
 
   return (
@@ -29,14 +47,15 @@ const SizeSelector = () => {
               Select size
             </p>
             <div className="flex flex-wrap justify-center gap-x-4 gap-y-1.5">
-              {SIZES.map((s) => (
+              {sizes.map((s) => (
                 <button
                   key={s}
                   type="button"
+                  disabled={addingSize === s}
                   onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleAdd(s); }}
-                  className="font-sans text-[11px] uppercase tracking-[0.1em] text-[#444] hover:text-[#111] hover:font-semibold transition-all duration-100 py-0.5"
+                  className="font-sans text-[11px] uppercase tracking-[0.1em] text-[#444] hover:text-[#111] hover:font-semibold transition-all duration-100 py-0.5 disabled:opacity-50"
                 >
-                  {s}
+                  {addingSize === s ? "..." : s}
                 </button>
               ))}
             </div>
@@ -52,6 +71,7 @@ const SizeSelector = () => {
 const NewArrivalsPage = () => {
   const [products, setProducts] = useState<ShopifyProduct[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -62,8 +82,9 @@ const NewArrivalsPage = () => {
           setProducts(featuredProducts);
         }
       })
-      .catch(() => {
+      .catch((err) => {
         if (active) {
+          setError(err instanceof Error ? err.message : "Failed to load new arrivals");
           setProducts([]);
         }
       })
@@ -100,13 +121,19 @@ const NewArrivalsPage = () => {
               Loading...
             </p>
           </div>
+        ) : error ? (
+          <div className="text-center py-20">
+            <p className="font-sans text-[13px] text-[#888] tracking-[0.02em] mb-4">
+              {error}
+            </p>
+          </div>
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-4 gap-[1px] bg-[#e0ddd8]">
             {products.map((product) => (
               <div key={product.id} className="bg-ivory p-0">
                 <ProductCard
                   product={product}
-                  imageChildren={<SizeSelector />}
+                  imageChildren={<SizeSelector product={product} />}
                 />
               </div>
             ))}

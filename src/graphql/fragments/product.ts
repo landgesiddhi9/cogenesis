@@ -12,6 +12,11 @@ export const PRODUCT_FIELDS_FRAGMENT = `
     featuredImage {
       ...ProductImageFields
     }
+    options {
+      id
+      name
+      values
+    }
     images(first: 20) {
       edges {
         node {

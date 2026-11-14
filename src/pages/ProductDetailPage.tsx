@@ -1,9 +1,11 @@
 import { useState, useEffect, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import { useWishlist } from "../hooks/useWishlist";
 import { useCart } from "../hooks/useCart";
 import { getProductByHandle } from "../services/product.service";
 import { createCart as serviceCreateCart, cartLinesAdd as serviceCartLinesAdd } from "../services/cart.service";
-import { readCartId, writeCartId } from "../utils/cartStorage";
+import { readCartId, writeCartId, removeCartId } from "../utils/cartStorage";
+import { resolveProductVariant, getProductSizes } from "../utils/variant";
 import ImageGallery from "../components/ProductDetail/ImageGallery";
 import ProductInfo from "../components/ProductDetail/ProductInfo";
 import ProductAccordion from "../components/ProductDetail/ProductAccordion";
@@ -15,9 +17,13 @@ interface ProductDetailPageProps {
   productHandle: string;
 }
 
+const COLOR_NAMES = ["White", "Beige", "Stone", "Olive", "Charcoal", "Black"];
+
 const ProductDetailPage = ({ productHandle }: ProductDetailPageProps) => {
+  const navigate = useNavigate();
   const [product, setProduct] = useState<ShopifyProduct | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [selectedColor, setSelectedColor] = useState(0);
   const [selectedSize, setSelectedSize] = useState("");
   const [quantity, setQuantity] = useState(1);
@@ -31,6 +37,7 @@ const ProductDetailPage = ({ productHandle }: ProductDetailPageProps) => {
   if (productHandle !== prevHandle) {
     setPrevHandle(productHandle);
     setLoading(true);
+    setError(null);
     setProduct(null);
   }
 
@@ -43,6 +50,7 @@ const ProductDetailPage = ({ productHandle }: ProductDetailPageProps) => {
 
         if (foundProduct) {
           setProduct(foundProduct);
+          setError(null);
           const recentlyViewedData = sessionStorage.getItem("recentlyViewed");
           const recentlyViewed: ShopifyProduct[] = recentlyViewedData
             ? JSON.parse(recentlyViewedData)
@@ -60,8 +68,9 @@ const ProductDetailPage = ({ productHandle }: ProductDetailPageProps) => {
           setProduct(null);
         }
       })
-      .catch(() => {
+      .catch((err) => {
         if (!active) return;
+        setError(err instanceof Error ? err.message : "Failed to load product details.");
         setProduct(null);
       })
       .finally(() => {
@@ -85,18 +94,26 @@ const ProductDetailPage = ({ productHandle }: ProductDetailPageProps) => {
   }, []);
 
   const handleAddToCart = async () => {
-    if (!selectedSize) {
-      showToast("Please select a size");
-      return;
-    }
     if (!product) {
       showToast("Product not found");
       return;
     }
 
-    const variant = product.variants.find((v) => v.title === selectedSize);
+    const availableSizes = getProductSizes(product);
+    if (availableSizes.length > 0 && !selectedSize) {
+      showToast("Please select a size");
+      return;
+    }
+
+    const colorName = COLOR_NAMES[selectedColor] || "";
+    const variant = resolveProductVariant(product, selectedSize, colorName);
     if (!variant) {
-      showToast("Selected size is not available");
+      showToast("Selected option is not available");
+      return;
+    }
+
+    if (!variant.availableForSale) {
+      showToast("Selected item is currently out of stock");
       return;
     }
 
@@ -108,28 +125,36 @@ const ProductDetailPage = ({ productHandle }: ProductDetailPageProps) => {
       await addToCartService(variant.id, quantity);
       setShowSuccess(true);
       setTimeout(() => setShowSuccess(false), 2000);
-    } catch {
-      showToast("Failed to add to cart. Please try again.");
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Failed to add to cart. Please try again.";
+      showToast(msg);
     } finally {
       setAddingToCart(false);
     }
   };
 
-  // Buy Now: directly calls Shopify cart service (bypasses CartProvider)
-  // so the CartToast "Product added to cart" notification does NOT fire.
+  // Buy Now: adds variant to cart and navigates directly to Shopify checkoutUrl
   const handleBuyNow = useCallback(async () => {
-    if (!selectedSize) {
-      showToast("Please select a size");
-      return;
-    }
     if (!product) {
       showToast("Product not found");
       return;
     }
 
-    const variant = product.variants.find((v) => v.title === selectedSize);
+    const availableSizes = getProductSizes(product);
+    if (availableSizes.length > 0 && !selectedSize) {
+      showToast("Please select a size");
+      return;
+    }
+
+    const colorName = COLOR_NAMES[selectedColor] || "";
+    const variant = resolveProductVariant(product, selectedSize, colorName);
     if (!variant) {
-      showToast("Selected size is not available");
+      showToast("Selected option is not available");
+      return;
+    }
+
+    if (!variant.availableForSale) {
+      showToast("Selected item is currently out of stock");
       return;
     }
 
@@ -137,31 +162,39 @@ const ProductDetailPage = ({ productHandle }: ProductDetailPageProps) => {
     setBuyingNow(true);
 
     try {
-      // Get or create a cart ID directly via the service layer
       let cartId = readCartId();
+      let updatedCart: ShopifyProduct | any = null;
 
-      if (!cartId) {
-        const newCart = await serviceCreateCart();
-        writeCartId(newCart.id);
-        cartId = newCart.id;
+      if (cartId) {
+        try {
+          updatedCart = await serviceCartLinesAdd(cartId, [
+            { merchandiseId: variant.id, quantity },
+          ]);
+        } catch {
+          removeCartId();
+          cartId = null;
+        }
       }
 
-      // Add the item and get the updated cart with checkoutUrl
-      const updatedCart = await serviceCartLinesAdd(cartId, [
-        { merchandiseId: variant.id, quantity },
-      ]);
+      if (!cartId || !updatedCart) {
+        const newCart = await serviceCreateCart({
+          lines: [{ merchandiseId: variant.id, quantity }],
+        });
+        writeCartId(newCart.id);
+        updatedCart = newCart;
+      }
 
       if (updatedCart?.checkoutUrl) {
         window.location.href = updatedCart.checkoutUrl;
       } else {
-        // Fallback: navigate to the cart page
-        window.location.href = "/cart";
+        navigate("/cart");
       }
-    } catch {
-      showToast("Failed to proceed to checkout. Please try again.");
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Failed to proceed to checkout. Please try again.";
+      showToast(msg);
       setBuyingNow(false);
     }
-  }, [product, selectedSize, quantity, buyingNow]);
+  }, [product, selectedSize, selectedColor, quantity, buyingNow, navigate, showToast]);
 
   if (loading) {
     return (
@@ -171,10 +204,18 @@ const ProductDetailPage = ({ productHandle }: ProductDetailPageProps) => {
     );
   }
 
-  if (!product) {
+  if (error || !product) {
     return (
-      <div className="w-full h-screen flex items-center justify-center bg-ivory">
-        <p className="text-charcoal text-lg font-sans">Product not found</p>
+      <div className="w-full h-screen flex flex-col items-center justify-center bg-ivory px-6 text-center">
+        <p className="text-charcoal text-lg font-sans mb-4">
+          {error || "Product not found"}
+        </p>
+        <button
+          onClick={() => navigate("/men/view-all")}
+          className="text-xs uppercase tracking-[0.2em] font-sans text-charcoal border-b border-charcoal pb-0.5 hover:opacity-70 transition-opacity"
+        >
+          Return to Collection
+        </button>
       </div>
     );
   }
