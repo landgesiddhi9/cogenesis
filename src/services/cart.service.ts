@@ -1,10 +1,44 @@
 import { shopifyRequest, type ShopifyRequestOptions } from "../api/client";
-import { CART_CREATE_MUTATION, type CartCreateResponse } from "../graphql/mutations/cartCreate";
-import { CART_LINES_ADD_MUTATION, type CartLinesAddResponse, type CartLinesAddVariables } from "../graphql/mutations/cartLinesAdd";
-import { CART_LINES_UPDATE_MUTATION, type CartLinesUpdateResponse, type CartLinesUpdateVariables } from "../graphql/mutations/cartLinesUpdate";
-import { CART_LINES_REMOVE_MUTATION, type CartLinesRemoveResponse, type CartLinesRemoveVariables } from "../graphql/mutations/cartLinesRemove";
-import { GET_CART_QUERY, type GetCartResponse, type GetCartVariables } from "../graphql/queries/getCart";
+import {
+  CART_CREATE_MUTATION,
+  type CartCreateResponse,
+  type CartCreateVariables,
+} from "../graphql/mutations/cartCreate";
+import {
+  CART_LINES_ADD_MUTATION,
+  type CartLinesAddResponse,
+  type CartLinesAddVariables,
+} from "../graphql/mutations/cartLinesAdd";
+import {
+  CART_LINES_UPDATE_MUTATION,
+  type CartLinesUpdateResponse,
+  type CartLinesUpdateVariables,
+} from "../graphql/mutations/cartLinesUpdate";
+import {
+  CART_LINES_REMOVE_MUTATION,
+  type CartLinesRemoveResponse,
+  type CartLinesRemoveVariables,
+} from "../graphql/mutations/cartLinesRemove";
+import {
+  GET_CART_QUERY,
+  type GetCartResponse,
+  type GetCartVariables,
+} from "../graphql/queries/getCart";
 import type { ShopifyCart, ShopifyCartLine } from "../types";
+
+export interface CartCreateInput {
+  lines?: Array<{
+    merchandiseId: string;
+    quantity?: number;
+  }>;
+}
+
+function handleUserErrors(userErrors?: Array<{ message: string; field?: string[] }>) {
+  if (userErrors && userErrors.length > 0) {
+    const errorMsg = userErrors.map((e) => e.message).join("; ");
+    throw new Error(errorMsg);
+  }
+}
 
 function mapCartLine(node: {
   id: string;
@@ -94,9 +128,17 @@ function mapCart(apiCart: {
 }
 
 export async function createCart(
+  input?: CartCreateInput,
   options: ShopifyRequestOptions = {},
 ): Promise<ShopifyCart> {
-  const data = await shopifyRequest<CartCreateResponse>(CART_CREATE_MUTATION, undefined, options);
+  const variables: CartCreateVariables = input ? { input } : {};
+  const data = await shopifyRequest<CartCreateResponse, CartCreateVariables>(
+    CART_CREATE_MUTATION,
+    variables,
+    options,
+  );
+
+  handleUserErrors(data.cartCreate.userErrors);
 
   if (!data.cartCreate.cart) {
     throw new Error("Failed to create cart.");
@@ -129,6 +171,8 @@ export async function cartLinesAdd(
     options,
   );
 
+  handleUserErrors(data.cartLinesAdd.userErrors);
+
   return data.cartLinesAdd.cart ? mapCart(data.cartLinesAdd.cart) : null;
 }
 
@@ -143,6 +187,8 @@ export async function cartLinesUpdate(
     options,
   );
 
+  handleUserErrors(data.cartLinesUpdate.userErrors);
+
   return data.cartLinesUpdate.cart ? mapCart(data.cartLinesUpdate.cart) : null;
 }
 
@@ -156,6 +202,8 @@ export async function cartLinesRemove(
     { cartId, lineIds },
     options,
   );
+
+  handleUserErrors(data.cartLinesRemove.userErrors);
 
   return data.cartLinesRemove.cart ? mapCart(data.cartLinesRemove.cart) : null;
 }

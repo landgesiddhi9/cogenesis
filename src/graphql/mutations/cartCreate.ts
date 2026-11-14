@@ -5,8 +5,8 @@ export const CART_CREATE_MUTATION = `
   ${PRODUCT_IMAGE_FIELDS_FRAGMENT}
   ${CART_FIELDS_FRAGMENT}
 
-  mutation cartCreate {
-    cartCreate {
+  mutation cartCreate($input: CartInput) {
+    cartCreate(input: $input) {
       cart {
         ...CartFields
       }
@@ -17,6 +17,15 @@ export const CART_CREATE_MUTATION = `
     }
   }
 `;
+
+export interface CartCreateVariables {
+  input?: {
+    lines?: Array<{
+      merchandiseId: string;
+      quantity?: number;
+    }>;
+  };
+}
 
 export interface CartCreateResponse {
   cartCreate: {

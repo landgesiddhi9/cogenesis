@@ -4,6 +4,7 @@ import SizeRecommenderModal from "./SizeRecommenderModal";
 import type { ShopifyProduct } from "../../types";
 import SalePrice from "../SalePrice";
 import { getBestCompareAtPrice } from "../../utils/price";
+import { getProductSizes, resolveProductVariant } from "../../utils/variant";
 
 interface ProductInfoProps {
   product: ShopifyProduct;
@@ -30,8 +31,6 @@ const colors = [
   { name: "Black", hex: "#1A1512" },
 ];
 
-const sizes = ["S", "M", "L", "XL"];
-
 const ProductInfo = ({
   product,
   selectedColor,
@@ -49,7 +48,12 @@ const ProductInfo = ({
 }: ProductInfoProps) => {
   const [isSizeGuideOpen, setIsSizeGuideOpen] = useState(false);
   const [isSizeRecommenderOpen, setIsSizeRecommenderOpen] = useState(false);
-  const price = product.priceRange.minVariantPrice.amount;
+  const sizes = getProductSizes(product);
+  const colorName = colors[selectedColor]?.name;
+  const currentVariant = resolveProductVariant(product, selectedSize, colorName);
+  const price = currentVariant?.price?.amount || product.priceRange.minVariantPrice.amount;
+  const compareAtPrice = currentVariant?.compareAtPrice?.amount || getBestCompareAtPrice(product);
+  const isAvailable = currentVariant ? currentVariant.availableForSale : product.variants.some((v) => v.availableForSale);
   const fabric = product.tags
     .find((tag) => ["cotton", "linen", "linen-blend"].includes(tag))
     ?.toUpperCase();
@@ -97,7 +101,7 @@ const ProductInfo = ({
             lineHeight: 1,
           }}
         >
-          <SalePrice price={price} compareAtPrice={getBestCompareAtPrice(product)} />
+          <SalePrice price={price} compareAtPrice={compareAtPrice} />
         </div>
       </div>
 
@@ -133,38 +137,40 @@ const ProductInfo = ({
       </div>
 
       {/* Size Selection - 40px spacing below */}
-      <div className="pb-8">
-        <h3
-          className="text-sm text-charcoal/60 tracking-widest mb-5 uppercase"
-          style={{
-            fontFamily: "'Cormorant Garamond', 'Canela', serif",
-            fontSize: "16px",
-            fontWeight: 400,
-            letterSpacing: "0.15em",
-          }}
-        >
-          Size
-        </h3>
-        <div className="flex gap-4">
-          {sizes.map((size) => (
-            <button
-              key={size}
-              onClick={() => setSelectedSize(size)}
-              className={`w-11 h-11 text-sm font-light transition-all duration-300 rounded-sm ${
-                selectedSize === size
-                  ? "bg-charcoal text-white border border-charcoal"
-                  : "bg-white text-charcoal border border-stone/20 hover:bg-warm-brown/5 hover:border-charcoal/40"
-              }`}
-              style={{
-                fontFamily: "'Cormorant Garamond', 'Canela', serif",
-                fontWeight: 400,
-              }}
-            >
-              {size}
-            </button>
-          ))}
+      {sizes.length > 0 && (
+        <div className="pb-8">
+          <h3
+            className="text-sm text-charcoal/60 tracking-widest mb-5 uppercase"
+            style={{
+              fontFamily: "'Cormorant Garamond', 'Canela', serif",
+              fontSize: "16px",
+              fontWeight: 400,
+              letterSpacing: "0.15em",
+            }}
+          >
+            Size
+          </h3>
+          <div className="flex gap-4 flex-wrap">
+            {sizes.map((size) => (
+              <button
+                key={size}
+                onClick={() => setSelectedSize(size)}
+                className={`w-11 h-11 text-sm font-light transition-all duration-300 rounded-sm ${
+                  selectedSize === size
+                    ? "bg-charcoal text-white border border-charcoal"
+                    : "bg-white text-charcoal border border-stone/20 hover:bg-warm-brown/5 hover:border-charcoal/40"
+                }`}
+                style={{
+                  fontFamily: "'Cormorant Garamond', 'Canela', serif",
+                  fontWeight: 400,
+                }}
+              >
+                {size}
+              </button>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Size Guide & Size Recommender - Compact section */}
       <div className="grid grid-cols-2 gap-px border-t border-b border-stone/15 py-4">
@@ -242,7 +248,8 @@ const ProductInfo = ({
       <div className="space-y-2 pb-8">
         <button
           onClick={addToCart}
-          className="w-full bg-charcoal text-white py-4 font-light transition-colors duration-300 hover:bg-charcoal/90 tracking-wide border border-charcoal"
+          disabled={!isAvailable}
+          className="w-full bg-charcoal text-white py-4 font-light transition-colors duration-300 hover:bg-charcoal/90 tracking-wide border border-charcoal disabled:opacity-50 disabled:cursor-not-allowed"
           style={{
             fontFamily: "'Cormorant Garamond', 'Canela', serif",
             fontSize: "16px",
@@ -250,12 +257,12 @@ const ProductInfo = ({
             letterSpacing: "0.08em",
           }}
         >
-          Add to Cart
+          {!isAvailable ? "Out of Stock" : "Add to Cart"}
         </button>
         <button
           onClick={buyNow}
-          disabled={buyingNow}
-          className="w-full bg-white text-charcoal py-4 font-light transition-colors duration-300 hover:bg-charcoal/5 tracking-wide border border-charcoal disabled:opacity-60 disabled:cursor-not-allowed"
+          disabled={!isAvailable || buyingNow}
+          className="w-full bg-white text-charcoal py-4 font-light transition-colors duration-300 hover:bg-charcoal/5 tracking-wide border border-charcoal disabled:opacity-50 disabled:cursor-not-allowed"
           style={{
             fontFamily: "'Cormorant Garamond', 'Canela', serif",
             fontSize: "16px",

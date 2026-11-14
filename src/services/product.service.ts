@@ -7,6 +7,12 @@ import {
   type GetFeaturedProductsVariables,
 } from "../graphql/queries/getFeaturedProducts";
 import {
+  GET_ALL_PRODUCTS_QUERY,
+  type GetAllProductsResponse,
+  type GetAllProductsVariables,
+  type ShopifyAllProductsSortKeys,
+} from "../graphql/queries/getAllProducts";
+import {
   GET_PRODUCT_BY_HANDLE_QUERY,
   type GetProductByHandleResponse,
   type GetProductByHandleVariables,
@@ -68,6 +74,43 @@ export async function getFeaturedProducts(
   const raw = data.products.edges.map(({ node }) => node);
   const products = raw
     .map((node, index) => mapProductNode(node, `featured-product:${index}`))
+    .filter((product): product is ShopifyProduct => product !== null);
+
+  return { products, raw, pageInfo: data.products.pageInfo };
+}
+
+export interface GetAllProductsParams {
+  first?: number;
+  after?: string | null;
+  query?: string | null;
+  sortKey?: ShopifyAllProductsSortKeys | null;
+  reverse?: boolean | null;
+  options?: ShopifyRequestOptions;
+}
+
+export async function getAllProducts(
+  params: GetAllProductsParams = {},
+): Promise<FeaturedProductsResult> {
+  const { first = 250, after, query, sortKey, reverse, options = {} } = params;
+
+  const data = await shopifyRequest<
+    GetAllProductsResponse,
+    GetAllProductsVariables
+  >(
+    GET_ALL_PRODUCTS_QUERY,
+    {
+      first,
+      after: after ?? undefined,
+      query: query ?? undefined,
+      sortKey: sortKey ?? undefined,
+      reverse: reverse ?? undefined,
+    },
+    options,
+  );
+
+  const raw = data.products.edges.map(({ node }) => node);
+  const products = raw
+    .map((node, index) => mapProductNode(node, `all-product:${index}`))
     .filter((product): product is ShopifyProduct => product !== null);
 
   return { products, raw, pageInfo: data.products.pageInfo };

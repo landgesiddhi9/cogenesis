@@ -41,6 +41,10 @@ function mapShopifyVariant(variant: ShopifyApiProductVariant): ShopifyProductVar
       ? mapPrice(variant.compareAtPrice)
       : undefined,
     availableForSale: variant.availableForSale,
+    selectedOptions: variant.selectedOptions?.map((opt) => ({
+      name: opt.name,
+      value: opt.value,
+    })),
     image: variant.image ? mapShopifyImage(variant.image, variant.title) : undefined,
   };
 }
@@ -66,6 +70,12 @@ export function mapShopifyProduct(
       mapShopifyVariant(variantNode),
     ) ?? [];
 
+  const options = node.options?.map((opt) => ({
+    id: opt.id,
+    name: opt.name,
+    values: opt.values,
+  }));
+
   return {
     id: node.id,
     title: node.title,
@@ -78,6 +88,7 @@ export function mapShopifyProduct(
     featuredImage,
     images: images.length > 0 ? images : [featuredImage],
     variants,
+    options,
     priceRange: {
       minVariantPrice: mapPrice(node.priceRange.minVariantPrice),
       maxVariantPrice: mapPrice(node.priceRange.maxVariantPrice),

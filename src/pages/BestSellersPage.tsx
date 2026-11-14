@@ -87,6 +87,7 @@ function getSortedFilteredProducts(
 
 const BestSellersPage = () => {
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [mobileColumns, setMobileColumns] = useState(2);
   const [desktopColumns, setDesktopColumns] = useState(4);
   const [sortBy, setSortBy] = useState("best-selling");
@@ -100,9 +101,13 @@ const BestSellersPage = () => {
       .then((result) => {
         if (!active) return;
         setAllProducts(result);
+        setError(null);
       })
-      .catch(() => {
-        if (active) setAllProducts([]);
+      .catch((err) => {
+        if (active) {
+          setError(err instanceof Error ? err.message : "Failed to load best sellers");
+          setAllProducts([]);
+        }
       })
       .finally(() => {
         if (active) setLoading(false);
@@ -205,6 +210,10 @@ const BestSellersPage = () => {
         {loading ? (
           <div className="text-center py-20">
             <p className="text-center text-lg text-charcoal font-sans">Loading...</p>
+          </div>
+        ) : error ? (
+          <div className="text-center py-20">
+            <p className="text-center text-lg text-charcoal font-sans mb-4">{error}</p>
           </div>
         ) : products.length === 0 ? (
           <div className="text-center py-20">

@@ -1,3 +1,4 @@
+import { getAllProducts as fetchAllProducts } from "./product.service";
 import { shopifyRequest, type ShopifyRequestOptions } from "../api/client";
 import {
   mapShopifyCollection,
@@ -149,21 +150,10 @@ export async function getAllCollections(
 export async function getAllProducts(
   options: ShopifyRequestOptions = {},
 ): Promise<CollectionProductsResult> {
-  const collections = await getAllCollections(50, options);
-  const handles = collections.map((c) => c.handle);
-
-  const results = await Promise.all(
-    handles.map((handle) => getProductsByCollection({ handle, options })),
-  );
-
-  const seen = new Set<string>();
-  const products = results.flatMap(({ products }) =>
-    products.filter((p) => {
-      if (seen.has(p.id)) return false;
-      seen.add(p.id);
-      return true;
-    }),
-  );
-
-  return { products, raw: [], pageInfo: { hasNextPage: false, hasPreviousPage: false, endCursor: "" } };
+  const result = await fetchAllProducts({ options });
+  return {
+    products: result.products,
+    raw: result.raw,
+    pageInfo: result.pageInfo,
+  };
 }
