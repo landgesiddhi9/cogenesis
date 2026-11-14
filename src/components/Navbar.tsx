@@ -76,13 +76,6 @@ const Navbar = () => {
     return () => observer.disconnect();
   }, []);
 
-  // Sync CSS variable for chatbot position
-  useEffect(() => {
-    document.documentElement.style.setProperty(
-      "--bottom-nav-height",
-      showBottomNav ? "56px" : "0px",
-    );
-  }, [showBottomNav]);
 
   // Lock body scroll when menu OR search overlay is open (preserve scroll position)
   useEffect(() => {
