@@ -4,19 +4,37 @@ import { useCart } from "../hooks/useCart";
 import { useWishlist } from "../hooks/useWishlist";
 import { getFeaturedProducts } from "../services/product.service";
 import { shopifyImageUrl } from "../utils/shopifyImage";
+import { resolveProductVariant, getProductSizes } from "../utils/variant";
 import type { ShopifyProduct } from "../types";
 import ProductCard from "../components/ProductCard";
 
-// ── Shared constants for the product strip ─────────────────────────────────────────
-const SIZES = ["S", "M", "L", "XL"];
-
 // ── Size selector panel for "May Interest You" strip ───────────────────────────
-const SizeSelector = () => {
+const SizeSelector = ({ product }: { product: ShopifyProduct }) => {
   const [addedSize, setAddedSize] = useState<string | null>(null);
+  const [addingSize, setAddingSize] = useState<string | null>(null);
+  const { addToCart } = useCart();
+  const sizes = getProductSizes(product);
 
-  const handleAdd = (size: string) => {
-    setAddedSize(size);
-    setTimeout(() => setAddedSize(null), 1800);
+  const handleAdd = async (size: string) => {
+    if (addingSize) return;
+    setAddingSize(size);
+
+    try {
+      const variant = resolveProductVariant(product, size);
+      if (variant) {
+        await addToCart(variant.id, 1);
+        setAddedSize(size);
+        setTimeout(() => setAddedSize(null), 1800);
+      }
+    } catch {
+      window.dispatchEvent(
+        new CustomEvent("cart-toast", {
+          detail: { message: "Failed to add item to bag", type: "error" },
+        }),
+      );
+    } finally {
+      setAddingSize(null);
+    }
   };
 
   return (
@@ -28,14 +46,15 @@ const SizeSelector = () => {
           </p>
         ) : (
           <div className="flex flex-wrap justify-center gap-x-3 gap-y-1.5">
-            {SIZES.map((s) => (
+            {sizes.map((s) => (
               <button
                 key={s}
                 type="button"
+                disabled={addingSize === s}
                 onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleAdd(s); }}
-                className="font-sans text-[10px] uppercase tracking-[0.1em] text-[#444] hover:text-[#111] hover:font-semibold transition-all duration-100 py-0.5"
+                className="font-sans text-[10px] uppercase tracking-[0.1em] text-[#444] hover:text-[#111] hover:font-semibold transition-all duration-100 py-0.5 disabled:opacity-50"
               >
-                {s}
+                {addingSize === s ? "..." : s}
               </button>
             ))}
           </div>
@@ -94,7 +113,7 @@ const formatPrice = (amount: string, currency: string) => {
 // See docs/shopify-checkout.md for details on future custom order success page.
 const CartPage = () => {
   const navigate = useNavigate();
-  const { cart, updateCartLine, removeCartLine } = useCart();
+  const { cart, loading, error, updateCartLine, removeCartLine } = useCart();
   const { isWishlisted, toggleWishlist } = useWishlist();
   const [processingLines, setProcessingLines] = useState<Set<string>>(new Set());
   const [checkoutLoading, setCheckoutLoading] = useState(false);
@@ -203,6 +222,29 @@ const CartPage = () => {
       });
     }
   };
+
+  if (loading) {
+    return (
+      <main className="bg-ivory min-h-[100svh] pb-24 flex flex-col items-center justify-center">
+        <p className="font-sans text-[13px] text-[#888] tracking-[0.02em]">Loading shopping bag...</p>
+      </main>
+    );
+  }
+
+  if (error && (!cart || cart.lines.length === 0)) {
+    return (
+      <main className="bg-ivory min-h-[100svh] pb-24 flex flex-col items-center justify-center px-6 text-center">
+        <p className="font-sans text-[13px] text-[#888] tracking-[0.02em] mb-4">{error}</p>
+        <button
+          type="button"
+          onClick={() => window.location.reload()}
+          className="font-sans text-[11px] uppercase tracking-[0.2em] text-[#111] border-b border-[#111] pb-0.5 hover:opacity-70 transition-opacity"
+        >
+          Try Again
+        </button>
+      </main>
+    );
+  }
 
   const hasItems = cart && cart.lines.length > 0;
 
@@ -388,7 +430,7 @@ const CartPage = () => {
                   product={p}
                   wishlisted={isWishlisted(p.id)}
                   onWishlistToggle={toggleWishlist}
-                  imageChildren={<SizeSelector />}
+                  imageChildren={<SizeSelector product={p} />}
                   showImageControls={false}
                 />
               </div>

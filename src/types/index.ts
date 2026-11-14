@@ -21,12 +21,24 @@ export interface ShopifyPrice {
   currencyCode: string;
 }
 
+export interface ShopifySelectedOption {
+  name: string;
+  value: string;
+}
+
+export interface ShopifyProductOption {
+  id?: string;
+  name: string;
+  values: string[];
+}
+
 export interface ShopifyProductVariant {
   id: string;
   title: string;
   price: ShopifyPrice;
   compareAtPrice?: ShopifyPrice;
   availableForSale: boolean;
+  selectedOptions?: ShopifySelectedOption[];
   image?: ShopifyImage;
 }
 
@@ -42,6 +54,7 @@ export interface ShopifyProduct {
   featuredImage: ShopifyImage;
   images: ShopifyImage[];
   variants: ShopifyProductVariant[];
+  options?: ShopifyProductOption[];
   priceRange: {
     minVariantPrice: ShopifyPrice;
     maxVariantPrice: ShopifyPrice;

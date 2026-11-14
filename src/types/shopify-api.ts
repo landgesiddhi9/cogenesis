@@ -11,10 +11,22 @@ export interface ShopifyApiImage {
   height?: number | null;
 }
 
+export interface ShopifyApiSelectedOption {
+  name: string;
+  value: string;
+}
+
+export interface ShopifyApiProductOption {
+  id?: string;
+  name: string;
+  values: string[];
+}
+
 export interface ShopifyApiProductVariant {
   id: string;
   title: string;
   availableForSale: boolean;
+  selectedOptions?: ShopifyApiSelectedOption[];
   price: ShopifyApiMoney;
   compareAtPrice?: ShopifyApiMoney | null;
   image?: ShopifyApiImage | null;
@@ -31,6 +43,7 @@ export interface ShopifyApiProduct {
   vendor: string;
   availableForSale: boolean;
   featuredImage?: ShopifyApiImage | null;
+  options?: ShopifyApiProductOption[];
   images?: {
     edges: Array<{
       node: ShopifyApiImage;

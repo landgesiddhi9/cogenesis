@@ -107,6 +107,7 @@ function getSortedFilteredProducts(
 
 const CollectionsPage = () => {
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [mobileColumns, setMobileColumns] = useState(2);
   const [desktopColumns, setDesktopColumns] = useState(4);
   const [sortBy, setSortBy] = useState("featured");
@@ -121,6 +122,7 @@ const CollectionsPage = () => {
   if (activeTab !== prevTab) {
     setPrevTab(activeTab);
     setLoading(true);
+    setError(null);
   }
 
   const tabs = buildCollectionTabs(collections);
@@ -151,9 +153,13 @@ const CollectionsPage = () => {
       .then((result) => {
         if (!active) return;
         setBaseProducts(result);
+        setError(null);
       })
-      .catch(() => {
-        if (active) setBaseProducts([]);
+      .catch((err) => {
+        if (active) {
+          setError(err instanceof Error ? err.message : "Failed to load products");
+          setBaseProducts([]);
+        }
       })
       .finally(() => {
         if (active) setLoading(false);
@@ -245,6 +251,10 @@ const CollectionsPage = () => {
         {loading ? (
           <div className="text-center py-20">
             <p className="text-center text-lg text-charcoal font-sans">Loading...</p>
+          </div>
+        ) : error ? (
+          <div className="text-center py-20">
+            <p className="text-center text-lg text-charcoal font-sans mb-4">{error}</p>
           </div>
         ) : products.length === 0 ? (
           <div className="text-center py-20">

@@ -21,6 +21,7 @@ export const CART_FIELDS_FRAGMENT = `
               }
               product {
                 title
+                handle
                 featuredImage {
                   ...ProductImageFields
                 }
