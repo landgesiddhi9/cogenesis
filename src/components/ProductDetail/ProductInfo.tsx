@@ -1,15 +1,15 @@
 import { useState } from "react";
 import SizeGuideDrawer from "./SizeGuideDrawer";
 import SizeRecommenderModal from "./SizeRecommenderModal";
-import type { ShopifyProduct } from "../../types";
+import type { ShopifyProduct, ShopifyProductVariant } from "../../types";
 import SalePrice from "../SalePrice";
 import { getBestCompareAtPrice } from "../../utils/price";
-import { getProductSizes, resolveProductVariant } from "../../utils/variant";
+import { getProductSizes, getProductColorOptions, resolveProductVariant } from "../../utils/variant";
 
 interface ProductInfoProps {
   product: ShopifyProduct;
-  selectedColor: number;
-  setSelectedColor: (index: number) => void;
+  selectedColor: string;
+  setSelectedColor: (color: string) => void;
   selectedSize: string;
   setSelectedSize: (size: string) => void;
   quantity: number;
@@ -20,16 +20,9 @@ interface ProductInfoProps {
   buyNow: () => void;
   buyingNow: boolean;
   description: string;
+  activeVariant?: ShopifyProductVariant | null;
+  onColorChange?: (colorName: string, variant?: ShopifyProductVariant | null) => void;
 }
-
-const colors = [
-  { name: "White", hex: "#FFFFFF" },
-  { name: "Beige", hex: "#F5E6D3" },
-  { name: "Stone", hex: "#D4C5B0" },
-  { name: "Olive", hex: "#6B7043" },
-  { name: "Charcoal", hex: "#2A2420" },
-  { name: "Black", hex: "#1A1512" },
-];
 
 const ProductInfo = ({
   product,
@@ -45,12 +38,14 @@ const ProductInfo = ({
   buyNow,
   buyingNow,
   description,
+  activeVariant,
+  onColorChange,
 }: ProductInfoProps) => {
   const [isSizeGuideOpen, setIsSizeGuideOpen] = useState(false);
   const [isSizeRecommenderOpen, setIsSizeRecommenderOpen] = useState(false);
   const sizes = getProductSizes(product);
-  const colorName = colors[selectedColor]?.name;
-  const currentVariant = resolveProductVariant(product, selectedSize, colorName);
+  const colorOptions = getProductColorOptions(product);
+  const currentVariant = activeVariant || resolveProductVariant(product, selectedSize, selectedColor);
   const price = currentVariant?.price?.amount || product.priceRange.minVariantPrice.amount;
   const compareAtPrice = currentVariant?.compareAtPrice?.amount || getBestCompareAtPrice(product);
   const isAvailable = currentVariant ? currentVariant.availableForSale : product.variants.some((v) => v.availableForSale);
@@ -105,36 +100,77 @@ const ProductInfo = ({
         </div>
       </div>
 
-      {/* Color Swatches - 40px spacing below */}
-      <div className="pb-8">
-        <h3
-          className="text-sm text-charcoal/60 tracking-widest mb-5 uppercase"
-          style={{
-            fontFamily: "'Cormorant Garamond', 'Canela', serif",
-            fontSize: "16px",
-            fontWeight: 400,
-            letterSpacing: "0.15em",
-          }}
-        >
-          Colour
-        </h3>
-        <div className="flex gap-4 flex-wrap">
-          {colors.map((color, idx) => (
-            <button
-              key={color.name}
-              onClick={() => setSelectedColor(idx)}
-              className={`w-8 h-8 rounded transition-all duration-300 ${
-                selectedColor === idx
-                  ? "border border-charcoal"
-                  : "border border-stone/20 hover:border-charcoal/40"
-              }`}
-              style={{ backgroundColor: color.hex }}
-              title={color.name}
-              aria-label={color.name}
-            />
-          ))}
+      {/* Color Swatches - Render dynamically from Shopify options */}
+      {colorOptions.length > 0 && (
+        <div className="pb-8">
+          <h3
+            className="text-sm text-charcoal/60 tracking-widest mb-5 uppercase flex items-center"
+            style={{
+              fontFamily: "'Cormorant Garamond', 'Canela', serif",
+              fontSize: "16px",
+              fontWeight: 400,
+              letterSpacing: "0.15em",
+            }}
+          >
+            <span>Colour</span>
+            {selectedColor && (
+              <span
+                className="normal-case text-charcoal/80 ml-2 text-sm font-normal tracking-normal"
+                style={{ fontFamily: "'Inter', sans-serif" }}
+              >
+                — {selectedColor}
+              </span>
+            )}
+          </h3>
+          <div className="flex gap-3 flex-wrap items-center">
+            {colorOptions.map((opt) => {
+              const isSelected =
+                Boolean(selectedColor) &&
+                selectedColor.toLowerCase() === opt.name.toLowerCase();
+
+              return (
+                <div
+                  key={opt.name}
+                  className={`p-[2px] rounded-full transition-all duration-200 flex items-center justify-center ${
+                    isSelected
+                      ? "ring-2 ring-charcoal ring-offset-2 ring-offset-ivory"
+                      : "hover:ring-1 hover:ring-charcoal/30"
+                  }`}
+                >
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSelectedColor(opt.name);
+                      onColorChange?.(opt.name, opt.variant);
+                    }}
+                    className={`w-9 h-9 rounded-full relative flex items-center justify-center overflow-hidden border transition-transform duration-200 ${
+                      isSelected
+                        ? "border-charcoal/20 shadow-sm scale-100"
+                        : "border-stone/20 hover:border-charcoal/40 opacity-95 hover:opacity-100"
+                    } ${!opt.availableForSale ? "opacity-40" : ""}`}
+                    style={{
+                      backgroundColor: opt.hex,
+                      backgroundImage: opt.swatchImageUrl
+                        ? `url(${opt.swatchImageUrl})`
+                        : undefined,
+                      backgroundSize: opt.swatchImageUrl ? "380%" : "cover",
+                      backgroundPosition: opt.swatchImageUrl ? "center 30%" : "center",
+                      backgroundRepeat: "no-repeat",
+                    }}
+                    title={`${opt.name}${!opt.availableForSale ? " (Out of Stock)" : ""}`}
+                    aria-label={`Select colour ${opt.name}${!opt.availableForSale ? " - Out of stock" : ""}`}
+                  >
+                    {/* Subtle diagonal line if out of stock */}
+                    {!opt.availableForSale && (
+                      <span className="w-full h-[1px] bg-charcoal/70 transform rotate-45 pointer-events-none z-10" />
+                    )}
+                  </button>
+                </div>
+              );
+            })}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Size Selection - 40px spacing below */}
       {sizes.length > 0 && (

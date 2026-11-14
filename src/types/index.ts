@@ -26,10 +26,22 @@ export interface ShopifySelectedOption {
   value: string;
 }
 
+export interface ShopifyOptionValueSwatch {
+  color?: string | null;
+  imageUrl?: string | null;
+}
+
+export interface ShopifyOptionValue {
+  id: string;
+  name: string;
+  swatch?: ShopifyOptionValueSwatch | null;
+}
+
 export interface ShopifyProductOption {
   id?: string;
   name: string;
   values: string[];
+  optionValues?: ShopifyOptionValue[];
 }
 
 export interface ShopifyProductVariant {

@@ -16,6 +16,18 @@ export const PRODUCT_FIELDS_FRAGMENT = `
       id
       name
       values
+      optionValues {
+        id
+        name
+        swatch {
+          color
+          image {
+            previewImage {
+              url
+            }
+          }
+        }
+      }
     }
     images(first: 20) {
       edges {

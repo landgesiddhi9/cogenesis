@@ -16,10 +16,26 @@ export interface ShopifyApiSelectedOption {
   value: string;
 }
 
+export interface ShopifyApiSwatch {
+  color?: string | null;
+  image?: {
+    previewImage?: {
+      url?: string | null;
+    } | null;
+  } | null;
+}
+
+export interface ShopifyApiOptionValue {
+  id: string;
+  name: string;
+  swatch?: ShopifyApiSwatch | null;
+}
+
 export interface ShopifyApiProductOption {
   id?: string;
   name: string;
   values: string[];
+  optionValues?: ShopifyApiOptionValue[];
 }
 
 export interface ShopifyApiProductVariant {
