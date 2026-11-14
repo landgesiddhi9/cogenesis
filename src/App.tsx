@@ -14,8 +14,8 @@ import Footer from "./components/Footer";
 
 import ErrorBoundary from "./components/ErrorBoundary";
 import LoadingFallback from "./components/LoadingFallback";
-import AIAssistant from "./components/AIAssistant";
 import { CartToast } from "./components/CartToast";
+import ChatAssistant from "./components/ChatAssistant";
 
 const CollectionPage = lazy(() => import("./pages/CollectionPage"));
 const LaunchingSoonPage = lazy(() => import("./pages/LaunchingSoonPage"));
@@ -170,8 +170,8 @@ function App() {
 
       {!isLoginPage && <Footer />}
 
-      <AIAssistant />
       <CartToast />
+      <ChatAssistant />
     </div>
   );
 }
