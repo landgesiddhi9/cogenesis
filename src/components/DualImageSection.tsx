@@ -11,26 +11,29 @@ const DualImageSection = () => {
   return (
     <section
       ref={ref}
-      className="w-full h-screen max-h-screen overflow-hidden bg-ivory flex items-center justify-center px-6 py-8 md:px-10 md:py-10 lg:px-16 lg:py-12"
+      className="w-full bg-ivory"
+      style={{ padding: '48px 40px' }}
     >
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-6 lg:gap-8 w-full max-w-7xl h-full max-h-[calc(100vh-6rem)]">
+      <div
+        className="grid grid-cols-1 md:grid-cols-2 w-full"
+        style={{ maxWidth: '900px', margin: '0 auto', gap: '36px' }}
+      >
         {dualImages.map((img, i) => (
           <div
             key={img.src}
-            className={`overflow-hidden transition-all duration-1000 ease-out ${
+            className={`transition-all duration-1000 ease-out ${
               isInView
                 ? 'opacity-100 translate-y-0'
                 : 'opacity-0 translate-y-8'
             }`}
             style={{ transitionDelay: `${i * 200}ms` }}
           >
-            <div className="relative w-full h-full max-h-[75vh] overflow-hidden">
-              <img
-                src={img.src}
-                alt={img.alt}
-                className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-out hover:scale-[1.03]"
-              />
-            </div>
+            <img
+              src={img.src}
+              alt={img.alt}
+              className="w-full transition-transform duration-700 ease-out hover:scale-[1.03]"
+              style={{ height: 'auto', display: 'block' }}
+            />
           </div>
         ))}
       </div>
