@@ -37,6 +37,13 @@ const ImageGallery = ({
   // Main featured image state
   const [activeImage, setActiveImage] = useState<string>(defaultImage);
 
+  // Reset active image when product changes
+  useEffect(() => {
+    if (defaultImage) {
+      setActiveImage(defaultImage);
+    }
+  }, [product.id, defaultImage]);
+
   // Automatically update the main image whenever the selected color or active variant changes
   useEffect(() => {
     // 1. Direct variant image from activeVariant
@@ -62,11 +69,11 @@ const ImageGallery = ({
       }
     }
 
-    // 3. Fallback to default featured image if no activeImage is set
-    if (!activeImage && defaultImage) {
+    // 3. Fallback to default featured image
+    if (defaultImage) {
       setActiveImage(defaultImage);
     }
-  }, [activeVariant, selectedColor, product, defaultImage]);
+  }, [product.id, activeVariant, selectedColor, defaultImage]);
 
   const labels = [
     "Front View",

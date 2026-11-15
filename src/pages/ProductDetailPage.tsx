@@ -5,7 +5,12 @@ import { useCart } from "../hooks/useCart";
 import { getProductByHandle, getFeaturedProducts } from "../services/product.service";
 import { createCart as serviceCreateCart, cartLinesAdd as serviceCartLinesAdd } from "../services/cart.service";
 import { readCartId, writeCartId, removeCartId } from "../utils/cartStorage";
-import { resolveProductVariant, getProductSizes, getProductColors, findSiblingProductForColor, predictProductHandleForColor } from "../utils/variant";
+import {
+  resolveProductVariant,
+  getProductSizes,
+  getProductColors,
+  resolveSiblingHandleForColor,
+} from "../utils/variant";
 import ImageGallery from "../components/ProductDetail/ImageGallery";
 import ProductInfo from "../components/ProductDetail/ProductInfo";
 import ProductAccordion from "../components/ProductDetail/ProductAccordion";
@@ -146,29 +151,18 @@ const ProductDetailPage = ({ productHandle }: ProductDetailPageProps) => {
       if (!product) return;
 
       const cleanTarget = colorName.trim().toLowerCase();
-      if (selectedColor.toLowerCase() === cleanTarget) {
+      if (selectedColor.trim().toLowerCase() === cleanTarget) {
         return;
       }
 
-      // Check if separate product exists for this color
-      const siblingProduct = findSiblingProductForColor(product, colorName, catalog);
-      if (siblingProduct && siblingProduct.handle !== product.handle) {
-        navigate(`/products/${siblingProduct.handle}`);
+      // 1. Check if a separate sibling product exists for this color in the store
+      const targetHandle = resolveSiblingHandleForColor(product, colorName, catalog);
+      if (targetHandle && targetHandle.toLowerCase() !== product.handle.toLowerCase()) {
+        navigate(`/products/${targetHandle}`);
         return;
       }
 
-      // Fallback: check predicted handle if catalog has it
-      const predicted = predictProductHandleForColor(product.handle, colorName);
-      if (
-        predicted &&
-        predicted !== product.handle &&
-        catalog.some((p) => p.handle.toLowerCase() === predicted.toLowerCase())
-      ) {
-        navigate(`/products/${predicted}`);
-        return;
-      }
-
-      // Single product setup: update state in-place
+      // 2. Single product setup: update state in-place
       setSelectedColor(colorName);
       const resolved =
         resolveProductVariant(product, selectedSize, colorName) ||
@@ -365,6 +359,7 @@ const ProductDetailPage = ({ productHandle }: ProductDetailPageProps) => {
               buyNow={handleBuyNow}
               buyingNow={buyingNow}
               description={productDescription}
+              catalog={catalog}
             />
 
             {/* Success notification */}

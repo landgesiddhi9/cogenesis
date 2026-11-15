@@ -5,7 +5,9 @@ export interface ColorSwatch {
 
 export const COLOR_PALETTE: Record<string, string> = {
   // Monochromes & Neutrals
-  white: "#FFFFFF",
+  white: "#F5F3EE",
+  "pure white": "#FFFFFF",
+  "milk white": "#F4F1EA",
   "off white": "#FAF9F6",
   "off-white": "#FAF9F6",
   ivory: "#FDFBF7",
@@ -14,6 +16,7 @@ export const COLOR_PALETTE: Record<string, string> = {
   bone: "#E3DAC9",
   alabaster: "#EDEAE0",
   black: "#1A1512",
+  "deep black": "#111111",
   charcoal: "#2A2420",
   anthracite: "#383E42",
   onyx: "#0F0F0F",
@@ -33,6 +36,12 @@ export const COLOR_PALETTE: Record<string, string> = {
   // Earth tones & Browns
   beige: "#F5E6D3",
   sand: "#D8C6A8",
+  "beach sand": "#D5C4A1",
+  sandstone: "#C9B496",
+  clay: "#A86D58",
+  butter: "#E8DCB8",
+  cocoa: "#5C4033",
+  driftwood: "#847A75",
   khaki: "#C3B091",
   tan: "#D2B48C",
   camel: "#C19A6B",
@@ -53,7 +62,8 @@ export const COLOR_PALETTE: Record<string, string> = {
   sepia: "#704214",
 
   // Blues
-  navy: "#0F2847",
+  navy: "#1B2A4A",
+  "navy blue": "#1B2A4A",
   "midnight blue": "#191970",
   midnight: "#12192C",
   blue: "#2B547E",
@@ -75,6 +85,7 @@ export const COLOR_PALETTE: Record<string, string> = {
 
   // Greens
   olive: "#6B7043",
+  "olive mist": "#7A8471",
   "olive green": "#556B2F",
   sage: "#9CAF88",
   forest: "#228B22",
@@ -93,6 +104,8 @@ export const COLOR_PALETTE: Record<string, string> = {
   // Reds, Pinks & Purples
   burgundy: "#800020",
   maroon: "#800000",
+  "rust red": "#B42D3F",
+  mandarin: "#D97443",
   wine: "#722F37",
   bordeaux: "#5C061C",
   merlot: "#730039",
