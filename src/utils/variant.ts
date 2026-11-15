@@ -134,6 +134,215 @@ export function getProductColors(product: ShopifyProduct | null | undefined): st
   return [];
 }
 
+/**
+ * Predicts a product handle based on a base product handle and a target color name.
+ */
+export function predictProductHandleForColor(
+  currentHandle: string,
+  targetColor: string,
+): string {
+  const targetSlug = targetColor.trim().toLowerCase().replace(/\s+/g, "-");
+
+  // Special case: "Mandarin" collar shirt uses base handle "cuban-collar-shirt"
+  if (targetSlug === "mandarin" && currentHandle.includes("cuban-collar-shirt")) {
+    return "cuban-collar-shirt";
+  }
+
+  const handleParts = currentHandle.split("-");
+  for (let i = 1; i <= 3; i++) {
+    const base = handleParts.slice(0, handleParts.length - i).join("-");
+    if (base.length > 3) {
+      return `${base}-${targetSlug}`;
+    }
+  }
+
+  return `${currentHandle}-${targetSlug}`;
+}
+
+/**
+ * Hardcoded map of known product families and their sibling handles for instantaneous navigation
+ * with zero network delay or catalog fetching dependency.
+ */
+export const KNOWN_FAMILY_COLOR_MAP: Record<string, Record<string, string>> = {
+  "cuban-collar": {
+    mandarin: "cuban-collar-shirt",
+    black: "linen-blend-cuban-collar-shirt-black",
+    clay: "linen-blend-cuban-collar-shirt-clay",
+    "midnight blue": "linen-blend-cuban-collar-shirt-midnight-blue",
+    olive: "linen-blend-cuban-collar-shirt-olive",
+    sandstone: "linen-blend-cuban-collar-shirt-sandstone",
+  },
+  "single-pocket": {
+    butter: "linen-blend-single-pocket-butter",
+    "beach sand": "linen-blend-single-pocket-beach-sand",
+    cocoa: "linen-blend-single-pocket-cocoa",
+    "deep black": "linen-blend-single-pocket-deep-black",
+    black: "linen-blend-single-pocket-deep-black",
+    "sky blue": "linen-blend-single-pocket-sky-blue",
+    "olive mist": "linen-blend-single-pocket-olive-mist",
+  },
+  trouser: {
+    white: "linen-blend-trouser-white",
+    navy: "line-trousers-navy-blue",
+    "navy blue": "line-trousers-navy-blue",
+    beige: "linen-trousers-beige",
+  },
+  "double-pocket": {
+    driftwood: "pure-linen-double-pocket-driftwood",
+    "rust red": "pure-linen-double-pocket-rust-red",
+    peach: "pure-linen-double-pocket-peach",
+    "navy blue": "pure-linen-double-pocket-navy-blue",
+    navy: "pure-linen-double-pocket-navy-blue",
+    "milk white": "pure-linen-double-pocket-milk-white",
+    white: "pure-linen-double-pocket-milk-white",
+  },
+};
+
+/**
+ * High-resolution featured product images for instant, reliable swatch rendering
+ * across all product families, avoiding empty, blank, or unstyled swatch boxes.
+ */
+export const KNOWN_HANDLE_IMAGE_MAP: Record<string, string> = {
+  // Cuban collar shirts
+  "cuban-collar-shirt": "https://cdn.shopify.com/s/files/1/1003/4790/4367/files/COGENESIS-2826_326761d6-3057-47a8-ba54-1fcc707d421d.jpg?v=1794408017",
+  "linen-blend-cuban-collar-shirt-black": "https://cdn.shopify.com/s/files/1/1003/4790/4367/files/COGENESIS-2957_032dd0aa-302f-427d-bdac-b1e3853a8578.jpg?v=1794408481",
+  "linen-blend-cuban-collar-shirt-clay": "https://cdn.shopify.com/s/files/1/1003/4790/4367/files/COGENESIS-3054_23abc754-1ca4-4ec0-b319-9079832d6fee.jpg?v=1794663192",
+  "linen-blend-cuban-collar-shirt-midnight-blue": "https://cdn.shopify.com/s/files/1/1003/4790/4367/files/COGENESIS-2831_eeb359b3-2e57-4667-91aa-5e21fc44801b.jpg?v=1794408615",
+  "linen-blend-cuban-collar-shirt-olive": "https://cdn.shopify.com/s/files/1/1003/4790/4367/files/COGENESIS-2891_baf34627-99d7-46d8-a617-7251a0581f0b.jpg?v=1794662585",
+  "linen-blend-cuban-collar-shirt-sandstone": "https://cdn.shopify.com/s/files/1/1003/4790/4367/files/COGENESIS-3029.jpg?v=1794408886",
+
+  // Single pocket shirts
+  "linen-blend-single-pocket-butter": "https://cdn.shopify.com/s/files/1/1003/4790/4367/files/COGENESIS-1813_f0be8cdb-2826-4c96-aa38-327b710044aa.jpg?v=1794665072",
+  "linen-blend-single-pocket-beach-sand": "https://cdn.shopify.com/s/files/1/1003/4790/4367/files/COGENESIS-2258_52661d5c-4448-4218-a64b-d4df8f357068.jpg?v=1794665576",
+  "linen-blend-single-pocket-cocoa": "https://cdn.shopify.com/s/files/1/1003/4790/4367/files/COGENESIS-1357_9aa53621-f953-465e-9817-3672d687d184.jpg?v=1794665404",
+  "linen-blend-single-pocket-deep-black": "https://cdn.shopify.com/s/files/1/1003/4790/4367/files/COGENESIS-1876_034f60a6-f36a-4ae0-b730-ad0714f0be17.jpg?v=1794665794",
+  "linen-blend-single-pocket-sky-blue": "https://cdn.shopify.com/s/files/1/1003/4790/4367/files/COGENESIS-1689_e9ccc0ba-faa2-4e61-ab67-704af8b94a7c.jpg?v=1794665989",
+  "linen-blend-single-pocket-olive-mist": "https://cdn.shopify.com/s/files/1/1003/4790/4367/files/COGENESIS-1647.jpg?v=1794664939",
+
+  // Trousers
+  "linen-blend-trouser-white": "https://cdn.shopify.com/s/files/1/1003/4790/4367/files/COGENESIS-2510.jpg?v=1794658581",
+  "line-trousers-navy-blue": "https://cdn.shopify.com/s/files/1/1003/4790/4367/files/COGENESIS-2530_268d2e32-fac6-459a-99af-ebbc240d8de3.jpg?v=1794661335",
+  "linen-trousers-beige": "https://cdn.shopify.com/s/files/1/1003/4790/4367/files/COGENESIS-1458.jpg?v=1794661557",
+
+  // Pure linen double pocket shirts
+  "pure-linen-double-pocket-driftwood": "https://cdn.shopify.com/s/files/1/1003/4790/4367/files/COGENESIS-2659.jpg?v=1794668848",
+  "pure-linen-double-pocket-rust-red": "https://cdn.shopify.com/s/files/1/1003/4790/4367/files/COGENESIS-2719_3d29561d-57fc-434e-9b69-93feb5fc8233.jpg?v=1794669407",
+  "pure-linen-double-pocket-peach": "https://cdn.shopify.com/s/files/1/1003/4790/4367/files/COGENESIS-2564_7c482021-d077-4cf0-a2e6-42071f500313.jpg?v=1794669513",
+  "pure-linen-double-pocket-navy-blue": "https://cdn.shopify.com/s/files/1/1003/4790/4367/files/COGENESIS-2489_bb6cc623-0b53-4f54-9898-2727d1a99f18.jpg?v=1794669619",
+  "pure-linen-double-pocket-milk-white": "https://cdn.shopify.com/s/files/1/1003/4790/4367/files/COGENESIS-2600_7f9bf615-2aec-419f-8dac-922330d150a1.jpg?v=1794669735",
+};
+
+/**
+ * Resolves a sibling product for a given color.
+ * If the store creates separate products per color (e.g., linen-blend-cuban-collar-shirt-black),
+ * this finds the matching product in the catalog to allow URL handle navigation.
+ */
+export function findSiblingProductForColor(
+  currentProduct: ShopifyProduct | null | undefined,
+  targetColor: string,
+  catalog: ShopifyProduct[],
+): ShopifyProduct | null {
+  if (!currentProduct || !targetColor) return null;
+  const cleanTarget = targetColor.trim().toLowerCase();
+  const targetSlug = cleanTarget.replace(/\s+/g, "-");
+
+  // 1. Direct handle pattern match:
+  const handleParts = currentProduct.handle.split("-");
+  for (let i = 1; i <= 3; i++) {
+    const base = handleParts.slice(0, handleParts.length - i).join("-");
+    if (base) {
+      const candidateHandle = `${base}-${targetSlug}`;
+      const found = catalog.find(
+        (p) => p.handle.toLowerCase() === candidateHandle,
+      );
+      if (found) return found;
+    }
+  }
+
+  // 2. Base title similarity:
+  const normalize = (s: string) =>
+    s
+      .toLowerCase()
+      .replace(/[^a-z0-9 ]/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+
+  const currentNorm = normalize(currentProduct.title);
+
+  const candidates = catalog.filter((p) => {
+    const pTitle = normalize(p.title);
+    const pHandle = p.handle.toLowerCase();
+    const hasColor = pTitle.includes(cleanTarget) || pHandle.includes(targetSlug);
+    if (!hasColor) return false;
+    if (
+      currentProduct.productType &&
+      p.productType &&
+      currentProduct.productType !== p.productType
+    ) {
+      return false;
+    }
+    return true;
+  });
+
+  if (candidates.length === 1) return candidates[0];
+
+  if (candidates.length > 1) {
+    const currentWords = new Set(
+      currentNorm.split(" ").filter((w) => w.length > 2),
+    );
+    let bestCandidate = candidates[0];
+    let maxOverlap = -1;
+    for (const cand of candidates) {
+      const candWords = normalize(cand.title).split(" ");
+      const overlap = candWords.filter((w) => currentWords.has(w)).length;
+      if (overlap > maxOverlap) {
+        maxOverlap = overlap;
+        bestCandidate = cand;
+      }
+    }
+    return bestCandidate;
+  }
+
+  return null;
+}
+
+/**
+ * Resolves the target Shopify product handle when a user clicks a color swatch.
+ * Supports known family mapping, dynamic catalog search, and handle prediction.
+ */
+export function resolveSiblingHandleForColor(
+  currentProduct: ShopifyProduct | null | undefined,
+  targetColor: string,
+  catalog: ShopifyProduct[] = [],
+): string | null {
+  if (!currentProduct || !targetColor) return null;
+  const cleanTarget = targetColor.trim().toLowerCase();
+  const currentHandle = currentProduct.handle.toLowerCase();
+
+  // 1. Direct family map lookup (instant, 0ms latency)
+  for (const [familyKey, colorMap] of Object.entries(KNOWN_FAMILY_COLOR_MAP)) {
+    if (currentHandle.includes(familyKey)) {
+      if (colorMap[cleanTarget]) {
+        return colorMap[cleanTarget];
+      }
+    }
+  }
+
+  // 2. Dynamic catalog lookup if catalog is loaded
+  if (catalog && catalog.length > 0) {
+    const sibling = findSiblingProductForColor(currentProduct, targetColor, catalog);
+    if (sibling) return sibling.handle;
+  }
+
+  // 3. Predicted handle fallback
+  const predicted = predictProductHandleForColor(currentProduct.handle, targetColor);
+  if (predicted && predicted.toLowerCase() !== currentHandle) {
+    return predicted;
+  }
+
+  return null;
+}
+
 export interface ProductColorOption {
   name: string;
   hex: string;
@@ -147,9 +356,12 @@ export interface ProductColorOption {
 
 /**
  * Maps Shopify color options to their corresponding variant preview data (official hex, swatch image, stock).
+ * Resolves images from admin swatch images, sibling products, variant images, or catalog fallbacks
+ * ensuring colors like White, Navy, Black, etc. always render zoomed fabric crops instead of blank boxes.
  */
 export function getProductColorOptions(
   product: ShopifyProduct | null | undefined,
+  catalog: ShopifyProduct[] = [],
 ): ProductColorOption[] {
   if (!product) return [];
 
@@ -179,11 +391,71 @@ export function getProductColorOptions(
       return v.title.toLowerCase().includes(cleanColor);
     });
 
+    // 3. Resolve variant image URL:
+    // Priority:
+    // a. Sibling product image (if separate products exist per color in this family)
+    // b. Known handle image map fallback
+    // c. Matching variant image in current product
+    // d. Color slug match in known images
+    // e. Product featured/first image fallback
+    let resolvedImageUrl: string | undefined = undefined;
+
+    // Check sibling product resolution:
+    const siblingHandle = resolveSiblingHandleForColor(product, colorName, catalog);
+    if (siblingHandle) {
+      const cleanSibHandle = siblingHandle.toLowerCase();
+      if (cleanSibHandle === product.handle.toLowerCase()) {
+        resolvedImageUrl =
+          matchingVariant?.image?.url ||
+          product.featuredImage?.url ||
+          product.images?.[0]?.url;
+      } else {
+        const siblingProduct = catalog.find(
+          (p) => p.handle.toLowerCase() === cleanSibHandle,
+        );
+        if (siblingProduct) {
+          resolvedImageUrl =
+            siblingProduct.featuredImage?.url ||
+            siblingProduct.images?.[0]?.url ||
+            siblingProduct.variants?.[0]?.image?.url;
+        }
+      }
+
+      if (!resolvedImageUrl && KNOWN_HANDLE_IMAGE_MAP[cleanSibHandle]) {
+        resolvedImageUrl = KNOWN_HANDLE_IMAGE_MAP[cleanSibHandle];
+      }
+    }
+
+    // Direct matching variant fallback
+    if (!resolvedImageUrl && matchingVariant?.image?.url) {
+      resolvedImageUrl = matchingVariant.image.url;
+    }
+
+    // Color slug match in KNOWN_HANDLE_IMAGE_MAP fallback
+    if (!resolvedImageUrl) {
+      const colorSlug = cleanColor.replace(/\s+/g, "-");
+      const matchedKey = Object.keys(KNOWN_HANDLE_IMAGE_MAP).find((k) =>
+        k.endsWith(`-${colorSlug}`) || k.includes(`-${colorSlug}-`) || k.includes(`-${colorSlug}`),
+      );
+      if (matchedKey) {
+        resolvedImageUrl = KNOWN_HANDLE_IMAGE_MAP[matchedKey];
+      }
+    }
+
+    // Default fallback to current product image so a blank box is NEVER rendered
+    const finalImage =
+      officialSwatchImg ||
+      resolvedImageUrl ||
+      matchingVariant?.image?.url ||
+      product.featuredImage?.url ||
+      product.images?.[0]?.url ||
+      undefined;
+
     return {
       name: colorName,
       hex: officialHex || getColorHex(colorName),
-      swatchImageUrl: officialSwatchImg || undefined,
-      imageUrl: matchingVariant?.image?.url,
+      swatchImageUrl: finalImage,
+      imageUrl: finalImage,
       variantId: matchingVariant?.id,
       availableForSale: matchingVariant ? matchingVariant.availableForSale : true,
       price: matchingVariant?.price,
@@ -271,103 +543,4 @@ export function resolveProductVariant(
 
   // Fallback to first available variant, or first variant
   return variants.find((v) => v.availableForSale) || variants[0];
-}
-
-/**
- * Predicts a product handle based on a base product handle and a target color name.
- */
-export function predictProductHandleForColor(
-  currentHandle: string,
-  targetColor: string,
-): string {
-  const targetSlug = targetColor.trim().toLowerCase().replace(/\s+/g, "-");
-
-  // Special case: "Mandarin" collar shirt uses base handle "cuban-collar-shirt"
-  if (targetSlug === "mandarin" && currentHandle.includes("cuban-collar-shirt")) {
-    return "cuban-collar-shirt";
-  }
-
-  const handleParts = currentHandle.split("-");
-  for (let i = 1; i <= 3; i++) {
-    const base = handleParts.slice(0, handleParts.length - i).join("-");
-    if (base.length > 3) {
-      return `${base}-${targetSlug}`;
-    }
-  }
-
-  return `${currentHandle}-${targetSlug}`;
-}
-
-/**
- * Resolves a sibling product for a given color.
- * If the store creates separate products per color (e.g., linen-blend-cuban-collar-shirt-black),
- * this finds the matching product in the catalog to allow URL handle navigation.
- */
-export function findSiblingProductForColor(
-  currentProduct: ShopifyProduct | null | undefined,
-  targetColor: string,
-  catalog: ShopifyProduct[],
-): ShopifyProduct | null {
-  if (!currentProduct || !targetColor) return null;
-  const cleanTarget = targetColor.trim().toLowerCase();
-  const targetSlug = cleanTarget.replace(/\s+/g, "-");
-
-  // 1. Direct handle pattern match:
-  const handleParts = currentProduct.handle.split("-");
-  for (let i = 1; i <= 3; i++) {
-    const base = handleParts.slice(0, handleParts.length - i).join("-");
-    if (base) {
-      const candidateHandle = `${base}-${targetSlug}`;
-      const found = catalog.find(
-        (p) => p.handle.toLowerCase() === candidateHandle,
-      );
-      if (found) return found;
-    }
-  }
-
-  // 2. Base title similarity:
-  const normalize = (s: string) =>
-    s
-      .toLowerCase()
-      .replace(/[^a-z0-9 ]/g, " ")
-      .replace(/\s+/g, " ")
-      .trim();
-
-  const currentNorm = normalize(currentProduct.title);
-
-  const candidates = catalog.filter((p) => {
-    const pTitle = normalize(p.title);
-    const pHandle = p.handle.toLowerCase();
-    const hasColor = pTitle.includes(cleanTarget) || pHandle.includes(targetSlug);
-    if (!hasColor) return false;
-    if (
-      currentProduct.productType &&
-      p.productType &&
-      currentProduct.productType !== p.productType
-    ) {
-      return false;
-    }
-    return true;
-  });
-
-  if (candidates.length === 1) return candidates[0];
-
-  if (candidates.length > 1) {
-    const currentWords = new Set(
-      currentNorm.split(" ").filter((w) => w.length > 2),
-    );
-    let bestCandidate = candidates[0];
-    let maxOverlap = -1;
-    for (const cand of candidates) {
-      const candWords = normalize(cand.title).split(" ");
-      const overlap = candWords.filter((w) => currentWords.has(w)).length;
-      if (overlap > maxOverlap) {
-        maxOverlap = overlap;
-        bestCandidate = cand;
-      }
-    }
-    return bestCandidate;
-  }
-
-  return null;
 }

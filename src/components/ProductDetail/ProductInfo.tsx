@@ -22,6 +22,7 @@ interface ProductInfoProps {
   description: string;
   activeVariant?: ShopifyProductVariant | null;
   onColorChange?: (colorName: string, variant?: ShopifyProductVariant | null) => void;
+  catalog?: ShopifyProduct[];
 }
 
 const ProductInfo = ({
@@ -40,11 +41,12 @@ const ProductInfo = ({
   description,
   activeVariant,
   onColorChange,
+  catalog = [],
 }: ProductInfoProps) => {
   const [isSizeGuideOpen, setIsSizeGuideOpen] = useState(false);
   const [isSizeRecommenderOpen, setIsSizeRecommenderOpen] = useState(false);
   const sizes = getProductSizes(product);
-  const colorOptions = getProductColorOptions(product);
+  const colorOptions = getProductColorOptions(product, catalog);
   const currentVariant = activeVariant || resolveProductVariant(product, selectedSize, selectedColor);
   const price = currentVariant?.price?.amount || product.priceRange.minVariantPrice.amount;
   const compareAtPrice = currentVariant?.compareAtPrice?.amount || getBestCompareAtPrice(product);
@@ -127,11 +129,12 @@ const ProductInfo = ({
               const isSelected =
                 Boolean(selectedColor) &&
                 selectedColor.toLowerCase() === opt.name.toLowerCase();
+              const swatchImg = opt.swatchImageUrl || opt.imageUrl;
 
               return (
                 <div
                   key={opt.name}
-                  className={`p-[2px] rounded-full transition-all duration-200 flex items-center justify-center ${
+                  className={`p-[2px] rounded-sm transition-all duration-200 flex items-center justify-center ${
                     isSelected
                       ? "ring-2 ring-charcoal ring-offset-2 ring-offset-ivory"
                       : "hover:ring-1 hover:ring-charcoal/30"
@@ -140,22 +143,24 @@ const ProductInfo = ({
                   <button
                     type="button"
                     onClick={() => {
-                      setSelectedColor(opt.name);
-                      onColorChange?.(opt.name, opt.variant);
+                      if (onColorChange) {
+                        onColorChange(opt.name, opt.variant);
+                      } else {
+                        setSelectedColor(opt.name);
+                      }
                     }}
-                    className={`w-9 h-9 rounded-full relative flex items-center justify-center overflow-hidden border transition-transform duration-200 ${
+                    className={`w-12 h-14 rounded-sm relative flex items-center justify-center overflow-hidden border transition-all duration-200 cursor-pointer ${
                       isSelected
-                        ? "border-charcoal/20 shadow-sm scale-100"
-                        : "border-stone/20 hover:border-charcoal/40 opacity-95 hover:opacity-100"
+                        ? "border-charcoal shadow-sm"
+                        : "border-stone/20 hover:border-charcoal/40 opacity-90 hover:opacity-100"
                     } ${!opt.availableForSale ? "opacity-40" : ""}`}
                     style={{
                       backgroundColor: opt.hex,
-                      backgroundImage: opt.swatchImageUrl
-                        ? `url(${opt.swatchImageUrl})`
-                        : undefined,
-                      backgroundSize: opt.swatchImageUrl ? "380%" : "cover",
-                      backgroundPosition: opt.swatchImageUrl ? "center 30%" : "center",
+                      backgroundImage: swatchImg ? `url(${swatchImg})` : undefined,
+                      backgroundSize: "280%",
+                      backgroundPosition: "center 28%",
                       backgroundRepeat: "no-repeat",
+                      boxShadow: isSelected ? undefined : "inset 0 0 0 1px rgba(0,0,0,0.06)",
                     }}
                     title={`${opt.name}${!opt.availableForSale ? " (Out of Stock)" : ""}`}
                     aria-label={`Select colour ${opt.name}${!opt.availableForSale ? " - Out of stock" : ""}`}
