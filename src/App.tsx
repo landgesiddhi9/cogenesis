@@ -3,13 +3,10 @@ import { Routes, Route, Navigate, useLocation, useParams } from "react-router-do
 
 import Navbar from "./components/Navbar";
 import Hero from "./components/Hero";
-import EditorialGrid from "./components/EditorialGrid";
+import PromoGrid from "./components/PromoGrid";
 import ProductStrip from "./components/ProductStrip";
-import CampaignBanner from "./components/CampaignBanner";
-import TripleVideoSection from "./components/TripleVideoSection";
+import DualImageSection from "./components/DualImageSection";
 import BrandStorySplitSection from "./components/BrandStorySplitSection";
-import GallerySection from "./components/GallerySection";
-import VideoSection from "./components/VideoSection";
 import Footer from "./components/Footer";
 
 import ErrorBoundary from "./components/ErrorBoundary";
@@ -61,12 +58,9 @@ function App() {
             element={
               <>
                 <Hero />
-                <EditorialGrid />
+                <PromoGrid />
+                <DualImageSection />
                 <ProductStrip />
-                <CampaignBanner />
-                <GallerySection />
-                <VideoSection />
-                <TripleVideoSection />
                 <BrandStorySplitSection />
               </>
             }
