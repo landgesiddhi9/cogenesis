@@ -12,7 +12,8 @@ const PromoGrid = () => {
   return (
     <section
       ref={ref}
-      className="w-full max-w-none px-0 mx-0 py-12 md:py-16"
+      className="w-full max-w-none px-0 mx-0"
+      style={{ padding: '40px 0' }}
     >
       <div className="grid grid-cols-1 md:grid-cols-3 gap-0">
         {promoImages.map((img, i) => (
