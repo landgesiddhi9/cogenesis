@@ -8,7 +8,7 @@ import type {
 
 // Hero
 export const heroImage: EditorialImage = {
-  src: "/images/hero.png",
+  src: "/images/Hero Banner Cogenesis.jpg",
   alt: "Model wearing white linen shirt and cream trousers - Spring/Summer Collection",
 };
 
