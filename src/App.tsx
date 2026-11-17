@@ -29,6 +29,7 @@ const AccountPage = lazy(() => import("./pages/AccountPage"));
 const SearchPage = lazy(() => import("./pages/SearchPage"));
 const PurchasesPage = lazy(() => import("./pages/PurchasesPage"));
 const ReturnsPage = lazy(() => import("./pages/ReturnsPage"));
+const PolicyPage = lazy(() => import("./pages/PolicyPage"));
 
 const CollectionRouteWrapper = () => {
   const { handle } = useParams<{ handle: string }>();
@@ -116,6 +117,12 @@ function App() {
 
           {/* Returns */}
           <Route path="/returns" element={<ReturnsPage />} />
+
+          {/* Policies */}
+          <Route path="/privacy-policy" element={<PolicyPage policyKey="privacyPolicy" />} />
+          <Route path="/refund-policy" element={<PolicyPage policyKey="refundPolicy" />} />
+          <Route path="/shipping-policy" element={<PolicyPage policyKey="shippingPolicy" />} />
+          <Route path="/terms-and-conditions" element={<PolicyPage policyKey="termsOfService" />} />
 
           {/* New Arrivals */}
           <Route path="/new-arrivals" element={<NewArrivalsPage />} />

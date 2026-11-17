@@ -771,6 +771,170 @@ html::-webkit-scrollbar {
 }
 
 
+/* ── Policy page prose styles ── */
+/*
+ * Scoped to .policy-prose — never bleeds into other components.
+ * Shopify returns policy body as HTML: <p>, <h1-h4>, <ul>, <ol>, <a>, <strong>, <hr>.
+ * Styled to match CoGenesis's luxury editorial typography and colour palette.
+ */
+
+/* Base */
+.policy-prose {
+    font-family: var(--font-sans);
+    font-size: 14px;
+    line-height: 1.85;
+    color: #4a4236;
+    max-width: 72ch;
+}
+
+@media (min-width: 768px) {
+    .policy-prose {
+        font-size: 15px;
+        line-height: 1.9;
+    }
+}
+
+/* Paragraphs */
+.policy-prose p {
+    margin-top: 0;
+    margin-bottom: 1.5rem;
+}
+
+/* Headings — Cormorant Garamond for editorial warmth */
+.policy-prose h1,
+.policy-prose h2,
+.policy-prose h3,
+.policy-prose h4 {
+    font-family: var(--font-display);
+    font-weight: 700;
+    color: #1a1512;
+    letter-spacing: 0.025em;
+    line-height: 1.25;
+    margin-top: 2.75rem;
+    margin-bottom: 0.9rem;
+}
+
+/* First heading in the body — no extra top gap */
+.policy-prose > h1:first-child,
+.policy-prose > h2:first-child,
+.policy-prose > h3:first-child {
+    margin-top: 0;
+}
+
+.policy-prose h1 { font-size: 1.6rem; }
+.policy-prose h2 { font-size: 1.3rem; }
+.policy-prose h3 { font-size: 1.1rem; font-weight: 600; }
+.policy-prose h4 { font-size: 1rem;   font-weight: 600; }
+
+@media (min-width: 768px) {
+    .policy-prose h1 { font-size: 1.9rem; }
+    .policy-prose h2 { font-size: 1.5rem; }
+    .policy-prose h3 { font-size: 1.2rem; }
+    .policy-prose h4 { font-size: 1.05rem; }
+}
+
+/* Thin rule below h2 — editorial section break */
+.policy-prose h2 {
+    padding-bottom: 0.6rem;
+    border-bottom: 1px solid #e2d9ce;
+}
+
+/* Lists */
+.policy-prose ul,
+.policy-prose ol {
+    margin: 0 0 1.5rem 1.5rem;
+    padding: 0;
+}
+
+.policy-prose ul  { list-style-type: disc; }
+.policy-prose ol  { list-style-type: decimal; }
+
+.policy-prose li {
+    margin-bottom: 0.5rem;
+    padding-left: 0.25rem;
+}
+
+.policy-prose li::marker {
+    color: #a09272;
+}
+
+/* Nested lists */
+.policy-prose ul ul,
+.policy-prose ol ol,
+.policy-prose ul ol,
+.policy-prose ol ul {
+    margin-top: 0.4rem;
+    margin-bottom: 0.4rem;
+    margin-left: 1.25rem;
+}
+
+/* Links */
+.policy-prose a {
+    color: #65220e;
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 3px;
+    transition: color 0.2s ease, text-decoration-color 0.2s ease;
+}
+
+.policy-prose a:hover {
+    color: #1a1512;
+    text-decoration-color: #1a1512;
+}
+
+/* Bold / italic */
+.policy-prose strong,
+.policy-prose b {
+    font-weight: 600;
+    color: #1a1512;
+}
+
+.policy-prose em,
+.policy-prose i {
+    font-style: italic;
+}
+
+/* Horizontal rule — acts as section divider */
+.policy-prose hr {
+    border: none;
+    border-top: 1px solid #ddd5c8;
+    margin: 2.5rem 0;
+}
+
+/* Blockquote — if present */
+.policy-prose blockquote {
+    border-left: 2px solid #c8b89a;
+    margin: 1.75rem 0;
+    padding: 0.5rem 0 0.5rem 1.25rem;
+    color: #7a7260;
+    font-style: italic;
+}
+
+/* Tables — if Shopify generates any */
+.policy-prose table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 1.5rem;
+    font-size: 0.9em;
+}
+
+.policy-prose th,
+.policy-prose td {
+    padding: 0.6rem 0.9rem;
+    text-align: left;
+    border-bottom: 1px solid #e2d9ce;
+}
+
+.policy-prose th {
+    font-family: var(--font-sans);
+    font-weight: 600;
+    font-size: 0.75rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #7a7260;
+    background: transparent;
+}
+
 /* Premium product image carousel motion */
 @keyframes productImageEnterNext {
     from {
