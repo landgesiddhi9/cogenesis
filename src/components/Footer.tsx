@@ -55,6 +55,26 @@ const Footer = () => {
                 FAQs
               </a>
             </li>
+            <li>
+              <a href="/shipping-policy" className="font-sans text-[12px] text-[#7a7260] hover:text-[#3d3929] transition-colors duration-300">
+                Shipping Policy
+              </a>
+            </li>
+            <li>
+              <a href="/refund-policy" className="font-sans text-[12px] text-[#7a7260] hover:text-[#3d3929] transition-colors duration-300">
+                Refund Policy
+              </a>
+            </li>
+            <li>
+              <a href="/terms-and-conditions" className="font-sans text-[12px] text-[#7a7260] hover:text-[#3d3929] transition-colors duration-300">
+                Terms &amp; Conditions
+              </a>
+            </li>
+            <li>
+              <a href="/privacy-policy" className="font-sans text-[12px] text-[#7a7260] hover:text-[#3d3929] transition-colors duration-300">
+                Privacy Policy
+              </a>
+            </li>
           </ul>
         </div>
 
