@@ -82,6 +82,16 @@ export interface ShopifyCollection {
   products: ShopifyProduct[];
 }
 
+export interface ShopifyPage {
+  id: string;
+  title: string;
+  handle: string;
+  body: string;
+  bodySummary?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
 export interface ShopifyCart {
   id: string;
   checkoutUrl: string;

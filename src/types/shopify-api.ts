@@ -93,3 +93,17 @@ export interface ShopifyApiCollection {
       };
     } | null;
 }
+
+export interface ShopifyApiPage {
+  id: string;
+  title: string;
+  handle: string;
+  body: string;
+  bodySummary?: string | null;
+  createdAt?: string;
+  updatedAt?: string;
+  seo?: {
+    title?: string | null;
+    description?: string | null;
+  } | null;
+}
