@@ -29,7 +29,7 @@ const LINKS: Record<Category, MenuLink[]> = {
     { label: "View All", to: "/men/view-all", image: "/images/male model .jpg" },
   ],
   women: [
-    { label: "Launching Soon", to: "/women", image: "/images/female model.jpg" },
+    { label: "Launching Soon", to: "/women", image: "/images/dropdown women.png" },
   ],
   fabric: [
     { label: "Linen", to: "/collections/linen", image: "/images/Dropdown linen.png" },
@@ -40,7 +40,7 @@ const LINKS: Record<Category, MenuLink[]> = {
 
 const DEFAULT_IMAGES: Record<Category, string> = {
   men: "/images/male model .jpg",
-  women: "/images/female model.jpg",
+  women: "/images/dropdown women.png",
   fabric: "/images/Dropdown linen.png",
 };
 

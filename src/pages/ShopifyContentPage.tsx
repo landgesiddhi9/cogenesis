@@ -46,6 +46,8 @@ const ShopifyContentPage = ({ handle, subtitle }: ShopifyContentPageProps) => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, [handle]);
 
+  const hasBody = Boolean(page?.body?.trim());
+
   return (
     <main className="bg-ivory min-h-[100svh]">
       {/* Fixed navbar spacer */}
@@ -59,7 +61,7 @@ const ShopifyContentPage = ({ handle, subtitle }: ShopifyContentPageProps) => {
             {loading ? (
               <span className="inline-block h-10 w-72 bg-[#e4ddd4] rounded animate-pulse" />
             ) : (
-              page?.title ?? "Page Not Found"
+              page?.title ?? "Fabric and Care Guide"
             )}
           </h1>
           {/* Subtitle */}
@@ -107,7 +109,7 @@ const ShopifyContentPage = ({ handle, subtitle }: ShopifyContentPageProps) => {
             <div className="h-px bg-[#ddd5c8]/70 mb-8 md:mb-10" />
             <div
               className="policy-prose"
-              dangerouslySetInnerHTML={{ __html: page.body }}
+              dangerouslySetInnerHTML={{ __html: hasBody ? page.body : "<p class='text-center text-[#9a9080]'>No content available for this page.</p>" }}
             />
           </article>
         )}
