@@ -1,11 +1,6 @@
-import { useInView } from '../hooks/useInView';
-
 const Section5Banner = () => {
-  const { ref, isInView } = useInView({ threshold: 0.1 });
-
   return (
     <section
-      ref={ref}
       className="w-full bg-ivory py-16 border-t border-[#431C1C]/10"
       style={{ paddingLeft: '40px', paddingRight: '40px' }}
     >
