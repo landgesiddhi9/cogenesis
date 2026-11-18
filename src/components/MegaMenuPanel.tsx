@@ -32,17 +32,16 @@ const LINKS: Record<Category, MenuLink[]> = {
     { label: "Launching Soon", to: "/women", image: "/images/female model.jpg" },
   ],
   fabric: [
-    { label: "Linen", to: "/collections/linen", image: "/images/fabric drop down.jpg" },
-    { label: "Linen Blend", to: "/collections/linen-blend", image: "/images/fabric2 dropdown.jpg" },
-    { label: "Care Guide", to: "/fabric/care-guide", image: "/images/fabric drop down.jpg" },
-    { label: "Fabric Guide", to: "/fabric/guide", image: "/images/fabric2 dropdown.jpg" },
+    { label: "Linen", to: "/collections/linen", image: "/images/Dropdown linen.png" },
+    { label: "Linen Blend", to: "/collections/linen-blend", image: "/images/dropdown linen blend.webp" },
+    { label: "Fabric and Care Guide", to: "/fabric-and-care-guide", image: "/images/fabric and care guide.jpg" },
   ],
 };
 
 const DEFAULT_IMAGES: Record<Category, string> = {
   men: "/images/male model .jpg",
   women: "/images/female model.jpg",
-  fabric: "/images/fabric drop down.jpg",
+  fabric: "/images/Dropdown linen.png",
 };
 
 const EASE = "cubic-bezier(0.22, 1, 0.36, 1)";
