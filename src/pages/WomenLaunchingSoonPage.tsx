@@ -13,7 +13,6 @@ const WomenLaunchingSoonPage = () => {
 
   return (
     <main className="bg-ivory">
-      <div className="h-14 md:h-16" />
       <div
         className={`grid grid-cols-1 md:grid-cols-[45%_55%] w-full transition-all duration-700 ease-out ${
           loaded ? "opacity-100" : "opacity-0"
