@@ -130,7 +130,7 @@ function App() {
             path="/fabric-and-care-guide"
             element={
               <ShopifyContentPage
-                handle="fabric-and-care-guide"
+                handle="fabric-guide"
                 subtitle="Care instructions and fabric details for your Cogenesis garments."
               />
             }

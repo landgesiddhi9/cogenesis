@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import womensImage from "../assets/w1.jpg";
 
 const WomenLaunchingSoonPage = () => {
   const navigate = useNavigate();
@@ -70,7 +69,7 @@ const WomenLaunchingSoonPage = () => {
           <div className="absolute inset-0 overflow-hidden bg-[#f0ece4]">
             {!imgError ? (
               <img
-                src={womensImage}
+                src="/images/women page.png"
                 alt="Women's collection preview"
                 className="w-full h-full object-cover"
                 style={{ objectPosition: "center" }}
