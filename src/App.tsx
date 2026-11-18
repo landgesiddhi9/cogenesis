@@ -5,6 +5,7 @@ import Navbar from "./components/Navbar";
 import Hero from "./components/Hero";
 import ProductStrip from "./components/ProductStrip";
 import DualImageSection from "./components/DualImageSection";
+import Section4 from "./components/Section4";
 import BrandStorySplitSection from "./components/BrandStorySplitSection";
 import Section5Banner from "./components/Section5Banner";
 import Footer from "./components/Footer";
@@ -68,6 +69,7 @@ function App() {
                 <Hero />
                 <DualImageSection />
                 <ProductStrip />
+                <Section4 />
                 <Section5Banner />
                 <BrandStorySplitSection />
               </>
