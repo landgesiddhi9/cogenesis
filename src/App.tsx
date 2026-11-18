@@ -30,6 +30,7 @@ const SearchPage = lazy(() => import("./pages/SearchPage"));
 const PurchasesPage = lazy(() => import("./pages/PurchasesPage"));
 const ReturnsPage = lazy(() => import("./pages/ReturnsPage"));
 const PolicyPage = lazy(() => import("./pages/PolicyPage"));
+const ShopifyContentPage = lazy(() => import("./pages/ShopifyContentPage"));
 
 const CollectionRouteWrapper = () => {
   const { handle } = useParams<{ handle: string }>();
@@ -123,6 +124,17 @@ function App() {
           <Route path="/refund-policy" element={<PolicyPage policyKey="refundPolicy" />} />
           <Route path="/shipping-policy" element={<PolicyPage policyKey="shippingPolicy" />} />
           <Route path="/terms-and-conditions" element={<PolicyPage policyKey="termsOfService" />} />
+
+          {/* Shopify CMS pages */}
+          <Route
+            path="/fabric-and-care-guide"
+            element={
+              <ShopifyContentPage
+                handle="fabric-and-care-guide"
+                subtitle="Care instructions and fabric details for your Cogenesis garments."
+              />
+            }
+          />
 
           {/* New Arrivals */}
           <Route path="/new-arrivals" element={<NewArrivalsPage />} />
