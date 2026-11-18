@@ -32,8 +32,8 @@ const LINKS: Record<Category, MenuLink[]> = {
     { label: "Launching Soon", to: "/women", image: "/images/dropdown women.png" },
   ],
   fabric: [
-    { label: "Linen", to: "/collections/linen", image: "/images/Dropdown linen.png" },
-    { label: "Linen Blend", to: "/collections/linen-blend", image: "/images/dropdown linen blend.webp" },
+    { label: "Linen", to: "/collections/linen", image: "/images/dropdown linen.jpg?v=2" },
+    { label: "Linen Blend", to: "/collections/linen-blend", image: "/images/dropdown linen blend.jpg?v=2" },
     { label: "Fabric and Care Guide", to: "/fabric-and-care-guide", image: "/images/fabric and care guide.jpg" },
   ],
 };
@@ -41,7 +41,7 @@ const LINKS: Record<Category, MenuLink[]> = {
 const DEFAULT_IMAGES: Record<Category, string> = {
   men: "/images/male model .jpg",
   women: "/images/dropdown women.png",
-  fabric: "/images/Dropdown linen.png",
+  fabric: "/images/dropdown linen.jpg?v=2",
 };
 
 const EASE = "cubic-bezier(0.22, 1, 0.36, 1)";
