@@ -50,7 +50,13 @@ function App() {
     <div className="section-content bg-ivory">
       <Navbar />
 
-      <main className="pt-[68px] md:pt-16">
+      <main
+        className={
+          location.pathname === "/launching-soon" || location.pathname.startsWith("/women")
+            ? ""
+            : "pt-[68px] md:pt-16"
+        }
+      >
         <ErrorBoundary>
           <Suspense fallback={<LoadingFallback />}>
             <Routes>
@@ -62,8 +68,8 @@ function App() {
                 <Hero />
                 <DualImageSection />
                 <ProductStrip />
-                <BrandStorySplitSection />
                 <Section5Banner />
+                <BrandStorySplitSection />
               </>
             }
           />
