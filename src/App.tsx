@@ -3,10 +3,10 @@ import { Routes, Route, Navigate, useLocation, useParams } from "react-router-do
 
 import Navbar from "./components/Navbar";
 import Hero from "./components/Hero";
-import PromoGrid from "./components/PromoGrid";
 import ProductStrip from "./components/ProductStrip";
 import DualImageSection from "./components/DualImageSection";
 import BrandStorySplitSection from "./components/BrandStorySplitSection";
+import Section5Banner from "./components/Section5Banner";
 import Footer from "./components/Footer";
 
 import ErrorBoundary from "./components/ErrorBoundary";
@@ -60,10 +60,10 @@ function App() {
             element={
               <>
                 <Hero />
-                <PromoGrid />
                 <DualImageSection />
                 <ProductStrip />
                 <BrandStorySplitSection />
+                <Section5Banner />
               </>
             }
           />
