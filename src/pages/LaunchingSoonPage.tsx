@@ -4,11 +4,8 @@ const LaunchingSoonPage = () => {
   const navigate = useNavigate();
   return (
     <main className="bg-ivory min-h-[100svh] flex flex-col">
-      {/* Spacer matches actual navbar height: h-14 on mobile, h-16 on md+ */}
-      <div className="h-14 md:h-16" />
-
       {/* Main content - centered */}
-      <div className="flex-1 flex items-center justify-center px-4 md:px-8 py-20">
+      <div className="flex-1 flex items-center justify-center px-4 md:px-8 pb-20">
         <div className="text-center max-w-2xl">
           {/* Decorative divider */}
           <div className="flex items-center justify-center gap-4 mb-8">
