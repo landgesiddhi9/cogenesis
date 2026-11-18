@@ -47,7 +47,7 @@ export const brandStoryPanel = {
     "Each shirt and trouser is developed across months of fabric study, draping and small-batch production, finished by hand in our atelier.",
   ],
   image: {
-    src: "/images/letterimg.png",
+    src: "/images/letter image.png",
     alt: "White-gloved hand holding a sealed Cogenesis letter on burgundy",
   },
 };
