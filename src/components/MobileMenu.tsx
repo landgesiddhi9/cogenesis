@@ -37,8 +37,7 @@ const SECTIONS: AccordionSection[] = [
     links: [
       { label: "Linen", to: "/collections/linen" },
       { label: "Linen Blend", to: "/collections/linen-blend" },
-      { label: "Care Guide", to: "/fabric/care-guide" },
-      { label: "Fabric Guide", to: "/fabric/guide" },
+      { label: "Fabric and Care Guide", to: "/fabric-and-care-guide" },
     ],
   },
 ];
