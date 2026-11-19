@@ -39,8 +39,6 @@ const PolicySkeleton = () => (
     <div className="h-10 bg-[#e4ddd4] rounded w-72 mb-3" />
     {/* Subtitle */}
     <div className="h-4 bg-[#ede8e1] rounded w-56 mb-8" />
-    {/* Divider */}
-    <div className="h-px bg-[#ddd5c8] mb-10" />
     {/* Body lines */}
     <div className="space-y-4">
       {[100, 95, 88, 100, 72, 94, 83, 100, 60, 90].map((w, i) => (
@@ -101,15 +99,12 @@ const PolicyPage = ({ policyKey }: PolicyPageProps) => {
   }, [policyKey, location.pathname]);
 
   return (
-    <main className="bg-ivory min-h-[100svh]">
-      {/* Fixed navbar spacer */}
-      <div className="h-14 md:h-16" />
-
+    <main className="bg-ivory min-h-[100svh] font-sans">
       {/* ── Page Header ─────────────────────────────────────────────────── */}
       <header className="border-b border-[#ddd5c8]/70 bg-ivory">
-        <div className="max-w-[1200px] mx-auto px-6 md:px-12 lg:px-20 py-6 md:py-8">
+        <div className="max-w-[1200px] mx-auto px-6 md:px-12 lg:px-20 py-4 md:py-6">
           {/* Title */}
-          <h1 className="font-display text-[2rem] md:text-[2.75rem] lg:text-[3.25rem] font-bold leading-[1.1] tracking-[0.02em] text-[#1a1512] mb-2 md:mb-3">
+          <h1 className="font-display text-[2rem] md:text-[2.75rem] lg:text-[3.25rem] font-medium leading-[1.1] tracking-[0.02em] text-[#261317] mb-2 md:mb-3">
             {loading ? (
               <span className="inline-block h-10 w-72 bg-[#e4ddd4] rounded animate-pulse" />
             ) : (
@@ -165,7 +160,7 @@ const PolicyPage = ({ policyKey }: PolicyPageProps) => {
           </aside>
 
           {/* ── Policy Content ─────────────────────────────────────────── */}
-          <div className="flex-1 min-w-0">
+          <div className="flex-1 min-w-0 md:pt-3">
 
             {/* Loading */}
             {loading && <PolicySkeleton />}
@@ -197,9 +192,6 @@ const PolicyPage = ({ policyKey }: PolicyPageProps) => {
             {/* Content */}
             {!loading && !error && activePolicy && (
               <article>
-                {/* Section divider above content */}
-                <div className="h-px bg-[#ddd5c8]/70 mb-8 md:mb-10" />
-
                 {/* Shopify HTML body */}
                 <div
                   className="policy-prose"

@@ -1,14 +1,14 @@
 @import "tailwindcss";
 
 @theme {
-    --color-ivory: #FAF8F4;
+    --color-ivory: #FAFAFA;
     --color-cream: #f5f0eb;
     --color-sand: #e8e0d8;
     --color-warm-gray: #a39890;
-    --color-stone: #7a7168;
+    --color-stone: #6b5f55;
     --color-earth: #5c5347;
     --color-espresso: #3d352e;
-    --color-charcoal: #2a2420;
+    --color-charcoal: #261317;
     --color-warm-brown: #4b403a;
     --color-deep-brown: #1a1512;
 
@@ -28,7 +28,7 @@
     --color-chat-note: #9A9188;
 
     --font-display: "Cormorant Garamond", "Georgia", serif;
-    --font-body: "Cormorant Garamond", "Georgia", serif;
+    --font-body: "Inter", "Helvetica Neue", sans-serif;
     --font-accent: "Cormorant Garamond", "Georgia", serif;
     --font-sans: "Inter", "Helvetica Neue", sans-serif;
 }
@@ -144,6 +144,9 @@ body {
     font-family: var(--font-body);
     background-color: var(--color-ivory);
     color: var(--color-charcoal);
+    font-weight: 400;
+    line-height: 1.65;
+    letter-spacing: 0.005em;
     min-height: 100svh;
 }
 
@@ -621,7 +624,7 @@ html::-webkit-scrollbar {
 }
 
 .brand-story-split__text {
-    background: #FAF8F4;
+    background: var(--color-ivory);
     border-left: 1.5px solid #5a0f12;
     border-top: 1.5px solid #5a0f12;
     border-bottom: 1.5px solid #5a0f12;
@@ -648,9 +651,9 @@ html::-webkit-scrollbar {
 }
 
 .brand-story-split__text h1 {
-    font-family: var(--font-body);
+    font-family: var(--font-display);
     font-size: clamp(1.5rem, 2.6vw, 3.25rem);
-    font-weight: 700;
+    font-weight: 500;
     letter-spacing: 0.22em;
     line-height: 1.15;
     max-width: 100%;
@@ -781,16 +784,16 @@ html::-webkit-scrollbar {
 /* Base */
 .policy-prose {
     font-family: var(--font-sans);
-    font-size: 14px;
-    line-height: 1.85;
+    font-size: 15px;
+    line-height: 1.75;
+    letter-spacing: 0.01em;
     color: #4a4236;
     max-width: 72ch;
 }
 
 @media (min-width: 768px) {
     .policy-prose {
-        font-size: 15px;
-        line-height: 1.9;
+        font-size: 16px;
     }
 }
 
@@ -806,8 +809,8 @@ html::-webkit-scrollbar {
 .policy-prose h3,
 .policy-prose h4 {
     font-family: var(--font-display);
-    font-weight: 700;
-    color: #1a1512;
+    font-weight: 500;
+    color: #261317;
     letter-spacing: 0.025em;
     line-height: 1.25;
     margin-top: 2.75rem;
