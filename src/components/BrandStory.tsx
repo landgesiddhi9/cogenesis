@@ -28,7 +28,7 @@ const BrandStory = () => {
 
         {/* Body text */}
         <p
-          className={`font-body text-sm md:text-base text-stone leading-[1.9] max-w-[680px] mx-auto mb-10 md:mb-14 transition-all duration-1000 delay-300 ${
+          className={`font-body font-light text-base md:text-lg text-earth leading-[1.85] tracking-[0.01em] max-w-[680px] mx-auto mb-10 md:mb-14 transition-all duration-1000 delay-300 ${
             isInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'
           }`}
         >

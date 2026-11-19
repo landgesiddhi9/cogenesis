@@ -274,6 +274,10 @@ const Footer = () => {
                 <li>
                   <a
                     href="/fabric"
+                    onClick={(event) => {
+                      event.preventDefault();
+                      window.dispatchEvent(new Event("cogenesis:open-fabric-menu"));
+                    }}
                     className="font-sans text-[13px] text-[#7a7260] hover:text-[#3d3929] transition-colors duration-300"
                   >
                     Fabric

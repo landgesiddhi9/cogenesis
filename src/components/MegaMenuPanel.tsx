@@ -108,7 +108,7 @@ const MegaMenuPanel = ({ isOpen, onClose, activeCategory }: MegaMenuPanelProps) 
   return (
     <div className="flex justify-center w-full">
       <div
-        className="w-full mb-6 bg-[#FAF8F4] rounded-b-2xl shadow-2xl overflow-hidden"
+        className="w-full mb-6 bg-[#FAFAFA] rounded-b-2xl shadow-2xl overflow-hidden"
         style={{
           opacity: isOpen ? 1 : 0,
           transform: isOpen
@@ -132,10 +132,10 @@ const MegaMenuPanel = ({ isOpen, onClose, activeCategory }: MegaMenuPanelProps) 
                   onMouseLeave={handleLeave}
                 >
                   <h3
-                    className={`font-serif text-[15px] md:text-[20px] font-medium tracking-[0.22em] uppercase mb-6 pb-4 border-b transition-colors duration-200 ${
+                    className={`font-serif text-[15px] md:text-[20px] tracking-[0.22em] uppercase mb-6 pb-4 border-b transition-all duration-200 ${
                       isActiveCategory
-                        ? "text-[#4A2E2A] border-[#4A2E2A]/30"
-                        : "text-[#4A2E2A]/50 border-[#4A2E2A]/10"
+                        ? "font-semibold text-[#431C1C] border-[#4A2E2A]/30"
+                        : "font-medium text-[#261317] border-[#4A2E2A]/10"
                     }`}
                     style={{ fontFamily: "'Cormorant Garamond', 'Georgia', serif" }}
                   >
@@ -144,6 +144,7 @@ const MegaMenuPanel = ({ isOpen, onClose, activeCategory }: MegaMenuPanelProps) 
                   <div className="flex flex-col">
                     {LINKS[cat.key].map((link) => {
                       const isHovered = hoveredLink === link.label && hoveredCategory === cat.key;
+                      const isViewAll = link.label === "View All";
                       return (
                         <button
                           key={link.label}
@@ -152,18 +153,22 @@ const MegaMenuPanel = ({ isOpen, onClose, activeCategory }: MegaMenuPanelProps) 
                             onClose();
                           }}
                           onMouseEnter={() => handleLinkHover(link)}
-                          className={`group text-left w-full transition-all duration-250 ${
+                          className={`group text-left w-full transition-all duration-200 ${
                             isHovered
-                              ? "bg-[#EDE4D6]/40 translate-x-0.5"
-                              : "hover:bg-[#EDE4D6]/40 hover:translate-x-0.5"
+                              ? "bg-[#EDE4D6]/40"
+                              : "hover:bg-[#EDE4D6]/40"
                           }`}
                           style={{ padding: "4px 8px", margin: "0 -8px", borderRadius: "4px" }}
                         >
                           <span
-                            className={`font-serif text-[15px] md:text-[18px] leading-[2] md:leading-[2.5] transition-all duration-250 ${
-                              isHovered
-                                ? "text-[#4A2E2A]"
-                                : "text-[#6B5C53]/80 group-hover:text-[#4A2E2A]"
+                            className={`font-serif text-[15px] md:text-[18px] leading-[2] md:leading-[2.5] transition-all duration-200 ${
+                              isViewAll
+                                ? isHovered
+                                  ? "font-bold text-[#431C1C]"
+                                  : "font-semibold text-[#261317]"
+                                : isHovered
+                                  ? "font-semibold text-[#431C1C]"
+                                  : "font-medium text-[#261317]"
                             }`}
                             style={{ fontFamily: "'Cormorant Garamond', 'Georgia', serif" }}
                           >
