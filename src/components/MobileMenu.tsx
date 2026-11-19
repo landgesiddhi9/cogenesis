@@ -105,7 +105,7 @@ const MobileMenu = ({ isOpen, onClose, cartCount }: MobileMenuProps) => {
       role="dialog"
       aria-modal={visuallyOpen}
       aria-label="Site navigation"
-      className="block md:hidden fixed inset-0 z-110 w-screen h-dvh bg-[#FAF8F4] flex flex-col overflow-hidden"
+      className="block md:hidden fixed inset-0 z-110 w-screen h-dvh bg-[#FAFAFA] flex flex-col overflow-hidden"
       aria-hidden={!visuallyOpen}
       inert={!visuallyOpen}
       style={{
