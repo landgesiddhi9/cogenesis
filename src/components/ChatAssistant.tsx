@@ -83,7 +83,7 @@ const EmptyState = ({ onSelect }: { onSelect: (value: string) => void }) => (
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.3, delay: 0.3 }}
-      className="mt-3 max-w-[300px] font-display text-[15px] leading-[1.7] text-chat-muted"
+      className="mt-3 max-w-[300px] font-sans font-light text-[15px] leading-[1.7] tracking-[0.01em] text-chat-muted"
     >
       Ask about our collections, sizing, fabrics, styling, or your order.
     </motion.p>
@@ -104,7 +104,7 @@ const EmptyState = ({ onSelect }: { onSelect: (value: string) => void }) => (
             key={label}
             type="button"
             onClick={() => onSelect(message)}
-            className="flex h-14 items-center gap-3 rounded-[16px] border border-chat-border bg-white px-4 text-left font-display text-[15px] font-medium text-chat-ink transition-colors duration-200 hover:bg-[#FAF7F2]"
+            className="flex h-14 items-center gap-3 rounded-[16px] border border-chat-border bg-white px-4 text-left font-sans text-[15px] font-normal text-chat-ink transition-colors duration-200 hover:bg-[#FAF7F2]"
           >
             <Icon
               className="h-[18px] w-[18px] shrink-0 text-chat-muted"
@@ -304,7 +304,7 @@ export default function ChatAssistant() {
                             } ${isUser ? "md:max-w-[72%]" : ""}`}
                           >
                             <div
-                              className={`whitespace-pre-line font-display text-[17px] font-normal leading-[1.8] text-chat-ink ${
+                              className={`whitespace-pre-line font-sans text-[16px] font-normal leading-[1.75] tracking-[0.01em] text-chat-ink ${
                                 isUser
                                   ? "rounded-[18px] border border-chat-user-border bg-white px-[18px] py-[14px]"
                                   : "rounded-[18px] bg-chat-bubble px-5 py-4"
@@ -335,7 +335,7 @@ export default function ChatAssistant() {
                     onKeyDown={handleKeyDown}
                     placeholder="Ask anything about our collections, sizing, or orders…"
                     aria-label="Type your question"
-                    className="min-w-0 flex-1 bg-transparent font-display text-[16px] text-chat-ink outline-none placeholder:font-sans placeholder:text-[14px] placeholder:text-chat-placeholder"
+                    className="min-w-0 flex-1 bg-transparent font-sans text-[16px] text-chat-ink outline-none placeholder:font-sans placeholder:text-[14px] placeholder:text-chat-placeholder"
                   />
                   <button
                     type="button"

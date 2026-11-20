@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import womensImage from "../assets/w1.jpg";
 
 const WomenLaunchingSoonPage = () => {
   const navigate = useNavigate();
@@ -14,12 +13,10 @@ const WomenLaunchingSoonPage = () => {
 
   return (
     <main className="bg-ivory">
-      <div className="h-14 md:h-16" />
       <div
-        className={`grid grid-cols-1 md:grid-cols-[45%_55%] w-full transition-all duration-700 ease-out ${
+        className={`grid min-h-[100svh] grid-cols-1 md:h-[100svh] md:min-h-0 md:grid-cols-[40%_60%] md:grid-rows-[minmax(0,1fr)] w-full transition-all duration-700 ease-out ${
           loaded ? "opacity-100" : "opacity-0"
         }`}
-        style={{ minHeight: "calc(100vh - 4rem)" }}
       >
         {/* Left — Text content */}
         <div className="flex items-center justify-center px-8 md:px-12 lg:px-16 xl:px-20 py-16 md:py-0">
@@ -70,10 +67,9 @@ const WomenLaunchingSoonPage = () => {
           <div className="absolute inset-0 overflow-hidden bg-[#f0ece4]">
             {!imgError ? (
               <img
-                src={womensImage}
+                src="/images/women page.png"
                 alt="Women's collection preview"
-                className="w-full h-full object-cover"
-                style={{ objectPosition: "center" }}
+                className="w-full h-full object-cover object-[70%_center]"
                 onError={() => setImgError(true)}
               />
             ) : (

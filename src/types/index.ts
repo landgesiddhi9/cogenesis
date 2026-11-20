@@ -83,7 +83,7 @@ export interface ShopifyCollection {
 }
 
 export interface ShopifyPage {
-  id: string;
+  id?: string;
   title: string;
   handle: string;
   body: string;

@@ -33,7 +33,7 @@ import {
 } from "./cart.service";
 import { searchProducts, type SearchProductsResult } from "./search.service";
 import { getWishlistProductsByIds } from "./wishlist.service";
-import { getPageByHandle, type PageServiceResult } from "./page.service";
+import { getPageByHandle, getShopifyPage, type PageServiceResult } from "./page.service";
 
 // Re-export all error types and utilities
 export {
@@ -45,6 +45,7 @@ export {
   getShopifyConfig,
   getStorefrontApiUrl,
   getPageByHandle,
+  getShopifyPage,
 };
 
 export type {
