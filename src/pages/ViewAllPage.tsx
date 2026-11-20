@@ -45,10 +45,12 @@ function buildCollectionTabs(collections: ShopifyCollection[]): CollectionTab[] 
     key: t.label.toLowerCase().replace(/\s+/g, "-"),
   }));
 
-  const collectionTabs: CollectionTab[] = collections.map((c) => ({
-    key: c.handle,
-    label: c.title.toUpperCase(),
-  }));
+  const collectionTabs: CollectionTab[] = collections
+    .filter((c) => c.title.trim().toUpperCase() !== "HOME PAGE")
+    .map((c) => ({
+      key: c.handle,
+      label: c.title.toUpperCase(),
+    }));
 
   const suffixes: CollectionTab[] = SUFFIX_TABS.map((t) => ({
     ...t,

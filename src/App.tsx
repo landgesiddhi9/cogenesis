@@ -3,10 +3,11 @@ import { Routes, Route, Navigate, useLocation, useParams } from "react-router-do
 
 import Navbar from "./components/Navbar";
 import Hero from "./components/Hero";
-import PromoGrid from "./components/PromoGrid";
 import ProductStrip from "./components/ProductStrip";
 import DualImageSection from "./components/DualImageSection";
+import Section4 from "./components/Section4";
 import BrandStorySplitSection from "./components/BrandStorySplitSection";
+import Section5Banner from "./components/Section5Banner";
 import Footer from "./components/Footer";
 
 import ErrorBoundary from "./components/ErrorBoundary";
@@ -30,6 +31,7 @@ const SearchPage = lazy(() => import("./pages/SearchPage"));
 const PurchasesPage = lazy(() => import("./pages/PurchasesPage"));
 const ReturnsPage = lazy(() => import("./pages/ReturnsPage"));
 const PolicyPage = lazy(() => import("./pages/PolicyPage"));
+const ShopifyContentPage = lazy(() => import("./pages/ShopifyContentPage"));
 
 const CollectionRouteWrapper = () => {
   const { handle } = useParams<{ handle: string }>();
@@ -49,7 +51,13 @@ function App() {
     <div className="section-content bg-ivory">
       <Navbar />
 
-      <main className="pt-[68px] md:pt-16">
+      <main
+        className={
+          location.pathname === "/launching-soon" || location.pathname.startsWith("/women")
+            ? ""
+            : "pt-[68px] md:pt-16"
+        }
+      >
         <ErrorBoundary>
           <Suspense fallback={<LoadingFallback />}>
             <Routes>
@@ -59,9 +67,10 @@ function App() {
             element={
               <>
                 <Hero />
-                <PromoGrid />
                 <DualImageSection />
                 <ProductStrip />
+                <Section4 />
+                <Section5Banner />
                 <BrandStorySplitSection />
               </>
             }
@@ -123,6 +132,17 @@ function App() {
           <Route path="/refund-policy" element={<PolicyPage policyKey="refundPolicy" />} />
           <Route path="/shipping-policy" element={<PolicyPage policyKey="shippingPolicy" />} />
           <Route path="/terms-and-conditions" element={<PolicyPage policyKey="termsOfService" />} />
+
+          {/* Shopify CMS pages */}
+          <Route
+            path="/fabric-and-care-guide"
+            element={
+              <ShopifyContentPage
+                handle="fabric-guide"
+                subtitle="Care instructions and fabric details for your Cogenesis garments."
+              />
+            }
+          />
 
           {/* New Arrivals */}
           <Route path="/new-arrivals" element={<NewArrivalsPage />} />

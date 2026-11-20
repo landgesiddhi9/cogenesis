@@ -21,13 +21,17 @@ const Navbar = () => {
   // Branding: Monogram (h-15) + Logo (h-32) with 8-10px visible gap + color #5C3432 + trim margins for PNG padding
 
   const [menuOpen, setMenuOpen] = useState(false);
-  const [activeCategory] = useState<"men" | "women" | "fabric">("men");
+  const [activeCategory, setActiveCategory] = useState<"men" | "women" | "fabric">("men");
 
   // Cherry-pick: search overlay + router state
   const [searchOpen, setSearchOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const activePath = location.pathname;
+  const closeMenu = () => {
+    setMenuOpen(false);
+    setActiveCategory("men");
+  };
 
   // Cart badge
   const { cart } = useCart();
@@ -38,6 +42,15 @@ const Navbar = () => {
     const sync = () => setIsLoggedIn(!!getSession());
     window.addEventListener(SESSION_EVENT, sync);
     return () => window.removeEventListener(SESSION_EVENT, sync);
+  }, []);
+
+  useEffect(() => {
+    const openFabricMenu = () => {
+      setActiveCategory("fabric");
+      setMenuOpen(true);
+    };
+    window.addEventListener("cogenesis:open-fabric-menu", openFabricMenu);
+    return () => window.removeEventListener("cogenesis:open-fabric-menu", openFabricMenu);
   }, []);
 
   // Helper: icon button class with active state (cherry-pick)
@@ -103,7 +116,10 @@ const Navbar = () => {
   useEffect(() => {
     if (!menuOpen) return;
     const handleKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setMenuOpen(false);
+      if (e.key === "Escape") {
+        setMenuOpen(false);
+        setActiveCategory("men");
+      }
     };
     window.addEventListener("keydown", handleKey);
     return () => window.removeEventListener("keydown", handleKey);
@@ -116,8 +132,8 @@ const Navbar = () => {
           } backdrop-blur-md shadow-sm`}
         style={{
           backgroundColor: menuOpen
-            ? "#FAF8F4"
-            : "rgba(250, 248, 244, 0.95)",
+            ? "#FAFAFA"
+            : "rgba(250, 250, 250, 0.95)",
           borderBottom: menuOpen
             ? "1px solid #D9D2C7"
             : "1px solid rgba(122, 113, 104, 0.1)",
@@ -130,7 +146,7 @@ const Navbar = () => {
             {/* Hamburger menu — visible on all sizes */}
             <button
               className="flex flex-col gap-1.25 p-2 relative z-60 transition-transform duration-350 ease-in-out active:scale-95"
-              onClick={() => setMenuOpen(!menuOpen)}
+              onClick={() => menuOpen ? closeMenu() : setMenuOpen(true)}
               aria-label={menuOpen ? "Close menu" : "Open menu"}
               aria-expanded={menuOpen}
               aria-controls="navbar-dropdown"
@@ -361,13 +377,14 @@ const Navbar = () => {
                 willChange: "opacity",
                 pointerEvents: menuOpen ? "auto" : "none",
               }}
-              onClick={() => setMenuOpen(false)}
+              onClick={closeMenu}
             />
             {/* Mega menu panel */}
             <div className="relative z-10">
               <MegaMenuPanel
+                key={activeCategory}
                 isOpen={menuOpen}
-                onClose={() => setMenuOpen(false)}
+                onClose={closeMenu}
                 activeCategory={activeCategory}
               />
             </div>
@@ -376,7 +393,7 @@ const Navbar = () => {
           {/* Mobile drawer */}
           <MobileMenu
             isOpen={menuOpen}
-            onClose={() => setMenuOpen(false)}
+            onClose={closeMenu}
             cartCount={cart?.totalQuantity ?? 0}
           />
         </>,

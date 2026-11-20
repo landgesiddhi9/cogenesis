@@ -37,8 +37,7 @@ const SECTIONS: AccordionSection[] = [
     links: [
       { label: "Linen", to: "/collections/linen" },
       { label: "Linen Blend", to: "/collections/linen-blend" },
-      { label: "Care Guide", to: "/fabric/care-guide" },
-      { label: "Fabric Guide", to: "/fabric/guide" },
+      { label: "Fabric and Care Guide", to: "/fabric-and-care-guide" },
     ],
   },
 ];
@@ -106,7 +105,7 @@ const MobileMenu = ({ isOpen, onClose, cartCount }: MobileMenuProps) => {
       role="dialog"
       aria-modal={visuallyOpen}
       aria-label="Site navigation"
-      className="block md:hidden fixed inset-0 z-110 w-screen h-dvh bg-[#FAF8F4] flex flex-col overflow-hidden"
+      className="block md:hidden fixed inset-0 z-110 w-screen h-dvh bg-[#FAFAFA] flex flex-col overflow-hidden"
       aria-hidden={!visuallyOpen}
       inert={!visuallyOpen}
       style={{
