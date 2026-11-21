@@ -3,6 +3,42 @@ import { getColorHex } from "./color";
 
 export const DEFAULT_SIZES = ["S", "M", "L", "XL"];
 
+export function getFabricComposition(product: ShopifyProduct | null | undefined): string {
+  if (!product) return "";
+
+  const handle = product.handle?.toLowerCase() || "";
+  const title = product.title?.toLowerCase() || "";
+  const productType = product.productType?.toLowerCase() || "";
+  const tags = product.tags?.map((tag) => tag.toLowerCase()) || [];
+  const categoryText = `${handle} ${title} ${productType} ${tags.join(" ")}`;
+
+  if (categoryText.includes("trouser")) {
+    return "40% linen and 60% cotton";
+  }
+
+  if (categoryText.includes("cuban collar") || categoryText.includes("cuban-collar")) {
+    return "40% linen and 60% cotton";
+  }
+
+  if (
+    categoryText.includes("pure linen") ||
+    categoryText.includes("pure-linen") ||
+    tags.includes("pure-linen")
+  ) {
+    return "100% linen";
+  }
+
+  if (
+    categoryText.includes("linen blend") ||
+    categoryText.includes("linen-blend") ||
+    tags.includes("linen-blend")
+  ) {
+    return "80% linen and 20% lyocell";
+  }
+
+  return "";
+}
+
 /**
  * Checks whether an option name corresponds to a color/colour attribute.
  */
