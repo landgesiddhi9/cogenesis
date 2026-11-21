@@ -32,6 +32,7 @@ const PurchasesPage = lazy(() => import("./pages/PurchasesPage"));
 const ReturnsPage = lazy(() => import("./pages/ReturnsPage"));
 const PolicyPage = lazy(() => import("./pages/PolicyPage"));
 const ShopifyContentPage = lazy(() => import("./pages/ShopifyContentPage"));
+const AccountAuthorizePage = lazy(() => import("./pages/AccountAuthorizePage"));
 
 const CollectionRouteWrapper = () => {
   const { handle } = useParams<{ handle: string }>();
@@ -114,6 +115,10 @@ function App() {
 
           {/* Account */}
           <Route path="/account" element={<AccountPage />} />
+          <Route
+            path="/account/authorize"
+            element={<AccountAuthorizePage />}
+          />
 
           {/* Cart */}
           <Route path="/cart" element={<CartPage />} />

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { setSession, getSession } from "../utils/auth";
+import { startShopifyCustomerAuth } from "../utils/shopifyAuth";
 import { FcGoogle } from "react-icons/fc";
 import { FaApple, FaEye, FaEyeSlash } from "react-icons/fa";
 
@@ -67,18 +68,46 @@ const OrDivider = () => (
 );
 
 // ─── Social buttons ──────────────────────────────────────────────────────────
-const SocialButtons = () => (
-  <div className="space-y-3">
-    <button className={socialBtnCls}>
-      <FcGoogle size={20} />
-      <span className="font-medium">Continue with Google</span>
-    </button>
-    <button className={socialBtnCls}>
-      <FaApple size={20} />
-      <span className="font-medium">Continue with Apple</span>
-    </button>
-  </div>
-);
+const SocialButtons = () => {
+  const [googleLoading, setGoogleLoading] = useState(false);
+  const [googleError, setGoogleError] = useState("");
+
+  const handleGoogleSignIn = async () => {
+    setGoogleLoading(true);
+    setGoogleError("");
+    try {
+      await startShopifyCustomerAuth();
+    } catch (error) {
+      setGoogleError(
+        error instanceof Error
+          ? error.message
+          : "Unable to start Shopify sign-in.",
+      );
+      setGoogleLoading(false);
+    }
+  };
+
+  return (
+    <div className="space-y-3">
+      <button
+        type="button"
+        onClick={handleGoogleSignIn}
+        disabled={googleLoading}
+        className={`${socialBtnCls} disabled:cursor-wait disabled:opacity-70`}
+      >
+        <FcGoogle size={20} />
+        <span className="font-medium">
+          {googleLoading ? "Connecting..." : "Continue with Google"}
+        </span>
+      </button>
+      {googleError && <p className={errCls}>{googleError}</p>}
+      <button type="button" className={socialBtnCls}>
+        <FaApple size={20} />
+        <span className="font-medium">Continue with Apple</span>
+      </button>
+    </div>
+  );
+};
 
 // ─── Heading ─────────────────────────────────────────────────────────────────
 const Heading = ({ title }: { title: string }) => (
@@ -231,6 +260,7 @@ const LoginPage: React.FC = () => {
     setSession({
       name: user.firstName || email.split("@")[0],
       email: email.trim().toLowerCase(),
+      provider: "mock",
     });
     navigate("/account");
   };
@@ -258,7 +288,11 @@ const LoginPage: React.FC = () => {
       firstName,
       lastName,
     });
-    setSession({ name: firstName, email: email.trim().toLowerCase() });
+    setSession({
+      name: firstName,
+      email: email.trim().toLowerCase(),
+      provider: "mock",
+    });
     navigate("/account");
   };
 
