@@ -54,6 +54,11 @@ const ProductInfo = ({
   const fabric = product.tags
     .find((tag) => ["cotton", "linen", "linen-blend"].includes(tag))
     ?.toUpperCase();
+  const descriptionLines = description
+    .split(".")
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .map((line) => `${line}.`);
 
   return (
     <div className="space-y-0 px-6 md:px-10 lg:px-14">
@@ -91,14 +96,18 @@ const ProductInfo = ({
         <div
           className="text-charcoal tracking-normal"
           style={{
-            fontFamily: "'Inter', 'Helvetica Neue', sans-serif",
-            fontSize: "28px",
+            fontFamily: "'Cormorant Garamond', 'Canela', serif",
+            fontSize: "27px",
             fontWeight: 400,
-            color: "#5A5550",
+            color: "#261317",
             lineHeight: 1,
           }}
         >
-          <SalePrice price={price} compareAtPrice={compareAtPrice} />
+          <SalePrice
+            price={price}
+            compareAtPrice={compareAtPrice}
+            luxuryProductDetail
+          />
         </div>
       </div>
 
@@ -124,7 +133,7 @@ const ProductInfo = ({
               </span>
             )}
           </h3>
-          <div className="flex gap-3 flex-wrap items-center">
+          <div className="flex gap-2 flex-nowrap items-center">
             {colorOptions.map((opt) => {
               const isSelected =
                 Boolean(selectedColor) &&
@@ -149,7 +158,7 @@ const ProductInfo = ({
                         setSelectedColor(opt.name);
                       }
                     }}
-                    className={`w-12 h-14 rounded-sm relative flex items-center justify-center overflow-hidden border transition-all duration-200 cursor-pointer ${
+                    className={`w-10 h-12 rounded-sm relative flex items-center justify-center overflow-hidden border transition-all duration-200 cursor-pointer ${
                       isSelected
                         ? "border-charcoal shadow-sm"
                         : "border-stone/20 hover:border-charcoal/40 opacity-90 hover:opacity-100"
@@ -317,18 +326,23 @@ const ProductInfo = ({
 
       {/* Product Description */}
       <div className="pb-12">
-        <p
-          className="text-charcoal/80 leading-relaxed max-w-lg"
-          style={{
-            fontFamily: "'Cormorant Garamond', 'Canela', serif",
-            fontSize: "18px",
-            fontWeight: 400,
-            lineHeight: 1.8,
-            letterSpacing: "0.01em",
-          }}
-        >
-          {description}
-        </p>
+        <div className="space-y-1.5 max-w-lg">
+          {descriptionLines.map((line, index) => (
+            <p
+              key={index}
+              className="text-charcoal/80 leading-relaxed"
+              style={{
+                fontFamily: "'Cormorant Garamond', 'Canela', serif",
+                fontSize: "18px",
+                fontWeight: 400,
+                lineHeight: 1.8,
+                letterSpacing: "0.01em",
+              }}
+            >
+              {line}
+            </p>
+          ))}
+        </div>
       </div>
 
       {/* Wishlist Button */}
@@ -396,7 +410,7 @@ const ProductInfo = ({
                 fontWeight: 400,
               }}
             >
-              On orders above ₹3,000
+              On orders above ₹2,099
             </p>
           </div>
         </div>
@@ -425,7 +439,7 @@ const ProductInfo = ({
                 fontWeight: 400,
               }}
             >
-              7-Day Returns
+              10-Day Returns
             </p>
             <p
               className="text-charcoal/50 mt-1"
