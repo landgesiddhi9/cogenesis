@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { getAllPolicies, type PolicyKey, type ShopifyPolicy } from "../services/policy.service";
+import { fetchShopifyPolicies, type PolicyKey, type ShopifyPolicy } from "../services/policy.service";
 
 // ── Policy navigation config ────────────────────────────────────────────────
 const POLICY_NAV: { key: PolicyKey; label: string; route: string; subtitle: string }[] = [
@@ -29,30 +29,6 @@ const POLICY_NAV: { key: PolicyKey; label: string; route: string; subtitle: stri
     subtitle: "Terms governing your use of this website and our services.",
   },
 ];
-
-const LOCAL_POLICY_FALLBACKS: Partial<Record<PolicyKey, ShopifyPolicy>> = {
-  privacyPolicy: {
-    title: "Privacy Policy",
-    url: "/privacy-policy",
-    body: `
-      <h2>Privacy Policy</h2>
-      <p>We respect your privacy. This policy describes how information may be collected, used, and protected when you use our website and services.</p>
-      <p>Information provided when you place an order, create an account, or contact us is used to provide and support the services you request.</p>
-      <p>For questions about this policy or requests concerning your personal information, please contact us using the details provided on this website.</p>
-    `,
-  },
-  termsOfService: {
-    title: "Terms & Conditions",
-    url: "/terms-and-conditions",
-    body: `
-      <h2>Terms &amp; Conditions</h2>
-      <p>These terms govern your access to and use of this website and the services offered through it.</p>
-      <p>Product information and availability may change. Orders are subject to product availability and confirmation.</p>
-      <p>We may update these terms from time to time. Your continued use of the website after changes are posted indicates your acceptance of the updated terms.</p>
-      <p>For questions about these terms, please contact us using the details provided on this website.</p>
-    `,
-  },
-};
 
 // ── Loading skeleton ─────────────────────────────────────────────────────────
 const PolicySkeleton = () => (
@@ -94,29 +70,26 @@ const PolicyPage = ({ policyKey }: PolicyPageProps) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Fetch all policies once so nav switches are instant
+  // Load all policies once so sidebar navigation stays immediate.
   useEffect(() => {
-    let cancelled = false;
-    setLoading(true);
-    setError(null);
+    const controller = new AbortController();
 
-    getAllPolicies()
-      .then((data) => {
-        if (!cancelled) setPolicies(data as Record<PolicyKey, ShopifyPolicy | null>);
+    fetchShopifyPolicies(controller.signal)
+      .then(setPolicies)
+      .catch((fetchError: unknown) => {
+        if (controller.signal.aborted) return;
+        setError(
+          fetchError instanceof Error
+            ? fetchError.message
+            : "Unable to load policies. Please try again later.",
+        );
       })
-      .catch(() => {
-        if (!cancelled) setError("Unable to load policies. Please try again later.");
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
+      .finally(() => { if (!controller.signal.aborted) setLoading(false); });
 
-    return () => { cancelled = true; };
+    return () => controller.abort();
   }, []);
 
-  const activePolicy = policies[policyKey]?.body.trim()
-    ? policies[policyKey]
-    : LOCAL_POLICY_FALLBACKS[policyKey] ?? null;
+  const activePolicy = policies[policyKey]?.body.trim() ? policies[policyKey] : null;
   const activeMeta = POLICY_NAV.find((n) => n.key === policyKey)!;
 
   // Scroll to top when policyKey changes
