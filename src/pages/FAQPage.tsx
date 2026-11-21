@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import faqData from "../data/faqData";
-import { getAllPolicies, type PolicyKey, type ShopifyPolicy } from "../services/policy.service";
+import { fetchShopifyPolicies, type PolicyKey, type ShopifyPolicy } from "../services/policy.service";
 import { getShopifyPage, type ShopifyPage } from "../services/page.service";
 
 interface FAQContentSource {
@@ -153,7 +153,7 @@ const FAQPage = () => {
   useEffect(() => {
     let cancelled = false;
 
-    Promise.all([getAllPolicies(), getShopifyPage("fabric-guide")])
+    Promise.all([fetchShopifyPolicies(), getShopifyPage("fabric-guide")])
       .then(([policies, fabricGuide]) => {
         if (!cancelled) setSources(getPolicySources(policies, fabricGuide));
       })
