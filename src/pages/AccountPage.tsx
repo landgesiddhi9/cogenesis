@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate, Navigate } from "react-router-dom";
 import { getSession, clearSession } from "../utils/auth";
+import { logoutFromShopify } from "../utils/shopifyAuth";
 
 // ── Single menu row ───────────────────────────────────────────────────────────
 const MenuRow = ({
@@ -69,6 +70,12 @@ const AccountPage = () => {
 
   const handleSignOut = () => {
     clearSession();
+    if (session.provider === "shopify") {
+      logoutFromShopify().catch(() => {
+        window.location.assign("https://cogenesis.in/");
+      });
+      return;
+    }
     navigate("/");
   };
 
