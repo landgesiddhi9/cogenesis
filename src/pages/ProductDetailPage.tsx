@@ -10,6 +10,7 @@ import {
   getProductSizes,
   getProductColors,
   resolveSiblingHandleForColor,
+  getFabricComposition,
 } from "../utils/variant";
 import ImageGallery from "../components/ProductDetail/ImageGallery";
 import ProductInfo from "../components/ProductDetail/ProductInfo";
@@ -326,6 +327,7 @@ const ProductDetailPage = ({ productHandle }: ProductDetailPageProps) => {
         ["cotton", "linen", "blend"].includes(t.toLowerCase()),
       ) || "fabric"
     }, this piece combines timeless elegance with contemporary design. Perfect for the discerning gentleman who appreciates quality, durability, and understated sophistication.`;
+  const fabricComposition = getFabricComposition(product);
 
   return (
     <div className="bg-ivory min-h-screen">
@@ -342,7 +344,7 @@ const ProductDetailPage = ({ productHandle }: ProductDetailPageProps) => {
           </div>
 
           {/* Right Side - Sticky Product Info Panel */}
-          <div className="sticky top-20 h-fit">
+          <div className="sticky top-20 h-fit lg:pr-16">
             <ProductInfo
               product={product}
               selectedColor={selectedColor}
@@ -379,19 +381,19 @@ const ProductDetailPage = ({ productHandle }: ProductDetailPageProps) => {
               />
               <ProductAccordion
                 title="Fabric & Composition"
-                content="Premium quality material with a lightweight structure. Made from sustainably sourced fibers. Designed for breathability and comfort throughout the day."
+                content={fabricComposition}
               />
               <ProductAccordion
                 title="Care Instructions"
-                content="Gentle hand wash in cold water. Lay flat to dry. Do not bleach. Iron at low temperature if needed. For best longevity, avoid frequent washing."
+                content={"Turn inside out\nMachine wash on cool cycle\nWash with like colors\nOnly non chlorine (bleach)\nLine dry\nDo not wring\nTumble dry low heat\nLow iron heat"}
               />
               <ProductAccordion
                 title="Shipping Information"
-                content="Free shipping on orders above ₹3,000. Standard delivery: 5-7 business days. Express delivery available for select locations."
+                content="Free shipping on orders above ₹2,099. Standard delivery: 5-7 business days. Express delivery available for select locations."
               />
               <ProductAccordion
                 title="Return & Exchange"
-                content="Easy 7-day returns on unworn items with original tags. Free exchanges for different sizes. Full refund within 14 days."
+                content="Easy 10-day returns on unworn items with original tags. Free exchanges for different sizes. Full refund within 14 days."
               />
               <ProductAccordion
                 title="Payment & Security"
