@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import allPaymentIcons from "../assets/payments/all in one.png";
 
 const Footer = () => {
@@ -66,14 +67,14 @@ const Footer = () => {
               </a>
             </li>
             <li>
-              <a href="/terms-and-conditions" className="font-sans text-[12px] text-[#7a7260] hover:text-[#3d3929] transition-colors duration-300">
+              <Link to="/terms-and-conditions" className="font-sans text-[12px] text-[#7a7260] hover:text-[#3d3929] transition-colors duration-300">
                 Terms &amp; Conditions
-              </a>
+              </Link>
             </li>
             <li>
-              <a href="/privacy-policy" className="font-sans text-[12px] text-[#7a7260] hover:text-[#3d3929] transition-colors duration-300">
+              <Link to="/privacy-policy" className="font-sans text-[12px] text-[#7a7260] hover:text-[#3d3929] transition-colors duration-300">
                 Privacy Policy
-              </a>
+              </Link>
             </li>
           </ul>
         </div>
@@ -325,20 +326,20 @@ const Footer = () => {
                   </a>
                 </li>
                 <li>
-                  <a
-                    href="/terms-and-conditions"
+                  <Link
+                    to="/terms-and-conditions"
                     className="font-sans text-[13px] text-[#7a7260] hover:text-[#3d3929] transition-colors duration-300"
                   >
                     Terms & Conditions
-                  </a>
+                  </Link>
                 </li>
                 <li>
-                  <a
-                    href="/privacy-policy"
+                  <Link
+                    to="/privacy-policy"
                     className="font-sans text-[13px] text-[#7a7260] hover:text-[#3d3929] transition-colors duration-300"
                   >
                     Privacy Policy
-                  </a>
+                  </Link>
                 </li>
               </ul>
             </div>

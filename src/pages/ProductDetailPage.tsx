@@ -329,6 +329,13 @@ const ProductDetailPage = ({ productHandle }: ProductDetailPageProps) => {
     }, this piece combines timeless elegance with contemporary design. Perfect for the discerning gentleman who appreciates quality, durability, and understated sophistication.`;
   const fabricComposition = getFabricComposition(product);
 
+  const productDescriptionLines = productDescription
+    .split(".")
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .map((line) => `${line}.`)
+    .join("\n");
+
   return (
     <div className="bg-ivory min-h-screen">
       {/* Main Product Section with Sticky Info Panel */}
@@ -360,7 +367,6 @@ const ProductDetailPage = ({ productHandle }: ProductDetailPageProps) => {
               addToCart={handleAddToCart}
               buyNow={handleBuyNow}
               buyingNow={buyingNow}
-              description={productDescription}
               catalog={catalog}
             />
 
@@ -377,7 +383,7 @@ const ProductDetailPage = ({ productHandle }: ProductDetailPageProps) => {
             <div className="mt-16 space-y-0">
               <ProductAccordion
                 title="Product Details"
-                content={`Type: ${product.productType}\nVendor: ${product.vendor}\nAvailable in multiple colors and sizes.`}
+                content={productDescriptionLines}
               />
               <ProductAccordion
                 title="Fabric & Composition"

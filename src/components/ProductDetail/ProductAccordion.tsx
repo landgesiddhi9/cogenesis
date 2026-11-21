@@ -73,7 +73,7 @@ const ProductAccordion = ({ title, content }: ProductAccordionProps) => {
       {isOpen && (
         <div className="pt-4 pb-2">
           <p
-            className="text-charcoal/70 leading-relaxed whitespace-pre-wrap"
+            className="text-charcoal leading-relaxed whitespace-pre-wrap"
             style={{
               fontFamily: "'Cormorant Garamond', 'Canela', serif",
               fontSize: "16px",
