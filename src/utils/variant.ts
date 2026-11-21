@@ -10,29 +10,32 @@ export function getFabricComposition(product: ShopifyProduct | null | undefined)
   const title = product.title?.toLowerCase() || "";
   const productType = product.productType?.toLowerCase() || "";
   const tags = product.tags?.map((tag) => tag.toLowerCase()) || [];
-  const categoryText = `${handle} ${title} ${productType} ${tags.join(" ")}`;
+  const description = product.description?.toLowerCase() || "";
+  const categoryText = `${handle} ${title} ${productType} ${tags.join(" ")} ${description}`.replaceAll("-", " ");
 
-  if (categoryText.includes("trouser")) {
+  if (/\btrousers?\b/.test(categoryText)) {
     return "40% linen and 60% cotton";
   }
 
-  if (categoryText.includes("cuban collar") || categoryText.includes("cuban-collar")) {
+  if (categoryText.includes("cuban collar")) {
     return "40% linen and 60% cotton";
   }
 
   if (
     categoryText.includes("pure linen") ||
-    categoryText.includes("pure-linen") ||
-    tags.includes("pure-linen")
+    categoryText.includes("100% linen")
   ) {
     return "100% linen";
   }
 
   if (
     categoryText.includes("linen blend") ||
-    categoryText.includes("linen-blend") ||
-    tags.includes("linen-blend")
+    categoryText.includes("lyocell")
   ) {
+    return "80% linen and 20% lyocell";
+  }
+
+  if (/\bshirts?\b/.test(categoryText)) {
     return "80% linen and 20% lyocell";
   }
 

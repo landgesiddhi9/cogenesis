@@ -30,6 +30,30 @@ const POLICY_NAV: { key: PolicyKey; label: string; route: string; subtitle: stri
   },
 ];
 
+const LOCAL_POLICY_FALLBACKS: Partial<Record<PolicyKey, ShopifyPolicy>> = {
+  privacyPolicy: {
+    title: "Privacy Policy",
+    url: "/privacy-policy",
+    body: `
+      <h2>Privacy Policy</h2>
+      <p>We respect your privacy. This policy describes how information may be collected, used, and protected when you use our website and services.</p>
+      <p>Information provided when you place an order, create an account, or contact us is used to provide and support the services you request.</p>
+      <p>For questions about this policy or requests concerning your personal information, please contact us using the details provided on this website.</p>
+    `,
+  },
+  termsOfService: {
+    title: "Terms & Conditions",
+    url: "/terms-and-conditions",
+    body: `
+      <h2>Terms &amp; Conditions</h2>
+      <p>These terms govern your access to and use of this website and the services offered through it.</p>
+      <p>Product information and availability may change. Orders are subject to product availability and confirmation.</p>
+      <p>We may update these terms from time to time. Your continued use of the website after changes are posted indicates your acceptance of the updated terms.</p>
+      <p>For questions about these terms, please contact us using the details provided on this website.</p>
+    `,
+  },
+};
+
 // ── Loading skeleton ─────────────────────────────────────────────────────────
 const PolicySkeleton = () => (
   <div className="animate-pulse">
@@ -90,7 +114,9 @@ const PolicyPage = ({ policyKey }: PolicyPageProps) => {
     return () => { cancelled = true; };
   }, []);
 
-  const activePolicy = policies[policyKey];
+  const activePolicy = policies[policyKey]?.body.trim()
+    ? policies[policyKey]
+    : LOCAL_POLICY_FALLBACKS[policyKey] ?? null;
   const activeMeta = POLICY_NAV.find((n) => n.key === policyKey)!;
 
   // Scroll to top when policyKey changes
@@ -166,7 +192,7 @@ const PolicyPage = ({ policyKey }: PolicyPageProps) => {
             {loading && <PolicySkeleton />}
 
             {/* Error */}
-            {!loading && error && (
+            {!loading && error && !activePolicy && (
               <div className="py-20 text-center">
                 <p className="font-sans text-[13px] text-[#9a9080] leading-relaxed">{error}</p>
                 <button
@@ -190,7 +216,7 @@ const PolicyPage = ({ policyKey }: PolicyPageProps) => {
             )}
 
             {/* Content */}
-            {!loading && !error && activePolicy && (
+            {!loading && activePolicy && (
               <article>
                 {/* Shopify HTML body */}
                 <div
