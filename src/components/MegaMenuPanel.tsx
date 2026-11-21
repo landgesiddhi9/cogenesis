@@ -23,10 +23,10 @@ const CATEGORIES: { key: Category; label: string }[] = [
 
 const LINKS: Record<Category, MenuLink[]> = {
   men: [
-    { label: "Shirts", to: "/collections/shirts", image: "/images/shirts dropdown.jpg" },
-    { label: "Trousers", to: "/collections/trousers", image: "/images/trouser dropdown.jpg" },
-    { label: "Best Sellers", to: "/men/best-sellers", image: "/images/male model 2 .jpg" },
-    { label: "View All", to: "/men/view-all", image: "/images/male model .jpg" },
+    { label: "Shirts", to: "/collections/shirts", image: "/images/shirt%20dropdown.jpg" },
+    { label: "Trousers", to: "/collections/trousers", image: "/images/trouser%20dropdown.jpg" },
+    { label: "Best Sellers", to: "/men/best-sellers", image: "/images/best%20seller%20dropdown.jpg" },
+    { label: "View All", to: "/men/view-all", image: "/images/view%20all%20dropdown.jpg" },
   ],
   women: [
     { label: "Launching Soon", to: "/women", image: "/images/dropdown women.png" },
@@ -188,7 +188,7 @@ const MegaMenuPanel = ({ isOpen, onClose, activeCategory }: MegaMenuPanelProps) 
                 <img
                   src={prevPreviewImage}
                   alt=""
-                  className="absolute inset-0 w-full h-full object-cover"
+                  className="absolute inset-0 w-full h-full object-cover object-top"
                   style={{
                     opacity: imageFading ? 0 : 1,
                     transition: `opacity ${IMAGE_FADE_DURATION}ms ${EASE}`,
@@ -199,11 +199,11 @@ const MegaMenuPanel = ({ isOpen, onClose, activeCategory }: MegaMenuPanelProps) 
                 <img
                   src={previewImage}
                   alt={displayCategory}
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-cover object-top"
                   style={{
                     opacity: prevPreviewImage && imageFading ? 1 : 1,
                     transition: `opacity ${IMAGE_FADE_DURATION}ms ${EASE}, transform ${IMAGE_FADE_DURATION}ms ${EASE}`,
-                    transform: imageFading ? "scale(1)" : "scale(1.03)",
+                    transform: "scale(1)",
                   }}
                 />
               )}
