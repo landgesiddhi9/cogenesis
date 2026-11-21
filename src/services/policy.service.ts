@@ -1,3 +1,5 @@
+import { shopifyRequest } from "../api/client";
+
 export type PolicyKey =
   | "privacyPolicy"
   | "refundPolicy"
@@ -7,175 +9,79 @@ export type PolicyKey =
 export interface ShopifyPolicy {
   title: string;
   body: string;
-  handle?: string;
-  url?: string;
+  handle: string;
+  url: string;
 }
 
 export type AllPolicies = Record<PolicyKey, ShopifyPolicy | null>;
 
-interface ShopifyPage {
-  title: string;
-  body: string;
-  handle: string;
-}
-
-interface ShopifyPoliciesResponse {
-  data?: {
-    shop: AllPolicies;
-    privacyPolicyPage: ShopifyPage | null;
-    refundPolicyPage: ShopifyPage | null;
-    returnPolicyPage: ShopifyPage | null;
-    shippingPolicyPage: ShopifyPage | null;
-    termsAndConditionsPage: ShopifyPage | null;
-    termsOfServicePage: ShopifyPage | null;
-  };
-  errors?: Array<{ message: string }>;
+interface ShopifyPoliciesQueryResponse {
+  shop?: Partial<Record<PolicyKey, ShopifyPolicy | null>> | null;
 }
 
 const FETCH_SHOPIFY_POLICIES_QUERY = `
   query FetchShopifyPolicies {
     shop {
-      privacyPolicy { title body handle }
-      termsOfService { title body handle }
-      refundPolicy { title body handle }
-      shippingPolicy { title body handle }
-    }
-    privacyPolicyPage: page(handle: "privacy-policy") {
-      title
-      body
-      handle
-    }
-    refundPolicyPage: page(handle: "refund-policy") {
-      title
-      body
-      handle
-    }
-    returnPolicyPage: page(handle: "return-policy") {
-      title
-      body
-      handle
-    }
-    shippingPolicyPage: page(handle: "shipping-policy") {
-      title
-      body
-      handle
-    }
-    termsAndConditionsPage: page(handle: "terms-and-conditions") {
-      title
-      body
-      handle
-    }
-    termsOfServicePage: page(handle: "terms-of-service") {
-      title
-      body
-      handle
+      shippingPolicy { title body handle url }
+      refundPolicy { title body handle url }
+      privacyPolicy { title body handle url }
+      termsOfService { title body handle url }
     }
   }
 `;
 
-const hasBody = (policy: ShopifyPolicy | ShopifyPage | null | undefined) =>
-  typeof policy?.body === "string" && policy.body.trim().length > 0;
+const POLICY_CACHE_TTL_MS = 5 * 60 * 1000;
 
-const firstAvailable = (
-  policy: ShopifyPolicy | null,
-  pages: Array<ShopifyPage | null>,
-  fallbackTitle: string,
-): ShopifyPolicy | null => {
-  if (hasBody(policy)) return policy;
+let cachedPolicies: { value: AllPolicies; expiresAt: number } | null = null;
+let policiesRequest: Promise<AllPolicies> | null = null;
 
-  const page = pages.find(hasBody);
-  if (!page) return null;
+const availablePolicy = (
+  policy: ShopifyPolicy | null | undefined,
+): ShopifyPolicy | null =>
+  policy && typeof policy.body === "string" && policy.body.trim()
+    ? policy
+    : null;
 
-  return {
-    title: page.title || fallbackTitle,
-    body: page.body,
-    handle: page.handle,
-    url: `/pages/${page.handle}`,
-  };
-};
-
-/** Fetches Storefront policies and matching Shopify Pages directly from Shopify. */
-export async function fetchShopifyPolicies(
-  signal?: AbortSignal,
-): Promise<AllPolicies> {
-  const env = import.meta.env;
-  const storeDomain =
-    env.VITE_SHOPIFY_STORE_DOMAIN || env.NEXT_PUBLIC_SHOPIFY_STORE_DOMAIN;
-  const storefrontAccessToken =
-    env.VITE_SHOPIFY_STOREFRONT_ACCESS_TOKEN ||
-    env.VITE_SHOPIFY_STOREFRONT_TOKEN ||
-    env.NEXT_PUBLIC_SHOPIFY_STOREFRONT_ACCESS_TOKEN;
-
-  if (!storeDomain?.trim() || !storefrontAccessToken?.trim()) {
-    throw new Error(
-      "Shopify policies are unavailable. Set VITE_SHOPIFY_STORE_DOMAIN and VITE_SHOPIFY_STOREFRONT_ACCESS_TOKEN (or the matching NEXT_PUBLIC_ variables).",
-    );
+/** Loads all published Shopify policies once and shares the result across pages. */
+export function fetchShopifyPolicies(): Promise<AllPolicies> {
+  if (cachedPolicies && Date.now() < cachedPolicies.expiresAt) {
+    return Promise.resolve(cachedPolicies.value);
   }
 
-  const domain = storeDomain.trim().replace(/^https?:\/\//i, "").replace(/\/+$/, "");
-  const apiVersion =
-    env.VITE_SHOPIFY_API_VERSION ||
-    env.NEXT_PUBLIC_SHOPIFY_API_VERSION ||
-    "2024-10";
-  const response = await fetch(
-    `https://${domain}/api/${apiVersion}/graphql.json`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "X-Shopify-Storefront-Access-Token": storefrontAccessToken.trim(),
-      },
-      body: JSON.stringify({ query: FETCH_SHOPIFY_POLICIES_QUERY }),
-      signal,
-    },
-  );
-  const text = await response.text();
+  if (policiesRequest) return policiesRequest;
 
-  if (!response.ok || !text.trim()) {
-    throw new Error(
-      `Shopify policy request failed${response.status ? ` (HTTP ${response.status})` : ""}: ${text.trim() || response.statusText || "empty response"}`,
-    );
-  }
+  policiesRequest = shopifyRequest<ShopifyPoliciesQueryResponse>(
+    FETCH_SHOPIFY_POLICIES_QUERY,
+  )
+    .then((data) => {
+      if (!data.shop) {
+        throw new Error("Shopify returned no store data while loading policies.");
+      }
 
-  let result: ShopifyPoliciesResponse;
-  try {
-    result = JSON.parse(text) as ShopifyPoliciesResponse;
-  } catch {
-    throw new Error("Shopify returned an invalid response while loading policies.");
-  }
+      const policies: AllPolicies = {
+        shippingPolicy: availablePolicy(data.shop.shippingPolicy),
+        refundPolicy: availablePolicy(data.shop.refundPolicy),
+        privacyPolicy: availablePolicy(data.shop.privacyPolicy),
+        termsOfService: availablePolicy(data.shop.termsOfService),
+      };
 
-  if (result.errors?.length) {
-    throw new Error(
-      `Shopify policy request failed: ${result.errors.map((error) => error.message).join("; ")}`,
-    );
-  }
-  if (!result.data?.shop) {
-    throw new Error("Shopify returned no policy data.");
-  }
+      cachedPolicies = {
+        value: policies,
+        expiresAt: Date.now() + POLICY_CACHE_TTL_MS,
+      };
+      return policies;
+    })
+    .catch((error: unknown) => {
+      if (error instanceof SyntaxError) {
+        throw new Error(
+          "Shopify returned an empty or invalid response while loading policies.",
+        );
+      }
+      throw error;
+    })
+    .finally(() => {
+      policiesRequest = null;
+    });
 
-  const data = result.data;
-  return {
-    privacyPolicy: firstAvailable(
-      data.shop.privacyPolicy,
-      [data.privacyPolicyPage],
-      "Privacy Policy",
-    ),
-    refundPolicy: firstAvailable(
-      data.shop.refundPolicy,
-      [data.refundPolicyPage, data.returnPolicyPage],
-      "Refund Policy",
-    ),
-    shippingPolicy: firstAvailable(
-      data.shop.shippingPolicy,
-      [data.shippingPolicyPage],
-      "Shipping Policy",
-    ),
-    termsOfService: firstAvailable(
-      data.shop.termsOfService,
-      [data.termsAndConditionsPage, data.termsOfServicePage],
-      "Terms of Service",
-    ),
-  };
+  return policiesRequest;
 }
-
-export const getAllPolicies = fetchShopifyPolicies;

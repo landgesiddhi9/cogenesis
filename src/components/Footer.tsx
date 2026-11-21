@@ -57,14 +57,14 @@ const Footer = () => {
               </a>
             </li>
             <li>
-              <a href="/shipping-policy" className="font-sans text-[12px] text-[#7a7260] hover:text-[#3d3929] transition-colors duration-300">
+              <Link to="/shipping-policy" className="font-sans text-[12px] text-[#7a7260] hover:text-[#3d3929] transition-colors duration-300">
                 Shipping Policy
-              </a>
+              </Link>
             </li>
             <li>
-              <a href="/refund-policy" className="font-sans text-[12px] text-[#7a7260] hover:text-[#3d3929] transition-colors duration-300">
+              <Link to="/refund-policy" className="font-sans text-[12px] text-[#7a7260] hover:text-[#3d3929] transition-colors duration-300">
                 Refund Policy
-              </a>
+              </Link>
             </li>
             <li>
               <Link to="/terms-and-conditions" className="font-sans text-[12px] text-[#7a7260] hover:text-[#3d3929] transition-colors duration-300">
@@ -310,20 +310,20 @@ const Footer = () => {
                   </a>
                 </li>
                 <li>
-                  <a
-                    href="/shipping-policy"
+                  <Link
+                    to="/shipping-policy"
                     className="font-sans text-[13px] text-[#7a7260] hover:text-[#3d3929] transition-colors duration-300"
                   >
                     Shipping Policy
-                  </a>
+                  </Link>
                 </li>
                 <li>
-                  <a
-                    href="/refund-policy"
+                  <Link
+                    to="/refund-policy"
                     className="font-sans text-[13px] text-[#7a7260] hover:text-[#3d3929] transition-colors duration-300"
                   >
                     Refund Policy
-                  </a>
+                  </Link>
                 </li>
                 <li>
                   <Link

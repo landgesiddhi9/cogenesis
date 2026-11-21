@@ -72,21 +72,27 @@ const PolicyPage = ({ policyKey }: PolicyPageProps) => {
 
   // Load all policies once so sidebar navigation stays immediate.
   useEffect(() => {
-    const controller = new AbortController();
+    let active = true;
 
-    fetchShopifyPolicies(controller.signal)
-      .then(setPolicies)
+    fetchShopifyPolicies()
+      .then((result) => {
+        if (active) setPolicies(result);
+      })
       .catch((fetchError: unknown) => {
-        if (controller.signal.aborted) return;
+        if (!active) return;
         setError(
           fetchError instanceof Error
             ? fetchError.message
             : "Unable to load policies. Please try again later.",
         );
       })
-      .finally(() => { if (!controller.signal.aborted) setLoading(false); });
+      .finally(() => {
+        if (active) setLoading(false);
+      });
 
-    return () => controller.abort();
+    return () => {
+      active = false;
+    };
   }, []);
 
   const activePolicy = policies[policyKey]?.body.trim() ? policies[policyKey] : null;
@@ -107,7 +113,7 @@ const PolicyPage = ({ policyKey }: PolicyPageProps) => {
             {loading ? (
               <span className="inline-block h-10 w-72 bg-[#e4ddd4] rounded animate-pulse" />
             ) : (
-              activeMeta.label
+              activePolicy?.title.trim() || activeMeta.label
             )}
           </h1>
           {/* Subtitle */}
