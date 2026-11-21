@@ -1,6 +1,5 @@
 import express from "express";
 import cors from "cors";
-import { fetchShopifyPolicies } from "./shopifyPolicies.js";
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -22,18 +21,6 @@ Speak in the register of a personal stylist, for example:
 
 app.use(cors());
 app.use(express.json());
-
-app.get("/api/policies", async (_req, res) => {
-  try {
-    const policies = await fetchShopifyPolicies();
-    res.set("Cache-Control", "public, s-maxage=300, stale-while-revalidate=600");
-    res.json({ policies });
-  } catch (error) {
-    const message =
-      error instanceof Error ? error.message : "Unable to load Shopify policies.";
-    res.status(502).json({ error: message });
-  }
-});
 
 function buildPrompt(question, history) {
   if (!history.length) return question;
