@@ -19,7 +19,6 @@ interface ProductInfoProps {
   addToCart: () => void;
   buyNow: () => void;
   buyingNow: boolean;
-  description: string;
   activeVariant?: ShopifyProductVariant | null;
   onColorChange?: (colorName: string, variant?: ShopifyProductVariant | null) => void;
   catalog?: ShopifyProduct[];
@@ -38,7 +37,6 @@ const ProductInfo = ({
   addToCart,
   buyNow,
   buyingNow,
-  description,
   activeVariant,
   onColorChange,
   catalog = [],
@@ -54,12 +52,6 @@ const ProductInfo = ({
   const fabric = product.tags
     .find((tag) => ["cotton", "linen", "linen-blend"].includes(tag))
     ?.toUpperCase();
-  const descriptionLines = description
-    .split(".")
-    .map((line) => line.trim())
-    .filter(Boolean)
-    .map((line) => `${line}.`);
-
   return (
     <div className="space-y-0 px-6 md:px-10 lg:px-14">
       {/* Product Name - Editorial Serif */}
@@ -322,27 +314,6 @@ const ProductInfo = ({
         >
           {buyingNow ? "Redirecting..." : "Buy Now"}
         </button>
-      </div>
-
-      {/* Product Description */}
-      <div className="pb-12">
-        <div className="space-y-1.5 max-w-lg">
-          {descriptionLines.map((line, index) => (
-            <p
-              key={index}
-              className="text-charcoal/80 leading-relaxed"
-              style={{
-                fontFamily: "'Cormorant Garamond', 'Canela', serif",
-                fontSize: "18px",
-                fontWeight: 400,
-                lineHeight: 1.8,
-                letterSpacing: "0.01em",
-              }}
-            >
-              {line}
-            </p>
-          ))}
-        </div>
       </div>
 
       {/* Wishlist Button */}
