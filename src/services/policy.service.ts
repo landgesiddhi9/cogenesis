@@ -1,72 +1,43 @@
-import { shopifyRequest } from "../api/client";
-import {
-  GET_POLICIES_QUERY,
-  type GetPoliciesResponse,
-  type ShopifyPolicy,
-  type ShopifyPolicyPage,
-} from "../graphql/queries/getPolicies";
-
-export type { ShopifyPolicy };
-
 export type PolicyKey =
   | "privacyPolicy"
   | "refundPolicy"
   | "shippingPolicy"
   | "termsOfService";
 
-export interface AllPolicies {
-  privacyPolicy: ShopifyPolicy | null;
-  refundPolicy: ShopifyPolicy | null;
-  shippingPolicy: ShopifyPolicy | null;
-  termsOfService: ShopifyPolicy | null;
+export interface ShopifyPolicy {
+  title: string;
+  body: string;
+  handle?: string;
+  url?: string;
 }
 
-/** Fetches all four Shopify store policies in a single GraphQL request. */
-export async function getAllPolicies(): Promise<AllPolicies> {
-  const data = await shopifyRequest<GetPoliciesResponse>(GET_POLICIES_QUERY);
-  const pagePolicy = (
-    pages: Array<ShopifyPolicyPage | null>,
-    fallbackTitle: string,
-  ): ShopifyPolicy | null => {
-    const page = pages.find((candidate) => candidate?.body.trim());
-    if (!page) return null;
+export type AllPolicies = Record<PolicyKey, ShopifyPolicy | null>;
 
-    return {
-      title: page.title || fallbackTitle,
-      body: page.body,
-      url: `/pages/${page.handle}`,
-    };
-  };
-  const policyOrPage = (
-    policy: ShopifyPolicy | null,
-    page: ShopifyPolicy | null,
-  ): ShopifyPolicy | null => policy?.body.trim() ? policy : page;
+interface PoliciesApiResponse {
+  policies?: Partial<AllPolicies>;
+  error?: string;
+}
+
+/** Loads Shopify policies from the server API so credentials never reach the browser. */
+export async function fetchShopifyPolicies(
+  signal?: AbortSignal,
+): Promise<AllPolicies> {
+  const response = await fetch("/api/policies", { signal });
+  const result = (await response.json()) as PoliciesApiResponse;
+
+  if (!response.ok) {
+    throw new Error(result.error || "Unable to load Shopify policies.");
+  }
+  if (!result.policies) {
+    throw new Error("The policy service returned no policy data.");
+  }
 
   return {
-    privacyPolicy: policyOrPage(
-      data.shop.privacyPolicy,
-      pagePolicy([data.privacyPolicyPage], "Privacy Policy"),
-    ),
-    refundPolicy: policyOrPage(
-      data.shop.refundPolicy,
-      pagePolicy([data.refundPolicyPage, data.returnPolicyPage], "Refund Policy"),
-    ),
-    shippingPolicy: policyOrPage(
-      data.shop.shippingPolicy,
-      pagePolicy([data.shippingPolicyPage], "Shipping Policy"),
-    ),
-    termsOfService: policyOrPage(
-      data.shop.termsOfService,
-      pagePolicy(
-        [data.termsAndConditionsPage, data.termsOfServicePage],
-        "Terms of Service",
-      ),
-    ),
+    privacyPolicy: result.policies.privacyPolicy ?? null,
+    refundPolicy: result.policies.refundPolicy ?? null,
+    shippingPolicy: result.policies.shippingPolicy ?? null,
+    termsOfService: result.policies.termsOfService ?? null,
   };
 }
 
-/** Fetches a single policy by key. Returns null if not set in Shopify Admin. */
-export async function getPolicy(key: PolicyKey): Promise<ShopifyPolicy | null> {
-  const policies = await getAllPolicies();
-  return policies[key];
-}
+export const getAllPolicies = fetchShopifyPolicies;
