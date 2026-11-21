@@ -1,10 +1,173 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import faqData from "../data/faqData";
+import { getAllPolicies, type PolicyKey, type ShopifyPolicy } from "../services/policy.service";
+import { getShopifyPage, type ShopifyPage } from "../services/page.service";
+
+interface FAQContentSource {
+  id: string;
+  label: string;
+  body: string;
+}
+
+const POLICY_SOURCES: {
+  key: PolicyKey;
+  id: string;
+  label: string;
+}[] = [
+  { key: "privacyPolicy", id: "privacyPolicy", label: "Privacy Policy" },
+  { key: "refundPolicy", id: "refundPolicy", label: "Refund Policy" },
+  { key: "shippingPolicy", id: "shippingPolicy", label: "Shipping Policy" },
+  { key: "termsOfService", id: "termsOfService", label: "Terms of Service" },
+];
+
+const CATEGORY_SOURCES: Record<string, string[]> = {
+  "ordering-payments": ["termsOfService", "refundPolicy", "privacyPolicy"],
+  "shipping-delivery": ["shippingPolicy", "refundPolicy"],
+  "returns-exchanges": ["refundPolicy"],
+  "product-sizing": ["fabricGuide", "termsOfService"],
+  "fabric-care": ["fabricGuide"],
+  "account-wishlist": ["privacyPolicy", "termsOfService"],
+  "gift-cards": ["termsOfService", "refundPolicy"],
+  "privacy-security": ["privacyPolicy"],
+  "contact-us": ["privacyPolicy", "refundPolicy", "shippingPolicy", "termsOfService"],
+};
+
+const TERM_ALIASES: Record<string, string[]> = {
+  account: ["guest", "register", "registration", "checkout"],
+  card: ["cards", "gift card", "credit card", "debit card"],
+  care: ["wash", "washing", "laundry", "cleaning"],
+  contact: ["email", "support", "inquiry", "customer service"],
+  exchange: ["exchanges", "return", "refund"],
+  gift: ["gifts", "gift card", "gift cards"],
+  hours: ["business hours", "support", "contact"],
+  linen: ["wrinkle", "wrinkles", "natural"],
+  order: ["orders", "purchase", "checkout", "dispatch"],
+  payment: ["payments", "pay", "paid", "transaction", "upi", "razorpay", "card"],
+  privacy: ["personal information", "data", "collect", "protect"],
+  refund: ["refunds", "return", "returns", "exchange"],
+  response: ["inquiry", "contact", "support"],
+  secure: ["security", "protect", "encrypted", "encryption"],
+  share: ["disclose", "third party", "sell", "share"],
+  shipping: ["ship", "delivery", "deliver", "dispatch", "carrier"],
+  shrunk: ["shrink", "shrinkage", "pre-shrunk"],
+  size: ["sizing", "fit", "measurement", "measurements"],
+  track: ["tracking", "shipment", "dispatch"],
+};
+
+const STOP_WORDS = new Set([
+  "a", "about", "after", "all", "am", "an", "and", "are", "as", "at", "be", "can",
+  "do", "does", "for", "from", "get", "how", "i", "if", "in", "is", "it", "my",
+  "of", "on", "or", "our", "the", "their", "this", "to", "we", "what", "when",
+  "where", "which", "who", "why", "with", "you", "your",
+]);
+
+const getPolicySources = (
+  policies: Record<PolicyKey, ShopifyPolicy | null>,
+  fabricGuide: ShopifyPage | null,
+): FAQContentSource[] => {
+  const sources = POLICY_SOURCES.flatMap(({ key, id, label }) => {
+    const policy = policies[key];
+    return policy?.body.trim() ? [{ id, label, body: policy.body }] : [];
+  });
+
+  if (fabricGuide?.body.trim()) {
+    sources.push({
+      id: "fabricGuide",
+      label: fabricGuide.title || "Fabric and Care Guide",
+      body: fabricGuide.body,
+    });
+  }
+
+  return sources;
+};
+
+const getContentBlocks = (html: string): string[] => {
+  const document = new DOMParser().parseFromString(html, "text/html");
+  const blocks = Array.from(
+    document.body.querySelectorAll("h1, h2, h3, h4, p, li, td, th, blockquote"),
+  )
+    .map((element) => element.textContent?.replace(/\s+/g, " ").trim() ?? "")
+    .filter(Boolean);
+
+  return blocks.length ? blocks : [document.body.textContent?.replace(/\s+/g, " ").trim() ?? ""].filter(Boolean);
+};
+
+const getSearchTerms = (question: string): string[] => {
+  const words = question.toLowerCase().match(/[a-z0-9]+/g) ?? [];
+  const terms = new Set(words.filter((word) => word.length > 2 && !STOP_WORDS.has(word)));
+
+  for (const word of words) {
+    TERM_ALIASES[word]?.forEach((alias) => terms.add(alias));
+  }
+
+  return Array.from(terms);
+};
+
+const getAnswer = (
+  categoryId: string,
+  question: string,
+  sources: FAQContentSource[],
+  loading: boolean,
+  error: boolean,
+): string => {
+  if (loading) return "Loading the latest information from our store policies and care guide.";
+  if (error) return "Unable to load the latest store information. Please try again later.";
+
+  const sourceIds = CATEGORY_SOURCES[categoryId] ?? [];
+  const candidates = sources.filter((source) => sourceIds.includes(source.id));
+  const searchTerms = getSearchTerms(question);
+  const matches = candidates
+    .flatMap((source) =>
+      getContentBlocks(source.body).map((text) => ({
+        text,
+        score: searchTerms.reduce(
+          (score, term) => score + (text.toLowerCase().includes(term) ? 1 : 0),
+          0,
+        ),
+      })),
+    )
+    .filter((match) => match.score > 0)
+    .sort((left, right) => right.score - left.score)
+    .slice(0, 3);
+
+  if (matches.length) {
+    return matches.map((match) => match.text).join(" ");
+  }
+
+  const sourceLabels = candidates.map((source) => source.label);
+  if (sourceLabels.length) {
+    return `Please refer to the current ${sourceLabels.join(" or ")} for the latest information about this question.`;
+  }
+
+  return "This information is not available in the currently published Shopify policies or Fabric and Care Guide.";
+};
 
 const FAQPage = () => {
   const [activeCategory, setActiveCategory] = useState(faqData[0].id);
   const [openItems, setOpenItems] = useState<Record<string, boolean>>({});
+  const [sources, setSources] = useState<FAQContentSource[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    Promise.all([getAllPolicies(), getShopifyPage("fabric-guide")])
+      .then(([policies, fabricGuide]) => {
+        if (!cancelled) setSources(getPolicySources(policies, fabricGuide));
+      })
+      .catch(() => {
+        if (!cancelled) setError(true);
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const toggleItem = (categoryId: string, question: string) => {
     const key = `${categoryId}-${question}`;
@@ -148,7 +311,13 @@ const FAQPage = () => {
                               >
                                 <div className="pb-6 md:pb-7 pr-12">
                                   <p className="font-sans text-[14px] text-black leading-relaxed">
-                                    {item.answer}
+                                    {getAnswer(
+                                      category.id,
+                                      item.question,
+                                      sources,
+                                      loading,
+                                      error,
+                                    )}
                                   </p>
                                 </div>
                               </motion.div>
