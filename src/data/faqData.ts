@@ -1,6 +1,7 @@
 export interface FAQItem {
   question: string;
-  answer: string;
+  answer?: string;
+  answerHtml?: string;
 }
 
 export interface FAQCategory {
@@ -16,21 +17,34 @@ const faqData: FAQCategory[] = [
     items: [
       {
         question: "What payment methods do you accept?",
-        answer:
-          "We accept Visa, Mastercard, American Express, RuPay, UPI, Net Banking and Razorpay-supported payment methods.",
+        answerHtml: `
+          <p>We accept a wide range of secure online payment methods for your convenience, including:</p>
+          <ul>
+            <li><strong>Credit &amp; Debit Cards:</strong> Visa, Mastercard, RuPay and other supported card networks.</li>
+            <li><strong>UPI:</strong> Google Pay, PhonePe, BHIM and other supported UPI applications.</li>
+            <li><strong>Net Banking:</strong> Payments through supported banks.</li>
+            <li><strong>Digital Wallets:</strong> Available supported wallet options.</li>
+            <li><strong>EMI:</strong> Eligible credit and debit card EMI options, where available.</li>
+          </ul>
+          <p>Available payment methods will be displayed at checkout.</p>
+        `,
       },
       {
         question: "Is my payment secure?",
-        answer:
-          "Yes. All transactions are encrypted and processed securely through Razorpay.",
+        answerHtml:
+          "Absolutely. Your payment is processed through a secure payment infrastructure with appropriate security measures to protect your transaction and payment information. We do not ask you to share your card details, PIN or OTP with us directly.",
       },
       {
         question: "Can I place an order without creating an account?",
-        answer: "Yes. Guest checkout is available.",
+        answerHtml:
+          "No. Creating an account and signing in are required to place an order on CoGenesis. This helps us manage your orders and provide you with a smoother shopping experience.",
       },
       {
         question: "Can I modify my order after placing it?",
-        answer: "Please contact us within 2 hours of placing your order.",
+        answerHtml: `
+          <p>Yes. You may request changes to your order within <strong>one hour of placing it</strong>, provided the order has not already been processed or dispatched.</p>
+          <p>For assistance, please contact us as soon as possible at <a href="mailto:support@cogenesis.in"><strong>support@cogenesis.in</strong></a>, mentioning your order number and the changes you would like to make. Once an order has been processed or dispatched, modifications may no longer be possible.</p>
+        `,
       },
     ],
   },
@@ -40,20 +54,23 @@ const faqData: FAQCategory[] = [
     items: [
       {
         question: "How long does shipping take?",
-        answer:
-          "Orders are typically delivered within 3–7 business days across India.",
+        answerHtml:
+          "Orders are usually delivered within <strong>5–7 business days</strong> from the date of dispatch. Delivery timelines may vary depending on your location and other logistical factors.",
       },
       {
         question: "Do you offer free shipping?",
-        answer: "Yes. Free shipping is available on all prepaid orders.",
+        answerHtml:
+          "Yes! We offer <strong>free shipping on all orders above ₹2,099</strong>. Orders below this amount may be subject to applicable shipping charges, which will be displayed at checkout.",
       },
       {
         question: "How can I track my order?",
-        answer: "Tracking information will be shared via email after dispatch.",
+        answerHtml:
+          "You can track your order by logging into your CoGenesis account and visiting the <strong>My Orders</strong> section. There, you can view your order details and track its delivery status.",
       },
       {
         question: "Do you ship internationally?",
-        answer: "International shipping will be introduced soon.",
+        answerHtml:
+          "Currently, we ship only within India. International shipping is not available at this time.",
       },
     ],
   },
@@ -63,36 +80,22 @@ const faqData: FAQCategory[] = [
     items: [
       {
         question: "What is your return policy?",
-        answer: "Returns are accepted within 7 days of delivery.",
+        answerHtml: `
+          <p>We want you to be completely satisfied with your purchase. Returns are subject to our Return &amp; Refund Policy, including the applicable eligibility conditions and timelines.</p>
+          <p>For complete details, please refer to our <a href="/refund-policy">Return &amp; Refund Policy</a>.</p>
+        `,
       },
       {
         question: "Can I exchange a product?",
-        answer: "Yes, subject to stock availability.",
+        answerHtml: `
+          <p>Yes, exchanges are available subject to our exchange policy and product eligibility.</p>
+          <p>Please review our <a href="/refund-policy">Return &amp; Refund Policy</a> for information about exchange conditions, timelines, eligibility, and the process for requesting an exchange.</p>
+        `,
       },
       {
         question: "How long do refunds take?",
-        answer: "Refunds are processed within 5–7 business days.",
-      },
-    ],
-  },
-  {
-    id: "product-sizing",
-    label: "Product & Sizing",
-    items: [
-      {
-        question: "How do I choose the correct size?",
-        answer:
-          "Use our Size Guide available on every product page.",
-      },
-      {
-        question: "Do your shirts fit true to size?",
-        answer:
-          "Yes. Our shirts follow standard contemporary tailoring measurements.",
-      },
-      {
-        question: "Do your trousers come in multiple fits?",
-        answer:
-          "Yes. Selected styles are available in Tailored and Relaxed fits.",
+        answerHtml:
+          "Once your return has been approved and processed, refunds usually take <strong>10–14 business days</strong> to reflect in your original payment method. The exact time may vary depending on your bank or payment provider.",
       },
     ],
   },
@@ -102,18 +105,20 @@ const faqData: FAQCategory[] = [
     items: [
       {
         question: "How should I care for my garments?",
-        answer:
-          "Follow the care instructions provided on the garment label.",
-      },
-      {
-        question: "Are your fabrics pre-shrunk?",
-        answer:
-          "Most fabrics undergo finishing processes to minimize shrinkage.",
-      },
-      {
-        question: "Do linen garments wrinkle?",
-        answer:
-          "Natural linen may develop wrinkles as part of its character and elegance.",
+        answerHtml: `
+          <p>Follow these care instructions to maintain your garment:</p>
+          <ul>
+            <li>Turn the garment inside out before washing.</li>
+            <li>Machine wash on a cool cycle.</li>
+            <li>Wash with like colors.</li>
+            <li>Use only non-chlorine bleach.</li>
+            <li>Line dry.</li>
+            <li>Do not wring.</li>
+            <li>If using a tumble dryer, use low heat.</li>
+            <li>Iron on low heat.</li>
+          </ul>
+          <p>Please preserve the care instructions as provided on the garment label.</p>
+        `,
       },
     ],
   },
@@ -123,30 +128,18 @@ const faqData: FAQCategory[] = [
     items: [
       {
         question: "How do I create an account?",
-        answer:
-          "Click the Account icon in the navigation bar and register.",
+        answerHtml:
+          "You can create an account directly on our website using the Sign In option. You can also conveniently sign in or create an account using your Google account.",
       },
       {
         question: "Can I save items for later?",
-        answer: "Yes. Add products to your Wishlist.",
+        answerHtml:
+          "Yes! You can save your favorite items to your Wishlist and revisit them whenever you like.",
       },
       {
         question: "Where can I view my orders?",
-        answer: "Inside the Account Dashboard.",
-      },
-    ],
-  },
-  {
-    id: "gift-cards",
-    label: "Gift Cards",
-    items: [
-      {
-        question: "Do you offer gift cards?",
-        answer: "Yes. Digital gift cards are available.",
-      },
-      {
-        question: "Do gift cards expire?",
-        answer: "Gift cards remain valid for 12 months.",
+        answerHtml:
+          'You can view and keep track of your orders by visiting the <a href="https://cogenesis.in/account">Orders section in your Account</a>.',
       },
     ],
   },
@@ -156,12 +149,13 @@ const faqData: FAQCategory[] = [
     items: [
       {
         question: "Is my personal information secure?",
-        answer:
-          "Yes. Customer information is protected using industry-standard security measures.",
+        answerHtml:
+          "Yes. We take the security of your personal information seriously and use appropriate measures to help keep your information safe.",
       },
       {
         question: "Do you share customer data?",
-        answer: "No. Customer information is never sold to third parties.",
+        answerHtml:
+          "We do not sell or share customer data with third parties. We only share the necessary information with our trusted service providers to help us operate our business and provide our services.",
       },
     ],
   },
@@ -171,16 +165,13 @@ const faqData: FAQCategory[] = [
     items: [
       {
         question: "How can I contact Cogenesis?",
-        answer: "Email: Cogenesisadmin@gmail.com",
-      },
-      {
-        question: "What are your support hours?",
-        answer: "Monday – Saturday, 10:00 AM – 7:00 PM IST",
+        answerHtml:
+          'You can reach our support team by email at <a href="mailto:support@cogenesis.in"><strong>support@cogenesis.in</strong></a> for any questions, concerns, order-related issues, returns, refunds, exchanges, or other assistance.',
       },
       {
         question: "How quickly can I expect a response?",
-        answer:
-          "We aim to respond to all customer inquiries within 24 business hours.",
+        answerHtml:
+          "You can expect a response within <strong>2–3 business days</strong>. Our team will do its best to get back to you as soon as possible and assist in resolving your queries.",
       },
     ],
   },

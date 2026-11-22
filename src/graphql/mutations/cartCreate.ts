@@ -61,6 +61,7 @@ export interface ShopifyApiCartLine {
     price: { amount: string; currencyCode: string };
     image: { url: string; altText?: string; width?: number; height?: number } | null;
     product: {
+      id: string;
       title: string;
       featuredImage: { url: string; altText?: string; width?: number; height?: number } | null;
     };

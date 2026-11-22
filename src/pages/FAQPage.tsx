@@ -310,15 +310,24 @@ const FAQPage = () => {
                                 className="overflow-hidden"
                               >
                                 <div className="pb-6 md:pb-7 pr-12">
-                                  <p className="font-sans text-[14px] text-black leading-relaxed">
-                                    {getAnswer(
-                                      category.id,
-                                      item.question,
-                                      sources,
-                                      loading,
-                                      error,
-                                    )}
-                                  </p>
+                                  {item.answerHtml ? (
+                                    <div
+                                      className="font-sans text-[14px] text-black leading-relaxed [&_p]:mb-3 [&_ul]:my-3 [&_ul]:list-disc [&_ul]:pl-6 [&_li]:mb-1 [&_strong]:font-semibold [&_a]:underline [&_a]:underline-offset-2"
+                                      dangerouslySetInnerHTML={{
+                                        __html: item.answerHtml,
+                                      }}
+                                    />
+                                  ) : (
+                                    <p className="font-sans text-[14px] text-black leading-relaxed">
+                                      {getAnswer(
+                                        category.id,
+                                        item.question,
+                                        sources,
+                                        loading,
+                                        error,
+                                      )}
+                                    </p>
+                                  )}
                                 </div>
                               </motion.div>
                             )}

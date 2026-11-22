@@ -20,6 +20,7 @@ export const CART_FIELDS_FRAGMENT = `
                 ...ProductImageFields
               }
               product {
+                id
                 title
                 handle
                 featuredImage {
