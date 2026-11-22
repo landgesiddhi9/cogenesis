@@ -298,7 +298,7 @@ export async function fetchShopifyCustomerProfile(
   const response = await fetch(configuration.graphql_api, {
     method: "POST",
     headers: {
-      Authorization: `Bearer ${accessToken}`,
+    Authorization: accessToken,
       "Content-Type": "application/json",
     },
     body: JSON.stringify({ query }),
