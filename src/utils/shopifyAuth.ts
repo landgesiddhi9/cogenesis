@@ -1,4 +1,4 @@
-import { getShopifyIdToken } from "./auth";
+import { clearSession, getShopifyIdToken } from "./auth";
 
 export interface OpenIdConfiguration {
   issuer: string;
@@ -298,7 +298,7 @@ export async function fetchShopifyCustomerProfile(
   const response = await fetch(configuration.graphql_api, {
     method: "POST",
     headers: {
-    Authorization: accessToken,
+       Authorization: accessToken,
       "Content-Type": "application/json",
     },
     body: JSON.stringify({ query }),
@@ -360,13 +360,13 @@ export async function handleShopifyOAuthCallback(
 }
 
 export async function logoutFromShopify(): Promise<void> {
-  const configuration = await discoverOpenIdConfiguration();
   const idToken = getShopifyIdToken();
+  const configuration = await discoverOpenIdConfiguration();
   const parameters = new URLSearchParams({
     post_logout_redirect_uri: "https://cogenesis.in/",
   });
   if (idToken) parameters.set("id_token_hint", idToken);
-  window.location.assign(
-    `${configuration.end_session_endpoint}?${parameters.toString()}`,
-  );
+  const logoutUrl = `${configuration.end_session_endpoint}?${parameters.toString()}`;
+  clearSession();
+  window.location.assign(logoutUrl);
 }

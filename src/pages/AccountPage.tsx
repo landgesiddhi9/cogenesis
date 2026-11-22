@@ -69,13 +69,14 @@ const AccountPage = () => {
     session.name.charAt(0).toUpperCase() + session.name.slice(1).toLowerCase();
 
   const handleSignOut = () => {
-    clearSession();
     if (session.provider === "shopify") {
       logoutFromShopify().catch(() => {
+        clearSession();
         window.location.assign("https://cogenesis.in/");
       });
       return;
     }
+    clearSession();
     navigate("/");
   };
 
