@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { setSession, getSession } from "../utils/auth";
 import { startShopifyCustomerAuth } from "../utils/shopifyAuth";
 import { FcGoogle } from "react-icons/fc";
-import { FaApple, FaEye, FaEyeSlash } from "react-icons/fa";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 
 type AuthState = "email" | "forgot" | "forgot-success" | "create";
 
@@ -101,10 +101,6 @@ const SocialButtons = () => {
         </span>
       </button>
       {googleError && <p className={errCls}>{googleError}</p>}
-      <button type="button" className={socialBtnCls}>
-        <FaApple size={20} />
-        <span className="font-medium">Continue with Apple</span>
-      </button>
     </div>
   );
 };

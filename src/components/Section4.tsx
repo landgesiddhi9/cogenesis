@@ -1,4 +1,5 @@
 import { useInView } from '../hooks/useInView';
+import HomepageProductLink from './HomepageProductLink';
 
 const section4Images = [
   { src: '/images/S4image1.jpg', alt: 'Editorial look 1 – COGENESIS collection' },
@@ -19,22 +20,26 @@ const Section4 = () => {
         style={{ maxWidth: '900px', margin: '0 auto', gap: '36px' }}
       >
         {section4Images.map((img, i) => (
-          <div
+          <HomepageProductLink
             key={img.src}
-            className={`aspect-[1150/1724] overflow-hidden transition-all duration-1000 ease-out ${
-              isInView
-                ? 'opacity-100 translate-y-0'
-                : 'opacity-0 translate-y-8'
-            }`}
-            style={{ transitionDelay: `${i * 200}ms` }}
+            productKey="section4"
           >
-            <img
-              src={img.src}
-              alt={img.alt}
-              className="block w-full h-full object-cover"
-              loading="lazy"
-            />
-          </div>
+            <div
+              className={`aspect-[1150/1724] overflow-hidden transition-all duration-1000 ease-out ${
+                isInView
+                  ? 'opacity-100 translate-y-0'
+                  : 'opacity-0 translate-y-8'
+              }`}
+              style={{ transitionDelay: `${i * 200}ms` }}
+            >
+              <img
+                src={img.src}
+                alt={img.alt}
+                className="block w-full h-full object-cover"
+                loading="lazy"
+              />
+            </div>
+          </HomepageProductLink>
         ))}
       </div>
     </section>

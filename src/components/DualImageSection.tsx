@@ -1,4 +1,5 @@
 import { useInView } from '../hooks/useInView';
+import HomepageProductLink from './HomepageProductLink';
 
 const dualImages = [
   { src: '/images/section2image1.jpg', alt: 'Editorial look 1 – COGENESIS collection' },
@@ -19,21 +20,25 @@ const DualImageSection = () => {
         style={{ maxWidth: '900px', margin: '0 auto', gap: '36px' }}
       >
         {dualImages.map((img, i) => (
-          <div
+          <HomepageProductLink
             key={img.src}
-            className={`aspect-[1150/1724] overflow-hidden transition-all duration-1000 ease-out ${
-              isInView
-                ? 'opacity-100 translate-y-0'
-                : 'opacity-0 translate-y-8'
-            }`}
-            style={{ transitionDelay: `${i * 200}ms` }}
+            productKey="section2"
           >
-            <img
-              src={img.src}
-              alt={img.alt}
-              className="block w-full h-full object-cover"
-            />
-          </div>
+            <div
+              className={`aspect-[1150/1724] overflow-hidden transition-all duration-1000 ease-out ${
+                isInView
+                  ? 'opacity-100 translate-y-0'
+                  : 'opacity-0 translate-y-8'
+              }`}
+              style={{ transitionDelay: `${i * 200}ms` }}
+            >
+              <img
+                src={img.src}
+                alt={img.alt}
+                className="block w-full h-full object-cover"
+              />
+            </div>
+          </HomepageProductLink>
         ))}
       </div>
     </section>

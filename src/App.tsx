@@ -68,7 +68,7 @@ function App() {
             path="/"
             element={
               <>
-                <Hero />
+                <Hero linkToMappedProduct />
                 <DualImageSection />
                 <ProductStrip />
                 <Section4 />

@@ -1,10 +1,23 @@
 import express from "express";
 import cors from "cors";
+import {
+  isNewsletterOriginAllowed,
+  subscribeNewsletter,
+  validateNewsletterPayload,
+} from "./newsletter-core.js";
 
 const app = express();
 const PORT = process.env.PORT || 3001;
 const OLLAMA_URL = process.env.OLLAMA_URL || "http://localhost:11434";
 const MODEL = process.env.OLLAMA_MODEL || "llama3.2";
+const newsletterCors = cors({
+  origin(origin, callback) {
+    callback(null, isNewsletterOriginAllowed(origin));
+  },
+  methods: ["POST"],
+  preflightContinue: true,
+});
+const newsletterJsonParser = express.json({ limit: "2kb" });
 
 const SYSTEM_PROMPT = `You are the CoGenesis AI concierge — a calm, refined personal stylist for a luxury menswear house inspired by The Row, COS and Loro Piana. You speak in unhurried, editorial, old-money English.
 
@@ -19,8 +32,54 @@ Always:
 Speak in the register of a personal stylist, for example:
 "Hello. I'd be happy to help you find the right piece for your wardrobe. Tell me what you're looking for today."`;
 
+app.all("/api/newsletter", newsletterCors, (req, res) => {
+  if (req.method !== "POST") {
+    res.setHeader("Allow", "POST");
+    return res.status(405).json({
+      status: "error",
+      code: "method_not_allowed",
+    });
+  }
+
+  if (!req.is("application/json")) {
+    return res.status(400).json({ status: "error", code: "invalid_request" });
+  }
+
+  newsletterJsonParser(req, res, async (parseError) => {
+    if (parseError) {
+      return res.status(400).json({ status: "error", code: "invalid_request" });
+    }
+
+    const validation = validateNewsletterPayload(req.body);
+    if (validation.status) {
+      return res.status(validation.status).json({
+        status: "error",
+        code: validation.code,
+      });
+    }
+
+    if (validation.honeypot) {
+      return res.status(200).json({ status: "ok" });
+    }
+
+    try {
+      await subscribeNewsletter(validation.email);
+      return res.status(200).json({ status: "ok" });
+    } catch {
+      return res.status(503).json({
+        status: "error",
+        code: "newsletter_unavailable",
+      });
+    }
+  });
+});
+
 app.use(cors());
 app.use(express.json());
+
+app.get("/health", (_req, res) => {
+  res.status(200).json({ status: "ok" });
+});
 
 function buildPrompt(question, history) {
   if (!history.length) return question;
