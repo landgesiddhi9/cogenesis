@@ -47,9 +47,9 @@ const Footer = () => {
           </h4>
           <ul className="mt-2 space-y-1.5">
             <li>
-              <a href="/contact" className="font-sans text-[12px] text-[#7a7260] hover:text-[#3d3929] transition-colors duration-300">
+              <Link to="/contact" className="font-sans text-[12px] text-[#7a7260] hover:text-[#3d3929] transition-colors duration-300">
                 Contact Us
-              </a>
+              </Link>
             </li>
             <li>
               <a href="/faqs" className="font-sans text-[12px] text-[#7a7260] hover:text-[#3d3929] transition-colors duration-300">
@@ -294,12 +294,12 @@ const Footer = () => {
               </h4>
               <ul className="space-y-3 mt-4">
                 <li>
-                  <a
-                    href="/contact"
+                  <Link
+                    to="/contact"
                     className="font-sans text-[13px] text-[#7a7260] hover:text-[#3d3929] transition-colors duration-300"
                   >
                     Contact Us
-                  </a>
+                  </Link>
                 </li>
                 <li>
                   <a

@@ -31,6 +31,7 @@ const SearchPage = lazy(() => import("./pages/SearchPage"));
 const PurchasesPage = lazy(() => import("./pages/PurchasesPage"));
 const ReturnsPage = lazy(() => import("./pages/ReturnsPage"));
 const PolicyPage = lazy(() => import("./pages/PolicyPage"));
+const ContactUsPage = lazy(() => import("./pages/ContactUsPage"));
 const ShopifyContentPage = lazy(() => import("./pages/ShopifyContentPage"));
 const AccountAuthorizePage = lazy(() => import("./pages/AccountAuthorizePage"));
 
@@ -137,6 +138,9 @@ function App() {
           <Route path="/refund-policy" element={<PolicyPage policyKey="refundPolicy" />} />
           <Route path="/shipping-policy" element={<PolicyPage policyKey="shippingPolicy" />} />
           <Route path="/terms-and-conditions" element={<PolicyPage policyKey="termsOfService" />} />
+
+          {/* Contact */}
+          <Route path="/contact" element={<ContactUsPage />} />
 
           {/* Shopify CMS pages */}
           <Route
