@@ -49,6 +49,7 @@ function mapCartLine(node: {
     price: { amount: string; currencyCode: string };
     image: { url: string; altText?: string; width?: number; height?: number } | null;
     product: {
+      id: string;
       title: string;
       featuredImage: { url: string; altText?: string; width?: number; height?: number } | null;
     };
@@ -74,6 +75,7 @@ function mapCartLine(node: {
           }
         : null,
       product: {
+        id: node.merchandise.product.id,
         title: node.merchandise.product.title,
         featuredImage: node.merchandise.product.featuredImage
           ? {
@@ -102,6 +104,7 @@ function mapCart(apiCart: {
       price: { amount: string; currencyCode: string };
       image: { url: string; altText?: string; width?: number; height?: number } | null;
       product: {
+        id: string;
         title: string;
         featuredImage: { url: string; altText?: string; width?: number; height?: number } | null;
       };

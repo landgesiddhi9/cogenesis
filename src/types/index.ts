@@ -102,6 +102,7 @@ export interface ShopifyCartLine {
     price: ShopifyPrice;
     image?: ShopifyImage | null;
     product: {
+      id: string;
       title: string;
       featuredImage?: ShopifyImage | null;
     };

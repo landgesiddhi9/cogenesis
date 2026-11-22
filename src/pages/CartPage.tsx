@@ -5,7 +5,7 @@ import { useWishlist } from "../hooks/useWishlist";
 import { getFeaturedProducts } from "../services/product.service";
 import { shopifyImageUrl } from "../utils/shopifyImage";
 import { resolveProductVariant, getProductSizes } from "../utils/variant";
-import type { ShopifyProduct } from "../types";
+import type { ShopifyCartLine, ShopifyProduct } from "../types";
 import ProductCard from "../components/ProductCard";
 
 // ── Size selector panel for "May Interest You" strip ───────────────────────────
@@ -114,8 +114,9 @@ const formatPrice = (amount: string, currency: string) => {
 const CartPage = () => {
   const navigate = useNavigate();
   const { cart, loading, error, updateCartLine, removeCartLine } = useCart();
-  const { isWishlisted, toggleWishlist } = useWishlist();
+  const { addToWishlist, isWishlisted, toggleWishlist } = useWishlist();
   const [processingLines, setProcessingLines] = useState<Set<string>>(new Set());
+  const [pendingRemovalLineId, setPendingRemovalLineId] = useState<string | null>(null);
   const [checkoutLoading, setCheckoutLoading] = useState(false);
 
   // "May Interest You" strip state
@@ -176,27 +177,57 @@ const CartPage = () => {
     }
   };
 
-  const handleRemove = async (lineId: string) => {
+  const handleRemove = async (lineId: string, showSuccessToast = true) => {
+    setPendingRemovalLineId(null);
     setProcessingLines((prev) => new Set(prev).add(lineId));
     try {
       await removeCartLine(lineId);
-      window.dispatchEvent(
-        new CustomEvent("cart-toast", {
-          detail: { message: "Product removed from cart", type: "success" },
-        }),
-      );
+      if (showSuccessToast) {
+        window.dispatchEvent(
+          new CustomEvent("cart-toast", {
+            detail: { message: "Product removed from cart", type: "success" },
+          }),
+        );
+      }
+      return true;
     } catch {
       window.dispatchEvent(
         new CustomEvent("cart-toast", {
           detail: { message: "Couldn't remove product", type: "error" },
         }),
       );
+      return false;
     } finally {
       setProcessingLines((prev) => {
         const next = new Set(prev);
         next.delete(lineId);
         return next;
       });
+    }
+  };
+
+  const handleSaveForLater = async (line: ShopifyCartLine) => {
+    const productId = line.merchandise.product.id;
+    if (!productId) {
+      window.dispatchEvent(
+        new CustomEvent("cart-toast", {
+          detail: { message: "Couldn't save product to wishlist", type: "error" },
+        }),
+      );
+      return;
+    }
+
+    const alreadyWishlisted = isWishlisted(productId);
+    if (!(await handleRemove(line.id, false))) return;
+
+    if (alreadyWishlisted) {
+      window.dispatchEvent(
+        new CustomEvent("wishlist-toast", {
+          detail: { message: "Product is already in your wishlist", type: "success" },
+        }),
+      );
+    } else {
+      addToWishlist(productId);
     }
   };
 
@@ -279,12 +310,40 @@ const CartPage = () => {
                       <button
                         type="button"
                         disabled={isProcessing(line.id)}
-                        onClick={() => handleRemove(line.id)}
+                        onClick={() =>
+                          setPendingRemovalLineId((current) =>
+                            current === line.id ? null : line.id,
+                          )
+                        }
                         className="absolute top-0 right-0 leading-none text-[#888] text-[28px] font-semibold hover:opacity-70 transition-opacity duration-150 disabled:opacity-40 disabled:cursor-not-allowed z-10"
-                        aria-label="Remove item"
+                        aria-label="Choose what to do with item"
                       >
                         ×
                       </button>
+                      {pendingRemovalLineId === line.id && (
+                        <div
+                          role="group"
+                          aria-label="Cart item options"
+                          className="mt-8 w-full bg-ivory border border-[#e0ddd8] p-3"
+                        >
+                          <button
+                            type="button"
+                            disabled={isProcessing(line.id)}
+                            onClick={() => handleRemove(line.id)}
+                            className="w-full text-left font-sans text-[11px] text-[#555] hover:text-[#111] py-1 transition-colors disabled:opacity-50"
+                          >
+                            Remove from Cart
+                          </button>
+                          <button
+                            type="button"
+                            disabled={isProcessing(line.id)}
+                            onClick={() => handleSaveForLater(line)}
+                            className="w-full text-left font-sans text-[11px] text-[#555] hover:text-[#111] py-1 transition-colors disabled:opacity-50"
+                          >
+                            Save for Later (Move to Wishlist)
+                          </button>
+                        </div>
+                      )}
                       <p className="font-sans text-[12px] tracking-[0.03em] text-[#111] truncate pr-6">
                         {line.merchandise.product.title}
                       </p>
@@ -345,7 +404,7 @@ const CartPage = () => {
                     </div>
                     <div className="flex justify-between font-sans text-[12px] text-[#555]">
                       <span>Shipping</span>
-                      <span className="text-[#888]">Calculated at checkout</span>
+                      <span className="text-[#888]">Free shipping on orders above ₹2,099</span>
                     </div>
                     <div className="border-t border-[#e0ddd8] pt-3 flex justify-between font-sans text-[13px] font-semibold text-[#111]">
                       <span>Total</span>
