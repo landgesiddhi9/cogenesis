@@ -6,4 +6,11 @@ import tailwindcss from '@tailwindcss/vite'
 export default defineConfig({
   plugins: [react(), tailwindcss()],
   envPrefix: ['VITE_', 'NEXT_PUBLIC_'],
+  server: {
+    proxy: {
+      '/api/newsletter': {
+        target: 'http://localhost:3001',
+      },
+    },
+  },
 })

@@ -1,17 +1,91 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import allPaymentIcons from "../assets/payments/all in one.png";
 
+type NewsletterState =
+  | "idle"
+  | "invalid"
+  | "submitting"
+  | "success"
+  | "error";
+
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 const Footer = () => {
   const [email, setEmail] = useState("");
+  const [newsletterState, setNewsletterState] =
+    useState<NewsletterState>("idle");
 
-  const handleSubscribe = (e: React.FormEvent) => {
+  useEffect(() => {
+    if (newsletterState === "success") {
+      const timeout = window.setTimeout(() => {
+        setNewsletterState("idle");
+      }, 4000);
+      return () => window.clearTimeout(timeout);
+    }
+  }, [newsletterState]);
+
+  const handleSubscribe = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (email) {
-      window.location.href = `mailto:newsletter@cogenesis.com?subject=Newsletter Subscription&body=Please subscribe me with email: ${email}`;
+
+    const formData = new FormData(e.currentTarget);
+    const companyField = formData.get("company");
+    const company =
+      typeof companyField === "string" ? companyField : "";
+    if (company.trim()) {
+      setNewsletterState("success");
+      return;
+    }
+
+    const normalizedEmail = email.trim().toLowerCase();
+    setEmail(normalizedEmail);
+    if (!EMAIL_PATTERN.test(normalizedEmail)) {
+      setNewsletterState("invalid");
+      return;
+    }
+
+    setNewsletterState("submitting");
+    try {
+      const response = await fetch("/api/newsletter", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: normalizedEmail, company }),
+      });
+      const payload: unknown = await response.json();
+
+      if (
+        !response.ok ||
+        typeof payload !== "object" ||
+        payload === null ||
+        !("status" in payload) ||
+        payload.status !== "ok"
+      ) {
+        setNewsletterState("error");
+        return;
+      }
+
       setEmail("");
+      setNewsletterState("success");
+    } catch {
+      setNewsletterState("error");
     }
   };
+
+  const handleEmailChange = (value: string) => {
+    setEmail(value);
+    if (newsletterState === "invalid" || newsletterState === "error") {
+      setNewsletterState("idle");
+    }
+  };
+
+  const newsletterMessage =
+    newsletterState === "invalid"
+      ? "Please enter a valid email address."
+      : newsletterState === "success"
+        ? "Thanks for subscribing!"
+        : newsletterState === "error"
+          ? "Something went wrong. Please try again."
+          : "";
 
   return (
     <footer className="bg-ivory border-t border-[#E7E2DA]" id="site-footer">
@@ -22,23 +96,48 @@ const Footer = () => {
           Newsletter
         </h3>
         <form
+          noValidate
           onSubmit={handleSubscribe}
-          className="flex items-center border-b border-[#b5a978] mt-2 mb-5"
+          className="flex items-center border-b border-[#b5a978] mt-2"
         >
+          <label htmlFor="footer-newsletter-email-mobile" className="sr-only">
+            Email address
+          </label>
           <input
             type="email"
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={(e) => handleEmailChange(e.target.value)}
             placeholder="Email address"
             className="flex-1 bg-transparent font-sans text-[12px] text-[#3d3929] placeholder:text-[#a09882] py-2 outline-none"
+            id="footer-newsletter-email-mobile"
+          />
+          <input
+            type="text"
+            name="company"
+            tabIndex={-1}
+            autoComplete="off"
+            aria-hidden="true"
+            className="sr-only"
           />
           <button
             type="submit"
+            disabled={newsletterState === "submitting"}
             className="font-sans text-[10px] tracking-[0.15em] uppercase text-[#3d3929] py-2 font-semibold"
           >
             Subscribe
           </button>
         </form>
+        <p className="mt-2 mb-5 font-sans text-[10px] leading-4 text-[#7a7260]">
+          By subscribing you agree to receive marketing emails. Unsubscribe
+          anytime.
+        </p>
+        <p
+          aria-live="polite"
+          aria-atomic="true"
+          className="font-sans text-[10px] leading-4 text-[#7a7260]"
+        >
+          {newsletterMessage}
+        </p>
 
         {/* Customer Care */}
         <div className="mb-4">
@@ -228,25 +327,49 @@ const Footer = () => {
               </h3>
               <div className="mt-4">
                 <form
+                  noValidate
                   onSubmit={handleSubscribe}
                   className="flex items-center border-b border-[#b5a978] max-w-[420px]"
                 >
+                  <label htmlFor="footer-email-input" className="sr-only">
+                    Email address
+                  </label>
                   <input
                     type="email"
                     value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    onChange={(e) => handleEmailChange(e.target.value)}
                     placeholder="Email address"
                     className="flex-1 bg-transparent font-sans text-[13px] text-[#3d3929] placeholder:text-[#a09882] py-2.5 pr-3 outline-none"
                     id="footer-email-input"
                   />
+                  <input
+                    type="text"
+                    name="company"
+                    tabIndex={-1}
+                    autoComplete="off"
+                    aria-hidden="true"
+                    className="sr-only"
+                  />
                   <button
                     type="submit"
+                    disabled={newsletterState === "submitting"}
                     className="font-sans text-[11px] tracking-[0.15em] uppercase text-[#3d3929] hover:text-[#3d3929] transition-colors duration-300 py-2.5 pl-3 font-semibold"
                     id="footer-subscribe-btn"
                   >
                     Subscribe
                   </button>
                 </form>
+                <p className="mt-2 font-sans text-[10px] leading-4 text-[#7a7260]">
+                  By subscribing you agree to receive marketing emails.
+                  Unsubscribe anytime.
+                </p>
+                <p
+                  aria-live="polite"
+                  aria-atomic="true"
+                  className="mt-1 font-sans text-[10px] leading-4 text-[#7a7260]"
+                >
+                  {newsletterMessage}
+                </p>
               </div>
             </div>
 
