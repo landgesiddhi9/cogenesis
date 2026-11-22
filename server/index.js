@@ -22,6 +22,10 @@ Speak in the register of a personal stylist, for example:
 app.use(cors());
 app.use(express.json());
 
+app.get("/health", (_req, res) => {
+  res.status(200).json({ status: "ok" });
+});
+
 function buildPrompt(question, history) {
   if (!history.length) return question;
   const lines = history.map((m) => {
